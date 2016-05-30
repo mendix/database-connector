@@ -58,8 +58,7 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 	private String userName;
 	private String password;
 	private String sql;
-	private IMendixObject __resultObject;
-	private databaseconnector.proxies.Row resultObject;
+	private IMendixObject resultObject;
 
 	public ExecuteQuery(IContext context, String jdbcUrl, String userName, String password, String sql, IMendixObject resultObject)
 	{
@@ -68,16 +67,14 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 		this.userName = userName;
 		this.password = password;
 		this.sql = sql;
-		this.__resultObject = resultObject;
+		this.resultObject = resultObject;
 	}
 
 	@Override
 	public java.util.List<IMendixObject> executeAction() throws Exception
 	{
-		this.resultObject = __resultObject == null ? null : databaseconnector.proxies.Row.initialize(getContext(), __resultObject);
-
 		// BEGIN USER CODE
-		String entityName = resultObject.getMendixObject().getMetaObject().getName();
+		String entityName = resultObject.getMetaObject().getName();
 		return connector.executeQuery(this.jdbcUrl, this.userName, this.password, entityName, this.sql, this.getContext());
 		// END USER CODE
 	}

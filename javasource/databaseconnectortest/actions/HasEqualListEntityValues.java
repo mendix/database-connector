@@ -16,35 +16,22 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
 import com.mendix.webui.CustomJavaAction;
-import databaseconnector.proxies.Row;
 
 public class HasEqualListEntityValues extends CustomJavaAction<Boolean>
 {
-	private java.util.List<IMendixObject> __Expected;
-	private java.util.List<databaseconnector.proxies.Row> Expected;
-	private java.util.List<IMendixObject> __Actual;
-	private java.util.List<databaseconnector.proxies.Row> Actual;
+	private java.util.List<IMendixObject> Expected;
+	private java.util.List<IMendixObject> Actual;
 
 	public HasEqualListEntityValues(IContext context, java.util.List<IMendixObject> Expected, java.util.List<IMendixObject> Actual)
 	{
 		super(context);
-		this.__Expected = Expected;
-		this.__Actual = Actual;
+		this.Expected = Expected;
+		this.Actual = Actual;
 	}
 
 	@Override
 	public Boolean executeAction() throws Exception
 	{
-		this.Expected = new java.util.ArrayList<databaseconnector.proxies.Row>();
-		if (__Expected != null)
-			for (IMendixObject __ExpectedElement : __Expected)
-				this.Expected.add(databaseconnector.proxies.Row.initialize(getContext(), __ExpectedElement));
-
-		this.Actual = new java.util.ArrayList<databaseconnector.proxies.Row>();
-		if (__Actual != null)
-			for (IMendixObject __ActualElement : __Actual)
-				this.Actual.add(databaseconnector.proxies.Row.initialize(getContext(), __ActualElement));
-
 		// BEGIN USER CODE
     return getMemberArray(Expected).equals(getMemberArray(Actual));
 		// END USER CODE
@@ -60,12 +47,12 @@ public class HasEqualListEntityValues extends CustomJavaAction<Boolean>
 	}
 
 	// BEGIN EXTRA CODE
-  private List<?> getMemberArray(List<Row> list) {
-    return list.stream().map(this::getMembers).collect(Collectors.toList());
+  private List<?> getMemberArray(List<IMendixObject> mendixObjects) {
+    return mendixObjects.stream().map(this::getMembers).collect(Collectors.toList());
   }
 
-  private Map<String, ? extends IMendixObjectMember<?>> getMembers(Row a) {
-    return a.getMendixObject().getMembers(getContext());
+  private Map<String, ? extends IMendixObjectMember<?>> getMembers(IMendixObject mendixObject) {
+    return mendixObject.getMembers(getContext());
   }
 
 	// END EXTRA CODE

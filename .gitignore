@@ -1,0 +1,6 @@
+/deployment
+/.classpath
+/.project
+/*.bak
+/*.launch
+/*.lock

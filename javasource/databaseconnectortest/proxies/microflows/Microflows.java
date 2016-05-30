@@ -15,7 +15,7 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 public class Microflows
 {
 	// These are the microflows for the DatabaseConnectorTest module
-	public static void assertEqualsListEntityValues(IContext context, String _message, java.util.List<databaseconnectortest.proxies.TestResultRow> _expected, java.util.List<databaseconnector.proxies.Row> _actual)
+	public static void assertEqualsListEntityValues(IContext context, String _message, java.util.List<databaseconnectortest.proxies.TestResultRow> _expected, java.util.List<databaseconnectortest.proxies.TestResultRow> _actual)
 	{
 		try
 		{
@@ -33,7 +33,7 @@ public class Microflows
 			if (_actual != null)
 			{
 				listparam_actual = new java.util.ArrayList<IMendixObject>();
-				for (databaseconnector.proxies.Row obj : _actual)
+				for (databaseconnectortest.proxies.TestResultRow obj : _actual)
 					listparam_actual.add(obj.getMendixObject());
 			}
 			params.put("Actual", listparam_actual);
