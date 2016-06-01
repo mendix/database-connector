@@ -1,7 +1,6 @@
 # Database Connector
 
-The Mendix platform offers many ways to integrate with external data, but integrating with external databases has not been a seamless experience until now. 
-The **Database connector** module can be used to seamlessly connect to external databases without limiting you in your choice of database or SQL dialect, enabling you to incorporate your external data directly in your Mendix application.
+The **Database connector** can be used to seamlessly connect to external databases without limiting you in your choice of database or SQL dialect, enabling you to incorporate your external data directly in your Mendix application.
 This document will focus on executing an SQL (Structured Query Language) Select Query and executing an SQL Statement on **external relational databases**. 
 
 The **Execute query** action (present in the Database connector) provides a consistent environment for Mendix projects to perform an arbitrary Select SQL query on relational external databases. JDBC (Java Database Connectivity) API, a standard Java API, 
@@ -41,8 +40,8 @@ The result of this action is a list of objects of type Row, which is also the ou
 ### Execute statement action
 The result of this action is either an Integer or a Long value which usually represents the amount of affected rows.
 
-# Known Issues
-Proper security must be applied as this action can allow SQL Injection in your Mendix application.
+# Remarks
+It is a good practice to avoid having user input as part of your dynamic SQL queries and statements. In the future we will support using parameters with the queries or statements.
 
 # License
 Licensed under the Apache license
