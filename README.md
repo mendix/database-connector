@@ -17,12 +17,11 @@ However, it is used for INSERT, UPDATE, DELETE, STORED PROCEDURE or DDL statemen
 * A database **URL** address that points to your database.
 * The **username** for logging into the database, relative to the database URL address.
 * The **password** for logging into the database, relative to the database URL address.
-* The JDBC driver jars (see also [here](#links-to-common-jdbc-drivers)), for the databases you want to connect to, must be placed inside the userlib directory of your Mendix application.  
+* The **JDBC driver** libraries (.jar extension) (see also [here](#links-to-common-jdbc-drivers)), for the databases you want to connect to, must be placed inside the userlib directory of your Mendix application.  
 So if you want to connect to Amazon RDS PostgreSQL database (For e.g. *jdbc:postgresql://xyz-rds-instance.ccnapcvoeosh.eu-west-1.rds.amazonaws.com:5432/postgres*), 
 you need to place PostgreSQL Jdbc driver jar inside the userlib folder.
-
-### Only for the Execute query action
-* An entity in the domain model, to be used for the results of the executed query.  
+* **Specific to the Execute query action:**  
+An entity in the domain model, to be used for the results of the executed query.  
 Let's say that you want to execute a query like `select name, number from stock`. This query has two columns of type String and Integer respectively. In order to use the Execute query action, you have to add an entity in the domain model that has the same attributes as the columns in the query.
 
 ## Installation
