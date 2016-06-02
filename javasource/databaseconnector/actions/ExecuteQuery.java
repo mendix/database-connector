@@ -18,15 +18,14 @@ import databaseconnector.impl.JdbcConnector;
 
 /**
  * <p>
- * This Java action provides a consistent environment for Mendix projects to perform an arbitrary SELECT SQL query on relational
- * external databases.
+ * This Java action provides a consistent environment for Mendix projects to perform an arbitrary SELECT SQL query on relational external databases.
  * JDBC (Java Database Connectivity) API, a standard Java API, is used when this Java action attempts
  * to connect with a Relational Database for which a JDBC driver exists.
  * The JDBC drivers for the databases you want to connect to, must be placed inside the userlib directory of a project.
  * </p>
  * 
- * Do not use this Java action for INSERT, UPDATE, or DELETE queries.
- * This Java action returns a list of Mendix objects of a type which should derive from DatabaseConnectors.SqlRow.
+ * Do not use this Java action for INSERT, UPDATE, DELETE or DDL queries.
+ * This action returns a list of Mendix objects based on the JDBC result set.
  * The jdbcUrl argument must specify a database URL address that points to your relational database and is dependent
  * upon the particular database and JDBC driver. It will always begin with "jdbc:" protocol, but the rest is up to particular vendor.
  * For example 'jdbc:mysql://hostname/databaseName' jdbcUrl format can be used for MySQL databases.
@@ -44,12 +43,12 @@ import databaseconnector.impl.JdbcConnector;
  *    The password for logging into the database, relative to the jdbcUrl argument.
  * 
  * @param <String> sql
- *    The SELECT prepared statement query to be performed, relative to the database type.
+ *    The SELECT query to be performed, relative to the database type.
  * 
- * @param <DatabaseConnectors.SqlRow> resultObject
+ * @param <IMendixObject> resultObject
  *    An instance of the resulting object. This instance is used only for defining the type of object to be returned.
  * 
- * @return <List<DatabaseConnectors.SqlRow>>
+ * @return <List<IMendixObject>>
  *    SELECT Query result as a list of objects.
  */
 public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>>

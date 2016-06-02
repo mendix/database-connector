@@ -58,6 +58,10 @@ public class JdbcConnector {
     return resultList;
   }
 
+  public String executeQueryToJson(String jdbcUrl, String userName, String password, String sql, IContext context) throws SQLException {
+    return null;
+  }
+
   public long executeStatement(String jdbcUrl, String userName, String password, String sql) throws SQLException {
     logNode.info(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
