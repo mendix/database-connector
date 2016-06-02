@@ -17,7 +17,7 @@ However, it is used for INSERT, UPDATE, DELETE, STORED PROCEDURE or DDL statemen
 * A database **URL** address that points to your database.
 * The **username** for logging into the database, relative to the database URL address.
 * The **password** for logging into the database, relative to the database URL address.
-* The JDBC driver jars, for the databases you want to connect to, must be placed inside the userlib directory of your Mendix application.  
+* The JDBC driver jars (see also [here](#links-to-common-jdbc-drivers)), for the databases you want to connect to, must be placed inside the userlib directory of your Mendix application.  
 So if you want to connect to Amazon RDS PostgreSQL database (For e.g. *jdbc:postgresql://xyz-rds-instance.ccnapcvoeosh.eu-west-1.rds.amazonaws.com:5432/postgres*), 
 you need to place PostgreSQL Jdbc driver jar inside the userlib folder.
 
@@ -42,13 +42,30 @@ The result of this action is either an Integer or a Long value which usually rep
 # Remarks
 It is a good practice to avoid having user input as part of your dynamic SQL queries and statements. In the future we will support using parameters with the queries or statements.
 
+# Links to common JDBC drivers
+* [Amazon Redshift](http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html#download-jdbc-driver)
+* [Apache Derby](http://db.apache.org/derby/derby_downloads.html)
+* [Firebird](http://www.firebirdsql.org/en/jdbc-driver/)
+* [H2 Database Engine](http://www.h2database.com/)
+* [HSQLDB](https://sourceforge.net/projects/hsqldb/files/)
+* [IBM DB2](http://www-01.ibm.com/support/docview.wss?uid=swg21385217)
+* [IBM Informix](https://www-01.ibm.com/marketing/iwm/tnd/search.jsp?go=y&rs=ifxjdbc)
+* [MariaDB](https://downloads.mariadb.org/connector-java/)
+* [Microsoft SQL Server/SQL Database](https://www.microsoft.com/en-us/download/details.aspx?id=11774)
+* [MySQL](http://dev.mysql.com/downloads/connector/j/)
+* [Oracle Database](http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html)
+* [OrientDB](http://orientdb.com/download/)
+* [PostgreSQL](https://jdbc.postgresql.org/download.html)
+* [Presto](https://prestodb.io/docs/current/installation/jdbc.html)
+* [SQLite](https://bitbucket.org/xerial/sqlite-jdbc/downloads)
+
 # License
-Licensed under the Apache license
+Licensed under the Apache license.
 
 # Developers notes
 * `git clone https://github.com/mendix/database-connector.git`
-* Open the DatabaseConnector.mpr with your mendix modeler.
-* Use *Deploy for Eclipse* option (shortcut F6) and you can then import this module as an Eclipse project to the Eclipse IDE.
+* Open the DatabaseConnector.mpr in the Mendix Modeler.
+* Use *Deploy for Eclipse* option (F6) and you can then import this module as an Eclipse project to the Eclipse IDE.
 
 # Version history
 None
