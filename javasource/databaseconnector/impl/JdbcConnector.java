@@ -5,12 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
@@ -34,30 +34,27 @@ public class JdbcConnector {
     this(logNode, new ObjectInstantiatorImpl(), ConnectionManagerSingleton.getInstance());
   }
 
-  public List<IMendixObject> executeQuery(String jdbcUrl, String userName, String password, String entityName, String sql,
+  public Stream<IMendixObject> executeQuery(String jdbcUrl, String userName, String password, String entityName, String sql,
       IContext context) throws SQLException {
-    List<IMendixObject> resultList = new ArrayList<>();
-
-    Consumer<Map<String, Object>> rowHandler = columns -> {
+    Function<Map<String, Object>, IMendixObject> toMendixObject = columns -> {
       IMendixObject obj = objectInstantiator.instantiate(context, entityName);
       columns.forEach((n, v) -> obj.setValue(context, n, v));
-      resultList.add(obj);
       logNode.info("obj: " + obj);
+      return obj;
     };
 
-    executeQuery(jdbcUrl, userName, password, sql, rowHandler);
+    Stream<Map<String,Object>> stream = executeQuery(jdbcUrl, userName, password, sql);
 
-    logNode.info(String.format("List: %d", resultList.size()));
-    return resultList;
+    return stream.map(toMendixObject);
   }
 
   public String executeQueryToJson(String jdbcUrl, String userName, String password, String sql, IContext context) throws SQLException {
     return null;
   }
 
-  public void executeQuery(String jdbcUrl, String userName, String password, String sql,
-      Consumer<Map<String, Object>> consumer) throws SQLException {
+  public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, String sql) throws SQLException {
     logNode.info(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
+    Builder<Map<String, Object>> builder = Stream.builder();
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -82,9 +79,11 @@ public class JdbcConnector {
           row.put(columnName, columnValue);
         }
 
-        consumer.accept(row);
+        builder.accept(row);
       }
     }
+
+    return builder.build();
   }
 
   public long executeStatement(String jdbcUrl, String userName, String password, String sql) throws SQLException {
