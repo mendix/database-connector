@@ -5,21 +5,12 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.Spliterators.AbstractSpliterator;
-import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import java.util.stream.Stream.Builder;
 
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
@@ -74,27 +65,24 @@ public class JdbcConnector {
       ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
       int columnCount = resultSetMetaData.getColumnCount();
       ColumnNameInfoGenerator columnNameInfo = new ColumnNameInfoGenerator(resultSetMetaData);
-      List<ColumnInfo> columnNames = IntStream.rangeClosed(1, columnCount).mapToObj(columnNameInfo::getColumnInfo).collect(Collectors.toList());
-      Stream<ResultSet> stream = ResultSetStream.stream(resultSet);
+      List<ColumnInfo> columnNames = IntStream.rangeClosed(1, columnCount)
+          .mapToObj(columnNameInfo::getColumnInfo).collect(Collectors.toList());
+      Stream<ResultSet> resultSetStream = ResultSetStream.stream(resultSet);
       Function<ResultSet, Map<String, Object>> toRowMap = rs -> {
-        Map<String, Object> row = new HashMap<>();
-        Consumer<ColumnInfo> setColumnValue = columnInfo -> {
+        Function<ColumnInfo, Object> getValue = columnInfo -> {
           try {
-            String columnName = columnInfo.getName();
             Object columnValue = rs.getObject(columnInfo.getIndex());
-            logNode.info(String.format("setting col: %s = %s", columnName, columnValue));
-            row.put(columnName, columnValue);
+            logNode.info(String.format("setting col: %s = %s", columnInfo.getName(), columnValue));
+            return columnValue;
           } catch (SQLException e) {
             throw new RuntimeException(e);
           }
         };
 
-        columnNames.forEach(setColumnValue);
-
-        return row;
+        return columnNames.stream().collect(Collectors.toMap(ColumnInfo::getName, getValue));
       };
 
-      Stream<Map<String, Object>> rowStream = stream.map(toRowMap);
+      Stream<Map<String, Object>> rowStream = resultSetStream.map(toRowMap);
 
       // Force the stream to read the whole ResultSet, so that the connection can be closed.
       return rowStream.collect(Collectors.toList()).stream();
