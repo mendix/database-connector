@@ -13,7 +13,6 @@ import com.mendix.core.Core;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.webui.CustomJavaAction;
-
 import databaseconnector.impl.JdbcConnector;
 
 /**
@@ -23,31 +22,31 @@ import databaseconnector.impl.JdbcConnector;
  * to connect with a Relational Database for which a JDBC driver exists.
  * The JDBC drivers for the databases you want to connect to, must be placed inside the userlib directory of a project.
  * </p>
- *
+ * 
  * Do not use this Java action for INSERT, UPDATE, DELETE or DDL queries.
  * This action returns a list of Mendix objects based on the JDBC result set.
  * The jdbcUrl argument must specify a database URL address that points to your relational database and is dependent
  * upon the particular database and JDBC driver. It will always begin with "jdbc:" protocol, but the rest is up to particular vendor.
  * For example 'jdbc:mysql://hostname/databaseName' jdbcUrl format can be used for MySQL databases.
  * Note: Proper security must be applied as this action can allow SQL Injection in your Mendix application.
- *
+ * 
  * @see    JdbcConnector
  * @since  Mendix World 2016
  * @param <String> jdbcUrl
  *    A database URL address that points to your database.
- *
- * @param <String> userName
+ * 
+ * @param <String> userName 
  *    The user name for logging into the database, relative to the jdbcUrl argument.
- *
- * @param <String> password
+ * 
+ * @param <String> password 
  *    The password for logging into the database, relative to the jdbcUrl argument.
- *
+ * 
  * @param <String> sql
  *    The SELECT  query to be performed, relative to the database type.
- *
+ * 
  * @param <DatabaseConnectors.SqlRow> resultObject
  *    An instance of the resulting object. This instance is used only for defining the type of object to be returned.
- *
+ * 
  * @return <List<DatabaseConnectors.SqlRow>>
  *    SELECT Query result as a list of objects.
  */

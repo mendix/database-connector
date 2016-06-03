@@ -6,10 +6,18 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.Spliterators.AbstractSpliterator;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import java.util.stream.Stream.Builder;
 
 import com.mendix.logging.ILogNode;
@@ -52,38 +60,44 @@ public class JdbcConnector {
     return null;
   }
 
+  public boolean getResultSet(ResultSet rs) throws SQLException {
+    return rs.next();
+  }
+
   public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, String sql) throws SQLException {
     logNode.info(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
-    Builder<Map<String, Object>> builder = Stream.builder();
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         ResultSet resultSet = preparedStatement.executeQuery()) {
       ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
       int columnCount = resultSetMetaData.getColumnCount();
-      String[] columnNames = IntStream.rangeClosed(1, columnCount).mapToObj(a -> {
-        try {
-          return resultSetMetaData.getColumnName(a);
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }).toArray(String[]::new);
-
-      while (resultSet.next()) {
+      ColumnNameInfo columnNameInfo = new ColumnNameInfo(resultSetMetaData);
+      String[] columnNames = IntStream.rangeClosed(1, columnCount).mapToObj(columnNameInfo::getColumnName).toArray(String[]::new);
+      Stream<ResultSet> stream = ResultSetStream.stream(resultSet);
+      Function<ResultSet, Map<String, Object>> toRowMap = rs -> {
         Map<String, Object> row = new HashMap<>();
 
-        for (int i = 0; i < columnCount; i++) {
-          String columnName = columnNames[i];
-          Object columnValue = resultSet.getObject(i + 1);
-          logNode.info(String.format("setting col: %s = %s", columnName, columnValue));
-          row.put(columnName, columnValue);
+        try {
+          for (int i = 0; i < columnCount; i++) {
+            String columnName = columnNames[i];
+            Object columnValue = rs.getObject(i + 1);
+            logNode.info(String.format("setting col: %s = %s", columnName, columnValue));
+            row.put(columnName, columnValue);
+          }
+        }
+        catch (SQLException e) {
+          throw new RuntimeException(e);
         }
 
-        builder.accept(row);
-      }
-    }
+        return row;
+      };
 
-    return builder.build();
+      Stream<Map<String, Object>> rowStream = stream.map(toRowMap);
+
+      // Force the stream to read the whole ResultSet, so that the connection can be closed.
+      return rowStream.collect(Collectors.toList()).stream();
+    }
   }
 
   public long executeStatement(String jdbcUrl, String userName, String password, String sql) throws SQLException {
