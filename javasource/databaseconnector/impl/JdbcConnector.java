@@ -7,6 +7,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -72,23 +73,23 @@ public class JdbcConnector {
         ResultSet resultSet = preparedStatement.executeQuery()) {
       ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
       int columnCount = resultSetMetaData.getColumnCount();
-      ColumnNameInfo columnNameInfo = new ColumnNameInfo(resultSetMetaData);
-      String[] columnNames = IntStream.rangeClosed(1, columnCount).mapToObj(columnNameInfo::getColumnName).toArray(String[]::new);
+      ColumnNameInfoGenerator columnNameInfo = new ColumnNameInfoGenerator(resultSetMetaData);
+      List<ColumnInfo> columnNames = IntStream.rangeClosed(1, columnCount).mapToObj(columnNameInfo::getColumnInfo).collect(Collectors.toList());
       Stream<ResultSet> stream = ResultSetStream.stream(resultSet);
       Function<ResultSet, Map<String, Object>> toRowMap = rs -> {
         Map<String, Object> row = new HashMap<>();
-
-        try {
-          for (int i = 0; i < columnCount; i++) {
-            String columnName = columnNames[i];
-            Object columnValue = rs.getObject(i + 1);
+        Consumer<ColumnInfo> setColumnValue = columnInfo -> {
+          try {
+            String columnName = columnInfo.getName();
+            Object columnValue = rs.getObject(columnInfo.getIndex());
             logNode.info(String.format("setting col: %s = %s", columnName, columnValue));
             row.put(columnName, columnValue);
+          } catch (SQLException e) {
+            throw new RuntimeException(e);
           }
-        }
-        catch (SQLException e) {
-          throw new RuntimeException(e);
-        }
+        };
+
+        columnNames.forEach(setColumnValue);
 
         return row;
       };

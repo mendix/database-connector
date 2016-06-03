@@ -2,16 +2,16 @@ package databaseconnector.impl;
 
 import java.sql.ResultSetMetaData;
 
-class ColumnNameInfo {
+class ColumnNameInfoGenerator {
   private ResultSetMetaData resultSetMetaData;
 
-  ColumnNameInfo(ResultSetMetaData resultSetMetaData) {
+  ColumnNameInfoGenerator(ResultSetMetaData resultSetMetaData) {
     this.resultSetMetaData = resultSetMetaData;
   }
 
-  String getColumnName(int index) {
+  ColumnInfo getColumnInfo(int index) {
     try {
-      return resultSetMetaData.getColumnName(index);
+      return new ColumnInfo(index, resultSetMetaData.getColumnName(index));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
