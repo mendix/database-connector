@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.IntStream;
 
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
@@ -58,18 +59,24 @@ public class JdbcConnector {
       Consumer<Map<String, Object>> consumer) throws SQLException {
     logNode.info(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
-    // TODO: make sure user doesn't crash runtime due to retrieving too many records
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         ResultSet resultSet = preparedStatement.executeQuery()) {
       ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
       int columnCount = resultSetMetaData.getColumnCount();
+      String[] columnNames = IntStream.rangeClosed(1, columnCount).mapToObj(a -> {
+        try {
+          return resultSetMetaData.getColumnName(a);
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
+      }).toArray(String[]::new);
 
       while (resultSet.next()) {
         Map<String, Object> row = new HashMap<>();
 
         for (int i = 0; i < columnCount; i++) {
-          String columnName = resultSetMetaData.getColumnName(i + 1);
+          String columnName = columnNames[i];
           Object columnValue = resultSet.getObject(i + 1);
           logNode.info(String.format("setting col: %s = %s", columnName, columnValue));
           row.put(columnName, columnValue);
