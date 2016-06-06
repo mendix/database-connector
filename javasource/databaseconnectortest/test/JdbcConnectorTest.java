@@ -33,7 +33,6 @@ import databaseconnector.interfaces.ConnectionManager;
 import databaseconnector.interfaces.ObjectInstantiator;
 
 public class JdbcConnectorTest {
-
   private static final String jdbcUrl = "TestUrl";
   private static final String userName = "TestUserName";
   private static final String password = "TestPassword";
