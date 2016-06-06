@@ -3,13 +3,10 @@ package databaseconnector.impl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.json.JSONArray;
@@ -58,40 +55,16 @@ public class JdbcConnector {
     return new JSONArray(jsonObjects.collect(Collectors.toList())).toString();
   }
 
-  public boolean getResultSet(ResultSet rs) throws SQLException {
-    return rs.next();
-  }
-
   public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, String sql) throws SQLException {
     logNode.info(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         ResultSet resultSet = preparedStatement.executeQuery()) {
-      ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-      int columnCount = resultSetMetaData.getColumnCount();
-      ColumnNameInfoGenerator columnNameInfo = new ColumnNameInfoGenerator(resultSetMetaData);
-      List<ColumnInfo> columnNames = IntStream.rangeClosed(1, columnCount)
-          .mapToObj(columnNameInfo::getColumnInfo).collect(Collectors.toList());
-      Stream<ResultSet> resultSetStream = ResultSetStream.stream(resultSet);
-      Function<ResultSet, Map<String, Object>> toRowMap = rs -> {
-        Function<ColumnInfo, Object> getValue = columnInfo -> {
-          try {
-            Object columnValue = rs.getObject(columnInfo.getIndex());
-            logNode.info(String.format("setting col: %s = %s", columnInfo.getName(), columnValue));
-            return columnValue;
-          } catch (SQLException e) {
-            throw new RuntimeException(e);
-          }
-        };
-
-        return columnNames.stream().collect(Collectors.toMap(ColumnInfo::getName, getValue));
-      };
-
-      Stream<Map<String, Object>> rowStream = resultSetStream.map(toRowMap);
+      ResultSetStream resultSetStream = new ResultSetStream(resultSet, logNode);
 
       // Force the stream to read the whole ResultSet, so that the connection can be closed.
-      return rowStream.collect(Collectors.toList()).stream();
+      return resultSetStream.toList().stream();
     }
   }
 
