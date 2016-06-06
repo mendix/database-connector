@@ -2,6 +2,7 @@ package databaseconnectortest.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -111,8 +112,10 @@ public class JdbcConnectorTest {
     when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
+    when(resultSetMetaData.getColumnName(anyInt())).thenReturn("a", "b");
     when(resultSetMetaData.getColumnCount()).thenReturn(2);
     when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
+    when(resultSet.getObject(anyInt())).thenReturn(true);
     when(resultSet.next()).thenReturn(true, true, true, true, false);
 
     Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
