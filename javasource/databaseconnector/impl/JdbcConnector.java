@@ -12,6 +12,9 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
@@ -49,7 +52,10 @@ public class JdbcConnector {
   }
 
   public String executeQueryToJson(String jdbcUrl, String userName, String password, String sql, IContext context) throws SQLException {
-    return null;
+    Stream<Map<String, Object>> stream = executeQuery(jdbcUrl, userName, password, sql);
+    Stream<JSONObject> jsonObjects = stream.map(JSONObject::new);
+
+    return new JSONArray(jsonObjects.collect(Collectors.toList())).toString();
   }
 
   public boolean getResultSet(ResultSet rs) throws SQLException {
