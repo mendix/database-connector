@@ -30,7 +30,7 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 import databaseconnector.impl.JdbcConnector;
 import databaseconnector.interfaces.ConnectionManager;
-import databaseconnector.interfaces.ObjectInstantiator;
+import databaseconnector.interfaces.IObjectInstantiator;
 
 public class JdbcConnectorTest {
 
@@ -43,7 +43,7 @@ public class JdbcConnectorTest {
   @Rule public MockitoRule rule = MockitoJUnit.rule();
 
   @Mock private IContext context;
-  @Mock private ObjectInstantiator objectInstantiator;
+  @Mock private IObjectInstantiator objectInstantiator;
   @Mock private ILogNode iLogNode;
   @Mock private Connection connection;
   @Mock private ConnectionManager connectionManager;
