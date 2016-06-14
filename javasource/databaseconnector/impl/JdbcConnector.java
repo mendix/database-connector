@@ -63,7 +63,6 @@ public class JdbcConnector {
         ResultSet resultSet = preparedStatement.executeQuery()) {
       ResultSetStream resultSetStream = new ResultSetStream(resultSet, logNode);
 
-      // Force the stream to read the whole ResultSet, so that the connection can be closed.
       return resultSetStream.toList().stream();
     }
   }

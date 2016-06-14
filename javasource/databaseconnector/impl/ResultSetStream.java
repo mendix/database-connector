@@ -36,7 +36,8 @@ public class ResultSetStream implements Iterator<ResultSet> {
   }
 
   public List<Map<String, Object>> toList() throws SQLException {
-    return stream().map(a -> getRowResult(columnNames)).collect(Collectors.toList());
+    // Force the stream to read the whole ResultSet, so that the connection can be closed.
+    return stream().map(a -> getRowResult()).collect(Collectors.toList());
   }
 
   @Override
@@ -57,7 +58,7 @@ public class ResultSetStream implements Iterator<ResultSet> {
     return StreamSupport.stream(Spliterators.spliteratorUnknownSize(this, Spliterator.ORDERED), false);
   }
 
-  private Map<String, Object> getRowResult(List<ColumnInfo> columnNames) {
+  private Map<String, Object> getRowResult() {
     return columnNames.stream().collect(Collectors.toMap(ColumnInfo::getName, this::getColumnResult));
   }
 
