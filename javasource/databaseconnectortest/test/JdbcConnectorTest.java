@@ -2,6 +2,7 @@ package databaseconnectortest.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -15,7 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,7 +34,6 @@ import databaseconnector.interfaces.ConnectionManager;
 import databaseconnector.interfaces.ObjectInstantiator;
 
 public class JdbcConnectorTest {
-
   private static final String jdbcUrl = "TestUrl";
   private static final String userName = "TestUserName";
   private static final String password = "TestPassword";
@@ -78,8 +78,9 @@ public class JdbcConnectorTest {
     when(resultSet.next()).thenReturn(true, false);
     when(objectInstantiator.instantiate(anyObject(), anyString())).thenThrow(testException);
 
+    Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
     try {
-     jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
+     result.count();
      fail("An exception should occur!");
     } catch(IllegalArgumentException iae) {}
 
@@ -95,9 +96,9 @@ public class JdbcConnectorTest {
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
 
-    List<IMendixObject> resultList = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
+    Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
 
-    assertEquals(0, resultList.size());
+    assertEquals(0, result.count());
 
     verify(connection).close();
     verify(preparedStatement).close();
@@ -111,13 +112,15 @@ public class JdbcConnectorTest {
     when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
+    when(resultSetMetaData.getColumnName(anyInt())).thenReturn("a", "b");
     when(resultSetMetaData.getColumnCount()).thenReturn(2);
     when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
+    when(resultSet.getObject(anyInt())).thenReturn(true);
     when(resultSet.next()).thenReturn(true, true, true, true, false);
 
-    List<IMendixObject> resultList = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
+    Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
 
-    assertEquals(4, resultList.size());
+    assertEquals(4, result.count());
 
     verify(objectInstantiator, times(4)).instantiate(context, entityName);
     verify(connectionManager).getConnection(jdbcUrl, userName, password);
@@ -150,8 +153,8 @@ public class JdbcConnectorTest {
     when(resultSet.getObject(1)).thenReturn(row1Value1, row2Value1);
     when(resultSet.getObject(2)).thenReturn(row1Value2, row2Value2);
 
-    List<IMendixObject> resultList = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
-    assertEquals(2, resultList.size());
+    Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
+    assertEquals(2, result.count());
 
     verify(resultObject1).setValue(context, columnName1, row1Value1);
     verify(resultObject1).setValue(context, columnName2, row1Value2);
@@ -172,9 +175,9 @@ public class JdbcConnectorTest {
     when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
     when(resultSet.next()).thenReturn(false);
 
-    List<IMendixObject> resultList = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
+    Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, entityName, sqlQuery, context);
 
-    assertEquals(0, resultList.size());
+    assertEquals(0, result.count());
 
     verify(objectInstantiator, never()).instantiate(context, entityName);
     verify(resultSet, times(1)).next();

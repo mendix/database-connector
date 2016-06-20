@@ -3,10 +3,14 @@ package databaseconnector.impl;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
@@ -30,32 +34,37 @@ public class JdbcConnector {
     this(logNode, new ObjectInstantiatorImpl(), ConnectionManagerSingleton.getInstance());
   }
 
-  public List<IMendixObject> executeQuery(String jdbcUrl, String userName, String password, String entityName, String sql,
+  public Stream<IMendixObject> executeQuery(String jdbcUrl, String userName, String password, String entityName, String sql,
       IContext context) throws SQLException {
-    List<IMendixObject> resultList = new ArrayList<>();
+    Function<Map<String, Object>, IMendixObject> toMendixObject = columns -> {
+      IMendixObject obj = objectInstantiator.instantiate(context, entityName);
+      columns.forEach((n, v) -> obj.setValue(context, n, v));
+      logNode.info("obj: " + obj);
+      return obj;
+    };
+
+    Stream<Map<String,Object>> stream = executeQuery(jdbcUrl, userName, password, sql);
+
+    return stream.map(toMendixObject);
+  }
+
+  public String executeQueryToJson(String jdbcUrl, String userName, String password, String sql, IContext context) throws SQLException {
+    Stream<Map<String, Object>> stream = executeQuery(jdbcUrl, userName, password, sql);
+    Stream<JSONObject> jsonObjects = stream.map(JSONObject::new);
+
+    return new JSONArray(jsonObjects.collect(Collectors.toList())).toString();
+  }
+
+  public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, String sql) throws SQLException {
     logNode.info(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
-    // TODO: make sure user doesn't crash runtime due to retrieving too many records
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         ResultSet resultSet = preparedStatement.executeQuery()) {
-      ResultSetMetaData resultSetMetaData = resultSet.getMetaData();
-      int columnCount = resultSetMetaData.getColumnCount();
+      ResultSetReader resultSetReader = new ResultSetReader(resultSet);
 
-      while (resultSet.next()) {
-        IMendixObject obj = objectInstantiator.instantiate(context, entityName);
-        for (int i = 0; i < columnCount; i++) {
-          String columnName = resultSetMetaData.getColumnName(i + 1);
-          Object columnValue = resultSet.getObject(i + 1);
-          logNode.info(String.format("setting col: %s = %s", columnName, columnValue));
-          obj.setValue(context, columnName, columnValue);
-        }
-        resultList.add(obj);
-        logNode.info("obj: " + obj);
-      }
+      return resultSetReader.readAll().stream();
     }
-    logNode.info(String.format("List: %d", resultList.size()));
-    return resultList;
   }
 
   public long executeStatement(String jdbcUrl, String userName, String password, String sql) throws SQLException {

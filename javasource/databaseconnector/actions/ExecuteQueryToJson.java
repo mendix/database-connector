@@ -9,13 +9,9 @@
 
 package databaseconnector.actions;
 
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import com.mendix.core.Core;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
-import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.webui.CustomJavaAction;
 import databaseconnector.impl.JdbcConnector;
 
@@ -46,43 +42,35 @@ import databaseconnector.impl.JdbcConnector;
  *    The password for logging into the database, relative to the jdbcUrl argument.
  * 
  * @param <String> sql
- *    The SELECT query to be performed, relative to the database type.
+ *    The SELECT  query to be performed, relative to the database type.
  * 
- * @param <IMendixObject> resultObject
+ * @param <DatabaseConnectors.SqlRow> resultObject
  *    An instance of the resulting object. This instance is used only for defining the type of object to be returned.
  * 
- * @return <List<IMendixObject>>
+ * @return <List<DatabaseConnectors.SqlRow>>
  *    SELECT Query result as a list of objects.
  */
-public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>>
+public class ExecuteQueryToJson extends CustomJavaAction<String>
 {
 	private String jdbcUrl;
 	private String userName;
 	private String password;
 	private String sql;
-	private IMendixObject resultObject;
 
-	public ExecuteQuery(IContext context, String jdbcUrl, String userName, String password, String sql, IMendixObject resultObject)
+	public ExecuteQueryToJson(IContext context, String jdbcUrl, String userName, String password, String sql)
 	{
 		super(context);
 		this.jdbcUrl = jdbcUrl;
 		this.userName = userName;
 		this.password = password;
 		this.sql = sql;
-		this.resultObject = resultObject;
 	}
 
 	@Override
-	public java.util.List<IMendixObject> executeAction() throws Exception
+	public String executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		String entityName = resultObject.getMetaObject().getName();
-		Stream<IMendixObject> resultStream = connector.executeQuery(
-		    this.jdbcUrl, this.userName, this.password, entityName, this.sql, this.getContext());
-		List<IMendixObject> resultList = resultStream.collect(Collectors.toList());
-		logNode.info(String.format("List: %d", resultList.size()));
-
-		return resultList;
+	  return connector.executeQueryToJson(this.jdbcUrl, this.userName, this.password, this.sql, this.getContext());
 		// END USER CODE
 	}
 
@@ -92,12 +80,12 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 	@Override
 	public String toString()
 	{
-		return "ExecuteQuery";
+		return "ExecuteQueryToJson";
 	}
 
 	// BEGIN EXTRA CODE
 	private final ILogNode logNode = Core.getLogger(this.getClass().getName());
 
-	private final JdbcConnector connector = new JdbcConnector(logNode);
+  private final JdbcConnector connector = new JdbcConnector(logNode);
 	// END EXTRA CODE
 }
