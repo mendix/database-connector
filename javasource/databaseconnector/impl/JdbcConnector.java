@@ -61,9 +61,9 @@ public class JdbcConnector {
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         ResultSet resultSet = preparedStatement.executeQuery()) {
-      ResultSetStream resultSetStream = new ResultSetStream(resultSet, logNode);
+      ResultSetReader resultSetReader = new ResultSetReader(resultSet);
 
-      return resultSetStream.toList().stream();
+      return resultSetReader.readAll().stream();
     }
   }
 
