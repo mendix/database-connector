@@ -1,12 +1,19 @@
 package databaseconnector.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
+import java.util.TimeZone;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 
 /**
  * ResultSetReader converts a given instance of {@link ResultSet} into a list of instances of Map<String, Object>, with key for column name
@@ -14,9 +21,10 @@ import java.util.stream.Collectors;
  */
 public class ResultSetReader {
   private final ResultSetIterator rsIter;
-
-  public ResultSetReader(final ResultSet resultSet) {
-    this.rsIter = new ResultSetIterator(resultSet);
+  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+  
+  public ResultSetReader(final ResultSet resultSet, final List<PrimitiveType> primitiveTypes) {
+    this.rsIter = new ResultSetIterator(resultSet, primitiveTypes);
   }
 
   /**
@@ -40,7 +48,44 @@ public class ResultSetReader {
 
   private Object getColumnResult(final ResultSet rs, final ColumnInfo columnInfo) {
     try {
-      final Object columnValue = rs.getObject(columnInfo.getIndex());
+      final int index = columnInfo.getIndex();
+	  Object columnValue = null;
+	  switch (columnInfo.getType()) {
+	    case Integer:
+	      columnValue = rs.getInt(index);
+		  break;
+	    case AutoNumber:
+	    case Long:
+		  columnValue = rs.getLong(index);
+		  break;
+	    case DateTime:
+          Timestamp timeStamp = rs.getTimestamp(index, calendar);
+          columnValue = (timeStamp != null) ? new Date(timeStamp.getTime()) : null;
+		  break;
+	    case Boolean:
+		  columnValue = rs.getBoolean(index);
+		  break;
+	    case Decimal:
+		  columnValue = rs.getBigDecimal(index);
+		  break;
+	    case Float:
+	    case Currency:
+		  columnValue = rs.getDouble(index);
+		  break;
+	    case HashString:
+	    case Enum:
+	    case String:
+		  columnValue = rs.getString(index);
+		  break;
+	    case Binary:
+	       try (InputStream inputStream = rs.getBinaryStream(index)) {
+        	columnValue = inputStream;
+          } catch (IOException e) {
+        	throw new RuntimeException(e);
+          }
+		  break;
+		default: throw new RuntimeException("Meta object primitive type '" + columnInfo.getType().name() + "' is unknown.");
+      }
       return columnValue;
     } catch (SQLException e) {
       throw new RuntimeException(e);

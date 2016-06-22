@@ -16,6 +16,7 @@ import com.mendix.core.Core;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.webui.CustomJavaAction;
 import databaseconnector.impl.JdbcConnector;
 
@@ -76,9 +77,9 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 	public java.util.List<IMendixObject> executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		String entityName = resultObject.getMetaObject().getName();
+		IMetaObject metaObject = resultObject.getMetaObject();
 		Stream<IMendixObject> resultStream = connector.executeQuery(
-		    this.jdbcUrl, this.userName, this.password, entityName, this.sql, this.getContext());
+		    this.jdbcUrl, this.userName, this.password, metaObject, this.sql, this.getContext());
 		List<IMendixObject> resultList = resultStream.collect(Collectors.toList());
 		logNode.info(String.format("List: %d", resultList.size()));
 

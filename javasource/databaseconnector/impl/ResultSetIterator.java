@@ -12,6 +12,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
+
 /**
  * ResultSetIterator implements {@link Iterator} interface. It wraps {@link ResultSet} into a stream for more convenient usage. Along
  * with that, it provides information about columns of the given result set.
@@ -20,9 +22,11 @@ public class ResultSetIterator implements Iterator<ResultSet> {
 
   private final ResultSet resultSet;
   private final List<ColumnInfo> columnInfos;
-
-  public ResultSetIterator(final ResultSet resultSet) {
+  private final List<PrimitiveType> primitiveTypes;
+  
+  public ResultSetIterator(final ResultSet resultSet, final List<PrimitiveType> primitiveTypes) {
     this.resultSet = resultSet;
+    this.primitiveTypes = primitiveTypes;
     this.columnInfos = createColumnInfos(resultSet);
   }
 
@@ -38,7 +42,7 @@ public class ResultSetIterator implements Iterator<ResultSet> {
 
   private ColumnInfo getColumnInfo(int index) {
     try {
-      return new ColumnInfo(index, resultSet.getMetaData().getColumnName(index));
+      return new ColumnInfo(index, resultSet.getMetaData().getColumnName(index), primitiveTypes.get(index));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
