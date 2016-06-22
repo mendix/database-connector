@@ -48,45 +48,45 @@ public class ResultSetReader {
 
   private Object getColumnResult(final ResultSet rs, final ColumnInfo columnInfo) {
     try {
-      final int index = columnInfo.getIndex();
-	  Object columnValue = null;
-	  switch (columnInfo.getType()) {
-	    case Integer:
-	      columnValue = rs.getInt(index);
-		  break;
-	    case AutoNumber:
-	    case Long:
-		  columnValue = rs.getLong(index);
-		  break;
-	    case DateTime:
+      int index = columnInfo.getIndex();
+  	  Object columnValue = null;
+  	  switch (columnInfo.getType()) {
+  	    case Integer:
+  	      columnValue = rs.getInt(index);
+  	      break;
+  	    case AutoNumber:
+  	    case Long:
+    		  columnValue = rs.getLong(index);
+    		  break;
+  	    case DateTime:
           Timestamp timeStamp = rs.getTimestamp(index, calendar);
           columnValue = (timeStamp != null) ? new Date(timeStamp.getTime()) : null;
-		  break;
-	    case Boolean:
-		  columnValue = rs.getBoolean(index);
-		  break;
-	    case Decimal:
-		  columnValue = rs.getBigDecimal(index);
-		  break;
-	    case Float:
-	    case Currency:
-		  columnValue = rs.getDouble(index);
-		  break;
-	    case HashString:
-	    case Enum:
-	    case String:
-		  columnValue = rs.getString(index);
-		  break;
-	    case Binary:
-	       try (InputStream inputStream = rs.getBinaryStream(index)) {
-        	columnValue = inputStream;
+    		  break;
+  	    case Boolean:
+    		  columnValue = rs.getBoolean(index);
+    		  break;
+  	    case Decimal:
+    		  columnValue = rs.getBigDecimal(index);
+    		  break;
+  	    case Float:
+  	    case Currency:
+    		  columnValue = rs.getDouble(index);
+    		  break;
+  	    case HashString:
+  	    case Enum:
+  	    case String:
+    		  columnValue = rs.getString(index);
+    		  break;
+  	    case Binary:
+          try (InputStream inputStream = rs.getBinaryStream(index)) {
+            columnValue = inputStream;
           } catch (IOException e) {
-        	throw new RuntimeException(e);
+            throw new RuntimeException(e);
           }
-		  break;
-		default: throw new RuntimeException("Meta object primitive type '" + columnInfo.getType().name() + "' is unknown.");
+  	      break;
+  	    default: throw new RuntimeException("Meta object primitive type '" + columnInfo.getType().name() + "' is unknown.");
       }
-      return columnValue;
+      return rs.wasNull() ? null : columnValue;
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
