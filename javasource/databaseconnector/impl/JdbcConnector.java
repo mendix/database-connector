@@ -6,11 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
@@ -46,13 +42,6 @@ public class JdbcConnector {
     Stream<Map<String,Object>> stream = executeQuery(jdbcUrl, userName, password, sql);
 
     return stream.map(toMendixObject);
-  }
-
-  public String executeQueryToJson(String jdbcUrl, String userName, String password, String sql, IContext context) throws SQLException {
-    Stream<Map<String, Object>> stream = executeQuery(jdbcUrl, userName, password, sql);
-    Stream<JSONObject> jsonObjects = stream.map(JSONObject::new);
-
-    return new JSONArray(jsonObjects.collect(Collectors.toList())).toString();
   }
 
   public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, String sql) throws SQLException {
