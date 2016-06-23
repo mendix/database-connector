@@ -11,12 +11,18 @@ import org.junit.Test;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
+import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.String;
+
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 
 public class ResultSetReaderTest {
+
+  private final List<IMetaPrimitive.PrimitiveType> types = Arrays.asList(String, String, String);
 
   private ResultSet mockResultSet() throws SQLException {
     final ResultSet rs = mock(ResultSet.class);
@@ -33,7 +39,7 @@ public class ResultSetReaderTest {
   public void testReadAll_Empty() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(false);
-    final ResultSetReader rsr = new ResultSetReader(rs);
+    final ResultSetReader rsr = new ResultSetReader(rs, types);
     assertTrue(rsr.readAll().isEmpty());
   }
 
@@ -41,11 +47,11 @@ public class ResultSetReaderTest {
   public void testReadAll_OneRecord() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, false);
-    when(rs.getObject(1)).thenReturn("a1");
-    when(rs.getObject(2)).thenReturn("b1");
-    when(rs.getObject(3)).thenReturn("c1");
+    when(rs.getString(1)).thenReturn("a1");
+    when(rs.getString(2)).thenReturn("b1");
+    when(rs.getString(3)).thenReturn("c1");
 
-    final ResultSetReader rsr = new ResultSetReader(rs);
+    final ResultSetReader rsr = new ResultSetReader(rs, types);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(1, records.size());
     final Map<String, Object> record = records.get(0);
@@ -59,11 +65,11 @@ public class ResultSetReaderTest {
   public void testReadAll_TwoRecord() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, true, false);
-    when(rs.getObject(1)).thenReturn("a1", "a2");
-    when(rs.getObject(2)).thenReturn("b1", "b2");
-    when(rs.getObject(3)).thenReturn("c1", "c2");
+    when(rs.getString(1)).thenReturn("a1", "a2");
+    when(rs.getString(2)).thenReturn("b1", "b2");
+    when(rs.getString(3)).thenReturn("c1", "c2");
 
-    final ResultSetReader rsr = new ResultSetReader(rs);
+    final ResultSetReader rsr = new ResultSetReader(rs, types);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(2, records.size());
 

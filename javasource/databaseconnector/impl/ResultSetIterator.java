@@ -42,7 +42,7 @@ public class ResultSetIterator implements Iterator<ResultSet> {
 
   private ColumnInfo getColumnInfo(int index) {
     try {
-      return new ColumnInfo(index, resultSet.getMetaData().getColumnName(index), primitiveTypes.get(index));
+      return new ColumnInfo(index, resultSet.getMetaData().getColumnName(index), primitiveTypes.get(index - 1));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

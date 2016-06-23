@@ -12,6 +12,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
+
+import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.String;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
@@ -21,6 +25,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ResultSetIteratorTest {
+
+  private final List<PrimitiveType> types = Arrays.asList(String, String, String);
 
   private ResultSet mockResultSet() throws SQLException {
     final ResultSet rs = mock(ResultSet.class);
@@ -36,7 +42,7 @@ public class ResultSetIteratorTest {
   @Test
   public void testColumnInfos() throws SQLException {
     final ResultSet rs = mockResultSet();
-    final ResultSetIterator rsi = new ResultSetIterator(rs);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, types);
     final Stream<ColumnInfo> infos = rsi.getColumnInfos();
     final List<String> actual = infos.map(ci -> ci.getIndex() + ":" + ci.getName()).collect(Collectors.toList());
     final List<String> expected = Arrays.asList("1:a", "2:b", "3:c");
@@ -47,7 +53,7 @@ public class ResultSetIteratorTest {
   public void testHasNext_Empty() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(false);
-    final ResultSetIterator rsi = new ResultSetIterator(rs);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, types);
     assertFalse(rsi.hasNext());
   }
 
@@ -55,7 +61,7 @@ public class ResultSetIteratorTest {
   public void testStream_Empty() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(false);
-    final ResultSetIterator rsi = new ResultSetIterator(rs);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, types);
     assertEquals(0, rsi.stream().count());
   }
 
@@ -63,7 +69,7 @@ public class ResultSetIteratorTest {
   public void testStream_OneRow() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, false);
-    final ResultSetIterator rsi = new ResultSetIterator(rs);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, types);
     assertEquals(1, rsi.stream().count());
     verify(rs, times(2)).next();
   }
@@ -72,7 +78,7 @@ public class ResultSetIteratorTest {
   public void testStream_TwoRows() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, true, false);
-    final ResultSetIterator rsi = new ResultSetIterator(rs);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, types);
     assertEquals(2, rsi.stream().count());
     verify(rs, times(3)).next();
   }

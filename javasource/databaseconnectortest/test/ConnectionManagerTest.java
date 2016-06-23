@@ -5,11 +5,15 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.times;
 
 import com.mendix.logging.ILogNode;
+import com.mendix.logging.impl.LogManager;
 
 import databaseconnector.impl.JdbcConnectionManager;
 import databaseconnector.interfaces.ConnectionManager;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.slf4j.impl.StaticLoggerBinder;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -21,6 +25,14 @@ public class ConnectionManagerTest {
 
   private ConnectionManager newConnManager(final ILogNode logNode) {
     return new JdbcConnectionManager(logNode);
+  }
+
+  @Before
+  public void setUp() {
+    ILogNode logNode = Mockito.mock(ILogNode.class);
+    LogManager logManager = Mockito.mock(LogManager.class);
+    Mockito.when(logManager.getLogNode(Matchers.anyString())).thenReturn(logNode);
+    StaticLoggerBinder.init(logManager);
   }
 
   @Test
