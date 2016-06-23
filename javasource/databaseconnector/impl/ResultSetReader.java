@@ -58,37 +58,37 @@ public class ResultSetReader {
 
   private Optional<Object> getColumnResult(final ResultSet rs, final ColumnInfo columnInfo) {
     try {
-      final String columnName = columnInfo.getName();
+      final int columnIndex = columnInfo.getIndex();
       Object columnValue = null;
       switch (columnInfo.getType()) {
         case Integer:
-          columnValue = rs.getInt(columnName);
+          columnValue = rs.getInt(columnIndex);
           break;
         case AutoNumber:
         case Long:
-          columnValue = rs.getLong(columnName);
+          columnValue = rs.getLong(columnIndex);
           break;
         case DateTime:
-          Timestamp timeStamp = rs.getTimestamp(columnName, calendar);
+          Timestamp timeStamp = rs.getTimestamp(columnIndex, calendar);
           columnValue = (timeStamp != null) ? new Date(timeStamp.getTime()) : null;
           break;
         case Boolean:
-          columnValue = rs.getBoolean(columnName);
+          columnValue = rs.getBoolean(columnIndex);
           break;
         case Decimal:
-          columnValue = rs.getBigDecimal(columnName);
+          columnValue = rs.getBigDecimal(columnIndex);
           break;
         case Float:
         case Currency:
-          columnValue = rs.getDouble(columnName);
+          columnValue = rs.getDouble(columnIndex);
           break;
         case HashString:
         case Enum:
         case String:
-          columnValue = rs.getString(columnName);
+          columnValue = rs.getString(columnIndex);
           break;
         case Binary:
-          columnValue = rs.getBytes(columnName);
+          columnValue = rs.getBytes(columnIndex);
           break;
       }
       return rs.wasNull() ? Optional.empty() : Optional.ofNullable(columnValue);

@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import databaseconnector.impl.ResultSetReader;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -54,9 +53,9 @@ public class ResultSetReaderTest {
   public void testReadAll_OneRecord() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, false);
-    when(rs.getString("a")).thenReturn("a1");
-    when(rs.getString("b")).thenReturn("b1");
-    when(rs.getString("c")).thenReturn("c1");
+    when(rs.getString(1)).thenReturn("a1");
+    when(rs.getString(2)).thenReturn("b1");
+    when(rs.getString(3)).thenReturn("c1");
 
     final ResultSetReader rsr = new ResultSetReader(rs, types);
     final List<Map<String, Object>> records = rsr.readAll();
@@ -72,9 +71,9 @@ public class ResultSetReaderTest {
   public void testReadAll_TwoRecord() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, true, false);
-    when(rs.getString("a")).thenReturn("a1", "a2");
-    when(rs.getString("b")).thenReturn("b1", "b2");
-    when(rs.getString("c")).thenReturn("c1", "c2");
+    when(rs.getString(1)).thenReturn("a1", "a2");
+    when(rs.getString(2)).thenReturn("b1", "b2");
+    when(rs.getString(3)).thenReturn("c1", "c2");
 
     final ResultSetReader rsr = new ResultSetReader(rs, types);
     final List<Map<String, Object>> records = rsr.readAll();
@@ -118,18 +117,18 @@ public class ResultSetReaderTest {
     when(rs.getMetaData()).thenReturn(md);
 
     when(rs.next()).thenReturn(true, false);
-    when(rs.getInt("Integer")).thenReturn(1);
-    when(rs.getLong("AutoNumber")).thenReturn(2L);
-    when(rs.getLong("Long")).thenReturn(3L);
-    when(rs.getBoolean("Boolean")).thenReturn(true);
-    when(rs.getBigDecimal("Decimal")).thenReturn(new BigDecimal("123"));
-    when(rs.getDouble("Float")).thenReturn(4.0);
-    when(rs.getDouble("Currency")).thenReturn(5.0);
-    when(rs.getString("HashString")).thenReturn("A0");
-    when(rs.getString("Enum")).thenReturn("A1");
-    when(rs.getString("String")).thenReturn("A2");
-    when(rs.getBytes("Binary")).thenReturn("привет мир".getBytes());
-    when(rs.getTimestamp(Mockito.eq("DateTime"), Mockito.any(Calendar.class))).thenReturn(new Timestamp(0L));
+    when(rs.getInt(1)).thenReturn(1);
+    when(rs.getLong(2)).thenReturn(2L);
+    when(rs.getLong(3)).thenReturn(3L);
+    when(rs.getBoolean(4)).thenReturn(true);
+    when(rs.getBigDecimal(5)).thenReturn(new BigDecimal("123"));
+    when(rs.getDouble(6)).thenReturn(4.0);
+    when(rs.getDouble(7)).thenReturn(5.0);
+    when(rs.getString(8)).thenReturn("A0");
+    when(rs.getString(9)).thenReturn("A1");
+    when(rs.getString(10)).thenReturn("A2");
+    when(rs.getBytes(11)).thenReturn("привет мир".getBytes());
+    when(rs.getTimestamp(Mockito.eq(12), Mockito.any(Calendar.class))).thenReturn(new Timestamp(0L));
 
     final ResultSetReader rsr = new ResultSetReader(rs, allTypes);
     final List<Map<String, Object>> records = rsr.readAll();
@@ -152,7 +151,7 @@ public class ResultSetReaderTest {
   }
 
   @Test
-  public void testNullResult() throws SQLException {
+  public void testNullResultSet() throws SQLException {
     final ResultSet rs = mock(ResultSet.class);
     when(rs.wasNull()).thenReturn(true);
     final ResultSetMetaData md = mock(ResultSetMetaData.class);
@@ -169,4 +168,23 @@ public class ResultSetReaderTest {
     final Map<String, Object> record = records.get(0);
     assertNull(record.get("String"));
   }
+
+  @Test
+  public void testNullResult() throws SQLException {
+    final ResultSet rs = mock(ResultSet.class);
+    final ResultSetMetaData md = mock(ResultSetMetaData.class);
+    when(md.getColumnCount()).thenReturn(1);
+    when(md.getColumnName(1)).thenReturn("String");
+    when(rs.getMetaData()).thenReturn(md);
+
+    when(rs.next()).thenReturn(true, false);
+    when(rs.getString("String")).thenReturn(null);
+
+    final ResultSetReader rsr = new ResultSetReader(rs, Arrays.asList(String));
+    final List<Map<String, Object>> records = rsr.readAll();
+    assertEquals(1, records.size());
+    final Map<String, Object> record = records.get(0);
+    assertNull(record.get("String"));
+  }
+
 }

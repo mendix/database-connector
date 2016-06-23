@@ -174,8 +174,8 @@ public class JdbcConnectorTest {
     when(resultSetMetaData.getColumnName(2)).thenReturn(columnName2);
     when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
     when(resultSet.next()).thenReturn(true, true, false);
-    when(resultSet.getString(columnName1)).thenReturn(row1Value1, row2Value1);
-    when(resultSet.getString(columnName2)).thenReturn(row1Value2, row2Value2);
+    when(resultSet.getString(1)).thenReturn(row1Value1, row2Value1);
+    when(resultSet.getString(2)).thenReturn(row1Value2, row2Value2);
 
     IMetaObject metaObject = mockIMetaObject(String, String);
     Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery, context);
