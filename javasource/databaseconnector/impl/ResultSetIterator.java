@@ -5,7 +5,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -13,7 +12,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 
 /**
  * ResultSetIterator implements {@link Iterator} interface. It wraps {@link ResultSet} into a stream for more convenient usage. Along
@@ -23,11 +23,11 @@ public class ResultSetIterator implements Iterator<ResultSet> {
 
   private final ResultSet resultSet;
   private final List<ColumnInfo> columnInfos;
-  private final Map<String, PrimitiveType> columnsTypes;
-  
-  public ResultSetIterator(final ResultSet resultSet, final Map<String, PrimitiveType> columnsTypes) {
+  private final IMetaObject metaObject;
+
+  public ResultSetIterator(final ResultSet resultSet, final IMetaObject metaObject) {
     this.resultSet = resultSet;
-    this.columnsTypes = columnsTypes;
+    this.metaObject = metaObject;
     this.columnInfos = createColumnInfos(resultSet);
   }
 
@@ -42,12 +42,22 @@ public class ResultSetIterator implements Iterator<ResultSet> {
   }
 
   private ColumnInfo getColumnInfo(int index) {
+    final String columnName;
+
     try {
-      final String columnName = resultSet.getMetaData().getColumnName(index);
-      return new ColumnInfo(index, columnName, columnsTypes.get(columnName));
+      columnName = resultSet.getMetaData().getColumnName(index);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+
+    final IMetaPrimitive primitive = metaObject.getMetaPrimitive(columnName);
+
+    if (primitive == null)
+      throw new RuntimeException(String.format("The entity type '%s' does not contain the primitive '%s' as specified in the query.",
+          metaObject.getName(),
+          columnName));
+
+    return new ColumnInfo(index, columnName, primitive.getType());
   }
 
   @Override

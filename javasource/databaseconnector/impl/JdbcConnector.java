@@ -4,19 +4,14 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
-import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
-import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 
 import databaseconnector.interfaces.ConnectionManager;
 import databaseconnector.interfaces.ObjectInstantiator;
@@ -46,23 +41,17 @@ public class JdbcConnector {
       return obj;
     };
 
-    Collection<? extends IMetaPrimitive> metaPrimitives = metaObject.getMetaPrimitives();
-    Map<String, PrimitiveType> columnsTypes = metaPrimitives.stream().collect(Collectors.toMap(
-        t -> t.getName(),
-        t -> t.getType()
-    ));
-
-    Stream<Map<String,Object>> stream = executeQuery(jdbcUrl, userName, password, columnsTypes, sql);
+    Stream<Map<String,Object>> stream = executeQuery(jdbcUrl, userName, password, metaObject, sql);
     return stream.map(toMendixObject);
   }
 
-  public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, Map<String, PrimitiveType> columnsTypes, String sql) throws SQLException {
+  public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, IMetaObject metaObject, String sql) throws SQLException {
     logNode.info(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         ResultSet resultSet = preparedStatement.executeQuery()) {
-      ResultSetReader resultSetReader = new ResultSetReader(resultSet, columnsTypes);
+      ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
 
       return resultSetReader.readAll().stream();
     }

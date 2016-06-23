@@ -3,41 +3,62 @@ package databaseconnectortest.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import databaseconnector.impl.ResultSetReader;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.AbstractMap;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static org.junit.Assert.assertTrue;
-import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.*;
+import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
+
+import databaseconnector.impl.ResultSetReader;
 
 public class ResultSetReaderTest {
 
-  private final Map<String, IMetaPrimitive.PrimitiveType> columnsTypes = Stream.of(
-      new AbstractMap.SimpleEntry<>("a", String),
-      new AbstractMap.SimpleEntry<>("b", String),
-      new AbstractMap.SimpleEntry<>("c", String)
-  ).collect(Collectors.toMap(
-      (e) -> e.getKey(),
-      (e) -> e.getValue()));
+  private final IMetaPrimitive integerPrimitive = mockPrimitive(PrimitiveType.Integer);
+  private final IMetaPrimitive autoNumberPrimitive = mockPrimitive(PrimitiveType.AutoNumber);
+  private final IMetaPrimitive longPrimitive = mockPrimitive(PrimitiveType.Long);
+  private final IMetaPrimitive booleanPrimitive = mockPrimitive(PrimitiveType.Boolean);
+  private final IMetaPrimitive decimalPrimitive = mockPrimitive(PrimitiveType.Decimal);
+  @SuppressWarnings("deprecation")
+  private final IMetaPrimitive floatPrimitive = mockPrimitive(PrimitiveType.Float);
+  @SuppressWarnings("deprecation")
+  private final IMetaPrimitive currencyPrimitive = mockPrimitive(PrimitiveType.Currency);
+  private final IMetaPrimitive hashStringPrimitive = mockPrimitive(PrimitiveType.HashString);
+  private final IMetaPrimitive enumPrimitive = mockPrimitive(PrimitiveType.Enum);
+  private final IMetaPrimitive stringPrimitive = mockPrimitive(PrimitiveType.String);
+  private final IMetaPrimitive binaryPrimitive = mockPrimitive(PrimitiveType.Binary);
+  private final IMetaPrimitive dateTimePrimitive = mockPrimitive(PrimitiveType.DateTime);
+  private final IMetaObject metaObjectWithStrings = mockMetaObjectWithStrings();
+
+  private IMetaObject mockMetaObjectWithStrings() {
+    final IMetaObject metaObject = mock(IMetaObject.class);
+    when(metaObject.getMetaPrimitive("a")).thenReturn(stringPrimitive);
+    when(metaObject.getMetaPrimitive("b")).thenReturn(stringPrimitive);
+    when(metaObject.getMetaPrimitive("c")).thenReturn(stringPrimitive);
+
+    return metaObject;
+  }
+
+  private IMetaPrimitive mockPrimitive(PrimitiveType primitiveType) {
+    final IMetaPrimitive primitive = mock(IMetaPrimitive.class);
+    when(primitive.getType()).thenReturn(primitiveType);
+
+    return primitive;
+  }
 
   private ResultSet mockResultSet() throws SQLException {
     final ResultSet rs = mock(ResultSet.class);
@@ -54,7 +75,7 @@ public class ResultSetReaderTest {
   public void testReadAll_Empty() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(false);
-    final ResultSetReader rsr = new ResultSetReader(rs, columnsTypes);
+    final ResultSetReader rsr = new ResultSetReader(rs, metaObjectWithStrings);
     assertTrue(rsr.readAll().isEmpty());
   }
 
@@ -66,7 +87,7 @@ public class ResultSetReaderTest {
     when(rs.getString(2)).thenReturn("b1");
     when(rs.getString(3)).thenReturn("c1");
 
-    final ResultSetReader rsr = new ResultSetReader(rs, columnsTypes);
+    final ResultSetReader rsr = new ResultSetReader(rs, metaObjectWithStrings);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(1, records.size());
     final Map<String, Object> record = records.get(0);
@@ -84,7 +105,7 @@ public class ResultSetReaderTest {
     when(rs.getString(2)).thenReturn("b1", "b2");
     when(rs.getString(3)).thenReturn("c1", "c2");
 
-    final ResultSetReader rsr = new ResultSetReader(rs, columnsTypes);
+    final ResultSetReader rsr = new ResultSetReader(rs, metaObjectWithStrings);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(2, records.size());
 
@@ -103,24 +124,23 @@ public class ResultSetReaderTest {
 
   @Test
   public void testAllTypes() throws SQLException {
-
-    final Map<String, IMetaPrimitive.PrimitiveType> allTypes = new HashMap<>();
-    allTypes.put("Integer", Integer);
-    allTypes.put("AutoNumber", AutoNumber);
-    allTypes.put("Long", Long);
-    allTypes.put("Boolean", Boolean);
-    allTypes.put("Decimal", Decimal);
-    allTypes.put("Float", Float);
-    allTypes.put("Currency", Currency);
-    allTypes.put("HashString", HashString);
-    allTypes.put("Enum", Enum);
-    allTypes.put("String", String);
-    allTypes.put("Binary", Binary);
-    allTypes.put("DateTime", DateTime);
+    final IMetaObject metaObject = mock(IMetaObject.class);
+    when(metaObject.getMetaPrimitive("Integer")).thenReturn(integerPrimitive);
+    when(metaObject.getMetaPrimitive("AutoNumber")).thenReturn(autoNumberPrimitive);
+    when(metaObject.getMetaPrimitive("Long")).thenReturn(longPrimitive);
+    when(metaObject.getMetaPrimitive("Boolean")).thenReturn(booleanPrimitive);
+    when(metaObject.getMetaPrimitive("Decimal")).thenReturn(decimalPrimitive);
+    when(metaObject.getMetaPrimitive("Float")).thenReturn(floatPrimitive);
+    when(metaObject.getMetaPrimitive("Currency")).thenReturn(currencyPrimitive);
+    when(metaObject.getMetaPrimitive("HashString")).thenReturn(hashStringPrimitive);
+    when(metaObject.getMetaPrimitive("Enum")).thenReturn(enumPrimitive);
+    when(metaObject.getMetaPrimitive("String")).thenReturn(stringPrimitive);
+    when(metaObject.getMetaPrimitive("Binary")).thenReturn(binaryPrimitive);
+    when(metaObject.getMetaPrimitive("DateTime")).thenReturn(dateTimePrimitive);
 
     final ResultSet rs = mock(ResultSet.class);
     final ResultSetMetaData md = mock(ResultSetMetaData.class);
-    when(md.getColumnCount()).thenReturn(allTypes.size());
+    when(md.getColumnCount()).thenReturn(12);
     when(md.getColumnName(1)).thenReturn("Integer");
     when(md.getColumnName(2)).thenReturn("AutoNumber");
     when(md.getColumnName(3)).thenReturn("Long");
@@ -149,12 +169,12 @@ public class ResultSetReaderTest {
     when(rs.getBytes(11)).thenReturn("привет мир".getBytes());
     when(rs.getTimestamp(Mockito.eq(12), Mockito.any(Calendar.class))).thenReturn(new Timestamp(0L));
 
-    final ResultSetReader rsr = new ResultSetReader(rs, allTypes);
+    final ResultSetReader rsr = new ResultSetReader(rs, metaObject);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(1, records.size());
 
     final Map<String, Object> record = records.get(0);
-    assertEquals(allTypes.size(), record.size());
+    assertEquals(12, record.size());
     assertEquals(1, record.get("Integer"));
     assertEquals(2L, record.get("AutoNumber"));
     assertEquals(3L, record.get("Long"));
@@ -181,10 +201,10 @@ public class ResultSetReaderTest {
     when(rs.next()).thenReturn(true, false);
     when(rs.getString("String")).thenReturn(null);
 
-    final Map<String, IMetaPrimitive.PrimitiveType> type = new HashMap<>();
-    type.put("String", String);
+    final IMetaObject metaObject = mock(IMetaObject.class);
+    when(metaObject.getMetaPrimitive("String")).thenReturn(stringPrimitive);
 
-    final ResultSetReader rsr = new ResultSetReader(rs, type);
+    final ResultSetReader rsr = new ResultSetReader(rs, metaObject);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(1, records.size());
     final Map<String, Object> record = records.get(0);
@@ -202,10 +222,10 @@ public class ResultSetReaderTest {
     when(rs.next()).thenReturn(true, false);
     when(rs.getString("String")).thenReturn(null);
 
-    final Map<String, IMetaPrimitive.PrimitiveType> type = new HashMap<>();
-    type.put("String", String);
+    final IMetaObject metaObject = mock(IMetaObject.class);
+    when(metaObject.getMetaPrimitive("String")).thenReturn(stringPrimitive);
 
-    final ResultSetReader rsr = new ResultSetReader(rs, type);
+    final ResultSetReader rsr = new ResultSetReader(rs, metaObject);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(1, records.size());
     final Map<String, Object> record = records.get(0);

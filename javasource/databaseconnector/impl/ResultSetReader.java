@@ -1,7 +1,5 @@
 package databaseconnector.impl;
 
-import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -15,6 +13,8 @@ import java.util.TimeZone;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
+
 /**
  * ResultSetReader converts a given instance of {@link ResultSet} into a list of instances of Map<String, Object>, with key for column name
  * and value for column value.
@@ -23,8 +23,8 @@ public class ResultSetReader {
   private final ResultSetIterator rsIter;
   private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
-  public ResultSetReader(final ResultSet resultSet, final Map<String, PrimitiveType> columnsTypes) {
-    this.rsIter = new ResultSetIterator(resultSet, columnsTypes);
+  public ResultSetReader(final ResultSet resultSet, final IMetaObject metaObject) {
+    this.rsIter = new ResultSetIterator(resultSet, metaObject);
   }
 
   /**
@@ -56,6 +56,7 @@ public class ResultSetReader {
     return ci -> getColumnResult(rs, ci);
   }
 
+  @SuppressWarnings("deprecation")
   private Optional<Object> getColumnResult(final ResultSet rs, final ColumnInfo columnInfo) {
     try {
       final int columnIndex = columnInfo.getIndex();

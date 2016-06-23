@@ -1,41 +1,43 @@
 package databaseconnectortest.test;
 
-import databaseconnector.impl.ColumnInfo;
-import databaseconnector.impl.ResultSetIterator;
-import org.junit.Test;
-
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
-
-import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.String;
-
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.junit.Test;
+
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
+
+import databaseconnector.impl.ColumnInfo;
+import databaseconnector.impl.ResultSetIterator;
+
 public class ResultSetIteratorTest {
 
-  private final Map<String, PrimitiveType> columnsTypes = Stream.of(
-      new SimpleEntry<>("a", String),
-      new SimpleEntry<>("b", String),
-      new SimpleEntry<>("c", String)
-  ).collect(Collectors.toMap(
-      (e) -> e.getKey(),
-      (e) -> e.getValue()));
+  private final IMetaObject metaObject = mockMetaObject();
 
+  private IMetaObject mockMetaObject() {
+    final IMetaObject metaObject = mock(IMetaObject.class);
+    final IMetaPrimitive stringPrimitive = mock(IMetaPrimitive.class);
+    when(stringPrimitive.getType()).thenReturn(PrimitiveType.String);
+    when(metaObject.getMetaPrimitive("a")).thenReturn(stringPrimitive);
+    when(metaObject.getMetaPrimitive("b")).thenReturn(stringPrimitive);
+    when(metaObject.getMetaPrimitive("c")).thenReturn(stringPrimitive);
+
+    return metaObject;
+  }
 
   private ResultSet mockResultSet() throws SQLException {
     final ResultSet rs = mock(ResultSet.class);
@@ -51,7 +53,7 @@ public class ResultSetIteratorTest {
   @Test
   public void testColumnInfos() throws SQLException {
     final ResultSet rs = mockResultSet();
-    final ResultSetIterator rsi = new ResultSetIterator(rs, columnsTypes);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, metaObject);
     final Stream<ColumnInfo> infos = rsi.getColumnInfos();
     final List<String> actual = infos.map(ci -> ci.getIndex() + ":" + ci.getName()).collect(Collectors.toList());
     final List<String> expected = Arrays.asList("1:a", "2:b", "3:c");
@@ -62,7 +64,7 @@ public class ResultSetIteratorTest {
   public void testHasNext_Empty() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(false);
-    final ResultSetIterator rsi = new ResultSetIterator(rs, columnsTypes);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, metaObject);
     assertFalse(rsi.hasNext());
   }
 
@@ -70,7 +72,7 @@ public class ResultSetIteratorTest {
   public void testStream_Empty() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(false);
-    final ResultSetIterator rsi = new ResultSetIterator(rs, columnsTypes);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, metaObject);
     assertEquals(0, rsi.stream().count());
   }
 
@@ -78,7 +80,7 @@ public class ResultSetIteratorTest {
   public void testStream_OneRow() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, false);
-    final ResultSetIterator rsi = new ResultSetIterator(rs, columnsTypes);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, metaObject);
     assertEquals(1, rsi.stream().count());
     verify(rs, times(2)).next();
   }
@@ -87,7 +89,7 @@ public class ResultSetIteratorTest {
   public void testStream_TwoRows() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, true, false);
-    final ResultSetIterator rsi = new ResultSetIterator(rs, columnsTypes);
+    final ResultSetIterator rsi = new ResultSetIterator(rs, metaObject);
     assertEquals(2, rsi.stream().count());
     verify(rs, times(3)).next();
   }
