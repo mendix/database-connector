@@ -5,6 +5,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Collectors;
@@ -22,11 +23,11 @@ public class ResultSetIterator implements Iterator<ResultSet> {
 
   private final ResultSet resultSet;
   private final List<ColumnInfo> columnInfos;
-  private final List<PrimitiveType> primitiveTypes;
+  private final Map<String, PrimitiveType> columnsTypes;
   
-  public ResultSetIterator(final ResultSet resultSet, final List<PrimitiveType> primitiveTypes) {
+  public ResultSetIterator(final ResultSet resultSet, final Map<String, PrimitiveType> columnsTypes) {
     this.resultSet = resultSet;
-    this.primitiveTypes = primitiveTypes;
+    this.columnsTypes = columnsTypes;
     this.columnInfos = createColumnInfos(resultSet);
   }
 
@@ -42,7 +43,8 @@ public class ResultSetIterator implements Iterator<ResultSet> {
 
   private ColumnInfo getColumnInfo(int index) {
     try {
-      return new ColumnInfo(index, resultSet.getMetaData().getColumnName(index), primitiveTypes.get(index - 1));
+      final String columnName = resultSet.getMetaData().getColumnName(index);
+      return new ColumnInfo(index, columnName, columnsTypes.get(columnName));
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

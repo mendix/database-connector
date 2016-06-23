@@ -47,19 +47,22 @@ public class JdbcConnector {
     };
 
     Collection<? extends IMetaPrimitive> metaPrimitives = metaObject.getMetaPrimitives();
-    List<PrimitiveType> primitiveTypes = metaPrimitives.stream().map(mp -> mp.getType()).collect(Collectors.toList());
-    Stream<Map<String,Object>> stream = executeQuery(jdbcUrl, userName, password, primitiveTypes, sql);
+    Map<String, PrimitiveType> columnsTypes = metaPrimitives.stream().collect(Collectors.toMap(
+        t -> t.getName(),
+        t -> t.getType()
+    ));
 
+    Stream<Map<String,Object>> stream = executeQuery(jdbcUrl, userName, password, columnsTypes, sql);
     return stream.map(toMendixObject);
   }
 
-  public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, List<PrimitiveType> primitiveTypes, String sql) throws SQLException {
+  public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, Map<String, PrimitiveType> columnsTypes, String sql) throws SQLException {
     logNode.info(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
         ResultSet resultSet = preparedStatement.executeQuery()) {
-      ResultSetReader resultSetReader = new ResultSetReader(resultSet, primitiveTypes);
+      ResultSetReader resultSetReader = new ResultSetReader(resultSet, columnsTypes);
 
       return resultSetReader.readAll().stream();
     }

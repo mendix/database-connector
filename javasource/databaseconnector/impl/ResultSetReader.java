@@ -23,8 +23,8 @@ public class ResultSetReader {
   private final ResultSetIterator rsIter;
   private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
-  public ResultSetReader(final ResultSet resultSet, final List<PrimitiveType> primitiveTypes) {
-    this.rsIter = new ResultSetIterator(resultSet, primitiveTypes);
+  public ResultSetReader(final ResultSet resultSet, final Map<String, PrimitiveType> columnsTypes) {
+    this.rsIter = new ResultSetIterator(resultSet, columnsTypes);
   }
 
   /**

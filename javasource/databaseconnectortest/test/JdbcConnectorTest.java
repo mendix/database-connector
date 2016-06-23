@@ -16,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -60,13 +61,16 @@ public class JdbcConnectorTest {
   @Mock private ResultSet resultSet;
   @Mock private ResultSetMetaData resultSetMetaData;
 
-  private IMetaObject mockIMetaObject(IMetaPrimitive.PrimitiveType... types) {
+  @InjectMocks private JdbcConnector jdbcConnector;
+
+  private IMetaObject mockIMetaObject(SimpleEntry<String, IMetaPrimitive.PrimitiveType>... entries) {
     IMetaObject metaObject = mock(IMetaObject.class);
     when(metaObject.getName()).thenReturn(entityName);
 
-    List<IMetaPrimitive> metaPrimitives = Arrays.asList(types).stream().map(type -> {
+    List<IMetaPrimitive> metaPrimitives = Arrays.asList(entries).stream().map(entry -> {
       IMetaPrimitive metaPrimitive = mock(IMetaPrimitive.class);
-      when(metaPrimitive.getType()).thenReturn(type);
+      when(metaPrimitive.getName()).thenReturn(entry.getKey());
+      when(metaPrimitive.getType()).thenReturn(entry.getValue());
       return metaPrimitive;
     }).collect(Collectors.toList());
 
@@ -74,7 +78,9 @@ public class JdbcConnectorTest {
     return metaObject;
   }
 
-  @InjectMocks private JdbcConnector jdbcConnector;
+  private SimpleEntry<String, IMetaPrimitive.PrimitiveType> entry(String name, IMetaPrimitive.PrimitiveType type) {
+    return new SimpleEntry<>(name, type);
+  }
 
   @Test public void testStatementCreationException() throws SQLException {
     Exception testException = new SQLException("Test Exception Text");
@@ -141,7 +147,7 @@ public class JdbcConnectorTest {
     when(resultSet.getBoolean(anyInt())).thenReturn(true);
     when(resultSet.next()).thenReturn(true, true, true, true, false);
 
-    IMetaObject metaObject = mockIMetaObject(Boolean, Boolean);
+    IMetaObject metaObject = mockIMetaObject(entry("a", Boolean), entry("b", Boolean));
     Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery, context);
 
     assertEquals(4, result.count());
@@ -177,7 +183,7 @@ public class JdbcConnectorTest {
     when(resultSet.getString(1)).thenReturn(row1Value1, row2Value1);
     when(resultSet.getString(2)).thenReturn(row1Value2, row2Value2);
 
-    IMetaObject metaObject = mockIMetaObject(String, String);
+    IMetaObject metaObject = mockIMetaObject(entry(columnName1, String), entry(columnName2, String));
     Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery, context);
     assertEquals(2, result.count());
 
@@ -200,7 +206,7 @@ public class JdbcConnectorTest {
     when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
     when(resultSet.next()).thenReturn(false);
 
-    IMetaObject metaObject = mockIMetaObject(String, String);
+    IMetaObject metaObject = mockIMetaObject(entry("a", String), entry("b", Boolean));
     Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery, context);
 
     assertEquals(0, result.count());

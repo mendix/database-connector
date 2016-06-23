@@ -15,11 +15,14 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Arrays;
+import java.util.AbstractMap;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertTrue;
 import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.*;
@@ -28,7 +31,13 @@ import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 
 public class ResultSetReaderTest {
 
-  private final List<IMetaPrimitive.PrimitiveType> types = Arrays.asList(String, String, String);
+  private final Map<String, IMetaPrimitive.PrimitiveType> columnsTypes = Stream.of(
+      new AbstractMap.SimpleEntry<>("a", String),
+      new AbstractMap.SimpleEntry<>("b", String),
+      new AbstractMap.SimpleEntry<>("c", String)
+  ).collect(Collectors.toMap(
+      (e) -> e.getKey(),
+      (e) -> e.getValue()));
 
   private ResultSet mockResultSet() throws SQLException {
     final ResultSet rs = mock(ResultSet.class);
@@ -45,7 +54,7 @@ public class ResultSetReaderTest {
   public void testReadAll_Empty() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(false);
-    final ResultSetReader rsr = new ResultSetReader(rs, types);
+    final ResultSetReader rsr = new ResultSetReader(rs, columnsTypes);
     assertTrue(rsr.readAll().isEmpty());
   }
 
@@ -57,7 +66,7 @@ public class ResultSetReaderTest {
     when(rs.getString(2)).thenReturn("b1");
     when(rs.getString(3)).thenReturn("c1");
 
-    final ResultSetReader rsr = new ResultSetReader(rs, types);
+    final ResultSetReader rsr = new ResultSetReader(rs, columnsTypes);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(1, records.size());
     final Map<String, Object> record = records.get(0);
@@ -75,7 +84,7 @@ public class ResultSetReaderTest {
     when(rs.getString(2)).thenReturn("b1", "b2");
     when(rs.getString(3)).thenReturn("c1", "c2");
 
-    final ResultSetReader rsr = new ResultSetReader(rs, types);
+    final ResultSetReader rsr = new ResultSetReader(rs, columnsTypes);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(2, records.size());
 
@@ -95,9 +104,19 @@ public class ResultSetReaderTest {
   @Test
   public void testAllTypes() throws SQLException {
 
-    List<IMetaPrimitive.PrimitiveType> allTypes = Arrays.asList(Integer, AutoNumber, Long,
-                                                                Boolean, Decimal, Float, Currency,
-                                                                HashString, Enum, String, Binary, DateTime);
+    final Map<String, IMetaPrimitive.PrimitiveType> allTypes = new HashMap<>();
+    allTypes.put("Integer", Integer);
+    allTypes.put("AutoNumber", AutoNumber);
+    allTypes.put("Long", Long);
+    allTypes.put("Boolean", Boolean);
+    allTypes.put("Decimal", Decimal);
+    allTypes.put("Float", Float);
+    allTypes.put("Currency", Currency);
+    allTypes.put("HashString", HashString);
+    allTypes.put("Enum", Enum);
+    allTypes.put("String", String);
+    allTypes.put("Binary", Binary);
+    allTypes.put("DateTime", DateTime);
 
     final ResultSet rs = mock(ResultSet.class);
     final ResultSetMetaData md = mock(ResultSetMetaData.class);
@@ -162,7 +181,10 @@ public class ResultSetReaderTest {
     when(rs.next()).thenReturn(true, false);
     when(rs.getString("String")).thenReturn(null);
 
-    final ResultSetReader rsr = new ResultSetReader(rs, Arrays.asList(String));
+    final Map<String, IMetaPrimitive.PrimitiveType> type = new HashMap<>();
+    type.put("String", String);
+
+    final ResultSetReader rsr = new ResultSetReader(rs, type);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(1, records.size());
     final Map<String, Object> record = records.get(0);
@@ -180,7 +202,10 @@ public class ResultSetReaderTest {
     when(rs.next()).thenReturn(true, false);
     when(rs.getString("String")).thenReturn(null);
 
-    final ResultSetReader rsr = new ResultSetReader(rs, Arrays.asList(String));
+    final Map<String, IMetaPrimitive.PrimitiveType> type = new HashMap<>();
+    type.put("String", String);
+
+    final ResultSetReader rsr = new ResultSetReader(rs, type);
     final List<Map<String, Object>> records = rsr.readAll();
     assertEquals(1, records.size());
     final Map<String, Object> record = records.get(0);
