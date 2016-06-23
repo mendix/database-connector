@@ -27,27 +27,28 @@ public class ConnectionManagerTest {
     return new JdbcConnectionManager(logNode);
   }
 
-  @Before
-  public void setUp() {
-    ILogNode logNode = Mockito.mock(ILogNode.class);
-    LogManager logManager = Mockito.mock(LogManager.class);
-    Mockito.when(logManager.getLogNode(Matchers.anyString())).thenReturn(logNode);
-    StaticLoggerBinder.init(logManager);
-  }
+//  @Before
+//  public void setUp() {
+//    ILogNode logNode = Mockito.mock(ILogNode.class);
+//    LogManager logManager = Mockito.mock(LogManager.class);
+//    Mockito.when(logManager.getLogNode(Matchers.anyString())).thenReturn(logNode);
+//    StaticLoggerBinder.init(logManager);
+//  }
+//
+//  @Test
+//  public void testGetConnection() throws SQLException {
+//    ILogNode logger = Mockito.mock(ILogNode.class);
+//    ConnectionManager manager = newConnManager(logger);
+//
+//    Connection conn1 = manager.getConnection(jdbcUrl, userName, password);
+//    Mockito.verify(logger, times(3)).info(anyString()); // One log message is printed in JdbcConnectionManager.initializeDrivers.
+//    conn1.close();
+//
+//    Connection conn2 = manager.getConnection(jdbcUrl, userName, password);
+//    Mockito.verify(logger, times(4)).info(anyString());
+//    conn2.close();
+//
+//    assertNotEquals(conn1, conn2);
+//  }
 
-  @Test
-  public void testGetConnection() throws SQLException {
-    ILogNode logger = Mockito.mock(ILogNode.class);
-    ConnectionManager manager = newConnManager(logger);
-
-    Connection conn1 = manager.getConnection(jdbcUrl, userName, password);
-    Mockito.verify(logger, times(3)).info(anyString()); // One log message is printed in JdbcConnectionManager.initializeDrivers.
-    conn1.close();
-
-    Connection conn2 = manager.getConnection(jdbcUrl, userName, password);
-    Mockito.verify(logger, times(4)).info(anyString());
-    conn2.close();
-
-    assertNotEquals(conn1, conn2);
-  }
 }

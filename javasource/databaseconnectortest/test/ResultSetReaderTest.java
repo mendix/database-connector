@@ -2,21 +2,28 @@ package databaseconnectortest.test;
 
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import databaseconnector.impl.ResultSetReader;
+import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertTrue;
-import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.String;
+import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.*;
 
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 
@@ -47,9 +54,9 @@ public class ResultSetReaderTest {
   public void testReadAll_OneRecord() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, false);
-    when(rs.getString(1)).thenReturn("a1");
-    when(rs.getString(2)).thenReturn("b1");
-    when(rs.getString(3)).thenReturn("c1");
+    when(rs.getString("a")).thenReturn("a1");
+    when(rs.getString("b")).thenReturn("b1");
+    when(rs.getString("c")).thenReturn("c1");
 
     final ResultSetReader rsr = new ResultSetReader(rs, types);
     final List<Map<String, Object>> records = rsr.readAll();
@@ -65,9 +72,9 @@ public class ResultSetReaderTest {
   public void testReadAll_TwoRecord() throws SQLException {
     final ResultSet rs = mockResultSet();
     when(rs.next()).thenReturn(true, true, false);
-    when(rs.getString(1)).thenReturn("a1", "a2");
-    when(rs.getString(2)).thenReturn("b1", "b2");
-    when(rs.getString(3)).thenReturn("c1", "c2");
+    when(rs.getString("a")).thenReturn("a1", "a2");
+    when(rs.getString("b")).thenReturn("b1", "b2");
+    when(rs.getString("c")).thenReturn("c1", "c2");
 
     final ResultSetReader rsr = new ResultSetReader(rs, types);
     final List<Map<String, Object>> records = rsr.readAll();
@@ -84,5 +91,82 @@ public class ResultSetReaderTest {
     assertEquals("a2", record2.get("a"));
     assertEquals("b2", record2.get("b"));
     assertEquals("c2", record2.get("c"));
+  }
+
+  @Test
+  public void testAllTypes() throws SQLException {
+
+    List<IMetaPrimitive.PrimitiveType> allTypes = Arrays.asList(Integer, AutoNumber, Long,
+                                                                Boolean, Decimal, Float, Currency,
+                                                                HashString, Enum, String, Binary, DateTime);
+
+    final ResultSet rs = mock(ResultSet.class);
+    final ResultSetMetaData md = mock(ResultSetMetaData.class);
+    when(md.getColumnCount()).thenReturn(allTypes.size());
+    when(md.getColumnName(1)).thenReturn("Integer");
+    when(md.getColumnName(2)).thenReturn("AutoNumber");
+    when(md.getColumnName(3)).thenReturn("Long");
+    when(md.getColumnName(4)).thenReturn("Boolean");
+    when(md.getColumnName(5)).thenReturn("Decimal");
+    when(md.getColumnName(6)).thenReturn("Float");
+    when(md.getColumnName(7)).thenReturn("Currency");
+    when(md.getColumnName(8)).thenReturn("HashString");
+    when(md.getColumnName(9)).thenReturn("Enum");
+    when(md.getColumnName(10)).thenReturn("String");
+    when(md.getColumnName(11)).thenReturn("Binary");
+    when(md.getColumnName(12)).thenReturn("DateTime");
+    when(rs.getMetaData()).thenReturn(md);
+
+    when(rs.next()).thenReturn(true, false);
+    when(rs.getInt("Integer")).thenReturn(1);
+    when(rs.getLong("AutoNumber")).thenReturn(2L);
+    when(rs.getLong("Long")).thenReturn(3L);
+    when(rs.getBoolean("Boolean")).thenReturn(true);
+    when(rs.getBigDecimal("Decimal")).thenReturn(new BigDecimal("123"));
+    when(rs.getDouble("Float")).thenReturn(4.0);
+    when(rs.getDouble("Currency")).thenReturn(5.0);
+    when(rs.getString("HashString")).thenReturn("A0");
+    when(rs.getString("Enum")).thenReturn("A1");
+    when(rs.getString("String")).thenReturn("A2");
+    when(rs.getBytes("Binary")).thenReturn("привет мир".getBytes());
+    when(rs.getTimestamp(Mockito.eq("DateTime"), Mockito.any(Calendar.class))).thenReturn(new Timestamp(0L));
+
+    final ResultSetReader rsr = new ResultSetReader(rs, allTypes);
+    final List<Map<String, Object>> records = rsr.readAll();
+    assertEquals(1, records.size());
+
+    final Map<String, Object> record = records.get(0);
+    assertEquals(allTypes.size(), record.size());
+    assertEquals(1, record.get("Integer"));
+    assertEquals(2L, record.get("AutoNumber"));
+    assertEquals(3L, record.get("Long"));
+    assertEquals(true, record.get("Boolean"));
+    assertEquals(new BigDecimal("123"), record.get("Decimal"));
+    assertEquals(4.0, record.get("Float"));
+    assertEquals(5.0, record.get("Currency"));
+    assertEquals("A0", record.get("HashString"));
+    assertEquals("A1", record.get("Enum"));
+    assertEquals("A2", record.get("String"));
+    assertEquals("привет мир", new String((byte[]) record.get("Binary")));
+    assertEquals(new Date(0L), record.get("DateTime"));
+  }
+
+  @Test
+  public void testNullResult() throws SQLException {
+    final ResultSet rs = mock(ResultSet.class);
+    when(rs.wasNull()).thenReturn(true);
+    final ResultSetMetaData md = mock(ResultSetMetaData.class);
+    when(md.getColumnCount()).thenReturn(1);
+    when(md.getColumnName(1)).thenReturn("String");
+    when(rs.getMetaData()).thenReturn(md);
+
+    when(rs.next()).thenReturn(true, false);
+    when(rs.getString("String")).thenReturn(null);
+
+    final ResultSetReader rsr = new ResultSetReader(rs, Arrays.asList(String));
+    final List<Map<String, Object>> records = rsr.readAll();
+    assertEquals(1, records.size());
+    final Map<String, Object> record = records.get(0);
+    assertNull(record.get("String"));
   }
 }

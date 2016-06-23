@@ -2,15 +2,15 @@ package databaseconnector.impl;
 
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.TimeZone;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -35,57 +35,63 @@ public class ResultSetReader {
    */
   public List<Map<String, Object>> readAll() throws SQLException {
     // Force the stream to read the whole ResultSet, so that the connection can be closed.
-    return rsIter.stream().map(rs -> getRowResult(rs)).collect(Collectors.toList());
+    // As Collectors.toMap does not accept null for a value, we have to explicitly convert the Optional back to its value.
+    return rsIter.stream().map(rs -> getRowResult(rs)).map(m -> {
+      final Map<String, Object> record = new HashMap<>();
+      for (Map.Entry<String, Optional<Object>> entry : m.entrySet()) {
+        record.put(entry.getKey(), entry.getValue().orElse(null));
+      }
+      return record;
+    }).collect(Collectors.toList());
   }
 
-  private Map<String, Object> getRowResult(final ResultSet rs) {
+  /**
+   * The Optional type for value is used because Collectors.toMap does not accept null for a value.
+   */
+  private Map<String, Optional<Object>> getRowResult(final ResultSet rs) {
     return rsIter.getColumnInfos().collect(Collectors.toMap(ColumnInfo::getName, curryGetColumnResult(rs)));
   }
 
-  private Function<ColumnInfo, Object> curryGetColumnResult(final ResultSet rs) {
+  private Function<ColumnInfo, Optional<Object>> curryGetColumnResult(final ResultSet rs) {
     return ci -> getColumnResult(rs, ci);
   }
 
-  private Object getColumnResult(final ResultSet rs, final ColumnInfo columnInfo) {
+  private Optional<Object> getColumnResult(final ResultSet rs, final ColumnInfo columnInfo) {
     try {
-      int index = columnInfo.getIndex();
+      final String columnName = columnInfo.getName();
       Object columnValue = null;
       switch (columnInfo.getType()) {
         case Integer:
-          columnValue = rs.getInt(index);
+          columnValue = rs.getInt(columnName);
           break;
         case AutoNumber:
         case Long:
-          columnValue = rs.getLong(index);
+          columnValue = rs.getLong(columnName);
           break;
         case DateTime:
-          Timestamp timeStamp = rs.getTimestamp(index, calendar);
+          Timestamp timeStamp = rs.getTimestamp(columnName, calendar);
           columnValue = (timeStamp != null) ? new Date(timeStamp.getTime()) : null;
           break;
         case Boolean:
-          columnValue = rs.getBoolean(index);
+          columnValue = rs.getBoolean(columnName);
           break;
         case Decimal:
-          columnValue = rs.getBigDecimal(index);
+          columnValue = rs.getBigDecimal(columnName);
           break;
         case Float:
         case Currency:
-          columnValue = rs.getDouble(index);
+          columnValue = rs.getDouble(columnName);
           break;
         case HashString:
         case Enum:
         case String:
-          columnValue = rs.getString(index);
+          columnValue = rs.getString(columnName);
           break;
         case Binary:
-          try (InputStream inputStream = rs.getBinaryStream(index)) {
-            columnValue = inputStream;
-          } catch (IOException e) {
-            throw new RuntimeException(e);
-          }
+          columnValue = rs.getBytes(columnName);
           break;
       }
-      return rs.wasNull() ? null : columnValue;
+      return rs.wasNull() ? Optional.empty() : Optional.ofNullable(columnValue);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }
