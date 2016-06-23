@@ -1,10 +1,14 @@
 package databaseconnector.impl;
 
+import java.io.ByteArrayInputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -34,18 +38,27 @@ public class JdbcConnector {
   public Stream<IMendixObject> executeQuery(String jdbcUrl, String userName, String password, IMetaObject metaObject, String sql,
       IContext context) throws SQLException {
     String entityName = metaObject.getName();
-    Function<Map<String, Object>, IMendixObject> toMendixObject = columns -> {
+    Function<Map<String, Optional<Object>>, IMendixObject> toMendixObject = columns -> {
       IMendixObject obj = objectInstantiator.instantiate(context, entityName);
-      columns.forEach((n, v) -> obj.setValue(context, n, v));
+      BiConsumer<String, Optional<Object>> setMemberValue = (name, value) -> {
+        Consumer<Object> setValue = rawValue -> obj.setValue(context, name, rawValue);
+        value.map(toSuitableValue()).ifPresent(setValue);
+      };
+      columns.forEach(setMemberValue);
       logNode.info("obj: " + obj);
       return obj;
     };
 
-    Stream<Map<String,Object>> stream = executeQuery(jdbcUrl, userName, password, metaObject, sql);
+    Stream<Map<String, Optional<Object>>> stream = executeQuery(jdbcUrl, userName, password, metaObject, sql);
+
     return stream.map(toMendixObject);
   }
 
-  public Stream<Map<String, Object>> executeQuery(String jdbcUrl, String userName, String password, IMetaObject metaObject, String sql) throws SQLException {
+  private Function<Object, Object> toSuitableValue() {
+    return v -> v instanceof byte[] ? new ByteArrayInputStream((byte[]) v) : v;
+  }
+
+  public Stream<Map<String, Optional<Object>>> executeQuery(String jdbcUrl, String userName, String password, IMetaObject metaObject, String sql) throws SQLException {
     logNode.info(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);

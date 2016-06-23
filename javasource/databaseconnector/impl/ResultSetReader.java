@@ -1,17 +1,18 @@
 package databaseconnector.impl;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.TimeZone;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 
@@ -33,23 +34,16 @@ public class ResultSetReader {
    * @return list of records, where records are represented as map
    * @throws SQLException
    */
-  public List<Map<String, Object>> readAll() throws SQLException {
+  public List<Map<String, Optional<Object>>> readAll() throws SQLException {
     // Force the stream to read the whole ResultSet, so that the connection can be closed.
-    // As Collectors.toMap does not accept null for a value, we have to explicitly convert the Optional back to its value.
-    return rsIter.stream().map(rs -> getRowResult(rs)).map(m -> {
-      final Map<String, Object> record = new HashMap<>();
-      for (Map.Entry<String, Optional<Object>> entry : m.entrySet()) {
-        record.put(entry.getKey(), entry.getValue().orElse(null));
-      }
-      return record;
-    }).collect(Collectors.toList());
+    return rsIter.stream().map(this::getRowResult).collect(toList());
   }
 
   /**
    * The Optional type for value is used because Collectors.toMap does not accept null for a value.
    */
   private Map<String, Optional<Object>> getRowResult(final ResultSet rs) {
-    return rsIter.getColumnInfos().collect(Collectors.toMap(ColumnInfo::getName, curryGetColumnResult(rs)));
+    return rsIter.getColumnInfos().collect(toMap(ColumnInfo::getName, curryGetColumnResult(rs)));
   }
 
   private Function<ColumnInfo, Optional<Object>> curryGetColumnResult(final ResultSet rs) {

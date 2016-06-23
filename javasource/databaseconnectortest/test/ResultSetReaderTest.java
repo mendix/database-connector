@@ -1,8 +1,7 @@
 package databaseconnectortest.test;
 
-
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -16,6 +15,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -88,13 +88,13 @@ public class ResultSetReaderTest {
     when(rs.getString(3)).thenReturn("c1");
 
     final ResultSetReader rsr = new ResultSetReader(rs, metaObjectWithStrings);
-    final List<Map<String, Object>> records = rsr.readAll();
+    final List<Map<String, Optional<Object>>> records = rsr.readAll();
     assertEquals(1, records.size());
-    final Map<String, Object> record = records.get(0);
+    final Map<String, Optional<Object>> record = records.get(0);
     assertEquals(3, record.size());
-    assertEquals("a1", record.get("a"));
-    assertEquals("b1", record.get("b"));
-    assertEquals("c1", record.get("c"));
+    assertEquals("a1", record.get("a").get());
+    assertEquals("b1", record.get("b").get());
+    assertEquals("c1", record.get("c").get());
   }
 
   @Test
@@ -106,20 +106,20 @@ public class ResultSetReaderTest {
     when(rs.getString(3)).thenReturn("c1", "c2");
 
     final ResultSetReader rsr = new ResultSetReader(rs, metaObjectWithStrings);
-    final List<Map<String, Object>> records = rsr.readAll();
+    final List<Map<String, Optional<Object>>> records = rsr.readAll();
     assertEquals(2, records.size());
 
-    final Map<String, Object> record1 = records.get(0);
+    final Map<String, Optional<Object>> record1 = records.get(0);
     assertEquals(3, record1.size());
-    assertEquals("a1", record1.get("a"));
-    assertEquals("b1", record1.get("b"));
-    assertEquals("c1", record1.get("c"));
+    assertEquals("a1", record1.get("a").get());
+    assertEquals("b1", record1.get("b").get());
+    assertEquals("c1", record1.get("c").get());
 
-    final Map<String, Object> record2 = records.get(1);
+    final Map<String, Optional<Object>> record2 = records.get(1);
     assertEquals(3, record2.size());
-    assertEquals("a2", record2.get("a"));
-    assertEquals("b2", record2.get("b"));
-    assertEquals("c2", record2.get("c"));
+    assertEquals("a2", record2.get("a").get());
+    assertEquals("b2", record2.get("b").get());
+    assertEquals("c2", record2.get("c").get());
   }
 
   @Test
@@ -170,23 +170,23 @@ public class ResultSetReaderTest {
     when(rs.getTimestamp(Mockito.eq(12), Mockito.any(Calendar.class))).thenReturn(new Timestamp(0L));
 
     final ResultSetReader rsr = new ResultSetReader(rs, metaObject);
-    final List<Map<String, Object>> records = rsr.readAll();
+    final List<Map<String, Optional<Object>>> records = rsr.readAll();
     assertEquals(1, records.size());
 
-    final Map<String, Object> record = records.get(0);
+    final Map<String, Optional<Object>> record = records.get(0);
     assertEquals(12, record.size());
-    assertEquals(1, record.get("Integer"));
-    assertEquals(2L, record.get("AutoNumber"));
-    assertEquals(3L, record.get("Long"));
-    assertEquals(true, record.get("Boolean"));
-    assertEquals(new BigDecimal("123"), record.get("Decimal"));
-    assertEquals(4.0, record.get("Float"));
-    assertEquals(5.0, record.get("Currency"));
-    assertEquals("A0", record.get("HashString"));
-    assertEquals("A1", record.get("Enum"));
-    assertEquals("A2", record.get("String"));
-    assertEquals("привет мир", new String((byte[]) record.get("Binary")));
-    assertEquals(new Date(0L), record.get("DateTime"));
+    assertEquals(1, record.get("Integer").get());
+    assertEquals(2L, record.get("AutoNumber").get());
+    assertEquals(3L, record.get("Long").get());
+    assertEquals(true, record.get("Boolean").get());
+    assertEquals(new BigDecimal("123"), record.get("Decimal").get());
+    assertEquals(4.0, record.get("Float").get());
+    assertEquals(5.0, record.get("Currency").get());
+    assertEquals("A0", record.get("HashString").get());
+    assertEquals("A1", record.get("Enum").get());
+    assertEquals("A2", record.get("String").get());
+    assertEquals("привет мир", new String((byte[]) record.get("Binary").get()));
+    assertEquals(new Date(0L), record.get("DateTime").get());
   }
 
   @Test
@@ -205,10 +205,10 @@ public class ResultSetReaderTest {
     when(metaObject.getMetaPrimitive("String")).thenReturn(stringPrimitive);
 
     final ResultSetReader rsr = new ResultSetReader(rs, metaObject);
-    final List<Map<String, Object>> records = rsr.readAll();
+    final List<Map<String, Optional<Object>>> records = rsr.readAll();
     assertEquals(1, records.size());
-    final Map<String, Object> record = records.get(0);
-    assertNull(record.get("String"));
+    final Map<String, Optional<Object>> record = records.get(0);
+    assertFalse(record.get("String").isPresent());
   }
 
   @Test
@@ -226,10 +226,10 @@ public class ResultSetReaderTest {
     when(metaObject.getMetaPrimitive("String")).thenReturn(stringPrimitive);
 
     final ResultSetReader rsr = new ResultSetReader(rs, metaObject);
-    final List<Map<String, Object>> records = rsr.readAll();
+    final List<Map<String, Optional<Object>>> records = rsr.readAll();
     assertEquals(1, records.size());
-    final Map<String, Object> record = records.get(0);
-    assertNull(record.get("String"));
+    final Map<String, Optional<Object>> record = records.get(0);
+    assertFalse(record.get("String").isPresent());
   }
 
 }
