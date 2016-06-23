@@ -18,16 +18,12 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -67,14 +63,12 @@ public class JdbcConnectorTest {
     IMetaObject metaObject = mock(IMetaObject.class);
     when(metaObject.getName()).thenReturn(entityName);
 
-    List<IMetaPrimitive> metaPrimitives = Arrays.asList(entries).stream().map(entry -> {
+    Arrays.asList(entries).forEach(entry -> {
       IMetaPrimitive metaPrimitive = mock(IMetaPrimitive.class);
-      when(metaPrimitive.getName()).thenReturn(entry.getKey());
       when(metaPrimitive.getType()).thenReturn(entry.getValue());
-      return metaPrimitive;
-    }).collect(Collectors.toList());
+      when(metaObject.getMetaPrimitive(entry.getKey())).thenReturn(metaPrimitive);
+    });
 
-    Mockito.<Collection<? extends IMetaPrimitive>>when(metaObject.getMetaPrimitives()).thenReturn(metaPrimitives);
     return metaObject;
   }
 
@@ -203,6 +197,8 @@ public class JdbcConnectorTest {
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
     when(resultSetMetaData.getColumnCount()).thenReturn(2);
+    when(resultSetMetaData.getColumnName(1)).thenReturn("a");
+    when(resultSetMetaData.getColumnName(2)).thenReturn("b");
     when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
     when(resultSet.next()).thenReturn(false);
 
