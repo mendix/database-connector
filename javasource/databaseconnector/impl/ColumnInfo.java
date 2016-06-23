@@ -3,11 +3,11 @@ package databaseconnector.impl;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 
 public class ColumnInfo {
-  private int index;
-  private String name;
-  private PrimitiveType type;
+  private final int index;
+  private final String name;
+  private final PrimitiveType type;
 
-  public ColumnInfo(int index, String name, PrimitiveType type) {
+  public ColumnInfo(final int index, final String name, final PrimitiveType type) {
     this.index = index;
     this.name = name;
     this.type = type;
