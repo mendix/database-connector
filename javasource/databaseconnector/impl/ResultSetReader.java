@@ -84,7 +84,6 @@ public class ResultSetReader {
             throw new RuntimeException(e);
           }
   	      break;
-  	    default: throw new RuntimeException("Meta object primitive type '" + columnInfo.getType().name() + "' is unknown.");
       }
       return rs.wasNull() ? null : columnValue;
     } catch (SQLException e) {
