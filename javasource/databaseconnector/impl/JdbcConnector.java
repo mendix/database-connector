@@ -44,9 +44,9 @@ public class JdbcConnector {
       IMendixObject obj = objectInstantiator.instantiate(context, entityName);
       BiConsumer<String, Optional<Object>> setMemberValue = (name, value) -> {
         PrimitiveType primitiveType = metaObject.getMetaPrimitive(name).getType();
-        // convert to suitable type
+        // convert to suitable value
         Function<Object, Object> toSuitableValue = toSuitableValue(primitiveType);
-        // for Boolean type, convert null to default false
+        // for Boolean type, convert null to false
         Supplier<Object> defaultValue = () -> primitiveType == PrimitiveType.Boolean ? Boolean.FALSE : null;
         // apply two functions declared above
         Object convertedValue = value.map(toSuitableValue).orElseGet(defaultValue);
