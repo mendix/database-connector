@@ -197,6 +197,31 @@ public class JdbcConnectorTest {
     verify(resultSet, times(3)).next();
   }
 
+  @Test public void testResultForBoolean() throws SQLException {
+    IMendixObject resultObject = mock(IMendixObject.class);
+
+    when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatement.executeQuery()).thenReturn(resultSet);
+    when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
+
+    when(resultSetMetaData.getColumnCount()).thenReturn(1);
+    when(resultSetMetaData.getColumnName(1)).thenReturn("Boolean");
+    when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
+    when(resultSet.next()).thenReturn(true, false);
+
+    // As Mockito does not allow to return null, we should not mock getting Boolean
+    // when(resultSet.getBoolean(1)).thenReturn(null);
+
+    IMetaObject metaObject = mockIMetaObject(entry("Boolean", Boolean), entry("String", String));
+    Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery, context);
+    assertEquals(1, result.count());
+
+    verify(resultObject).setValue(context, "Boolean", false);
+    verify(objectInstantiator, times(1)).instantiate(context, entityName);
+    verify(resultSet, times(2)).next();
+  }
+
   @Test public void testNoResults() throws Exception {
     IMendixObject resultObject = mock(IMendixObject.class);
 
