@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,6 +24,7 @@ import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 
 import databaseconnector.impl.ColumnInfo;
 import databaseconnector.impl.ResultSetIterator;
+import org.mockito.Mockito;
 
 public class ResultSetIteratorTest {
 
@@ -30,13 +32,20 @@ public class ResultSetIteratorTest {
 
   private IMetaObject mockMetaObject() {
     final IMetaObject metaObject = mock(IMetaObject.class);
-    final IMetaPrimitive stringPrimitive = mock(IMetaPrimitive.class);
-    when(stringPrimitive.getType()).thenReturn(PrimitiveType.String);
-    when(metaObject.getMetaPrimitive("a")).thenReturn(stringPrimitive);
-    when(metaObject.getMetaPrimitive("b")).thenReturn(stringPrimitive);
-    when(metaObject.getMetaPrimitive("c")).thenReturn(stringPrimitive);
-
+    final Collection<? extends IMetaPrimitive> stringPrimitives = Arrays.asList(
+        mockMetaPrimitive("a", PrimitiveType.String),
+        mockMetaPrimitive("b", PrimitiveType.String),
+        mockMetaPrimitive("c", PrimitiveType.String)
+    );
+    Mockito.<Collection<? extends IMetaPrimitive>>when(metaObject.getMetaPrimitives()).thenReturn(stringPrimitives);
     return metaObject;
+  }
+
+  private IMetaPrimitive mockMetaPrimitive(String name, PrimitiveType type) {
+    final IMetaPrimitive primitive = mock(IMetaPrimitive.class);
+    when(primitive.getType()).thenReturn(type);
+    when(primitive.getName()).thenReturn(name);
+    return primitive;
   }
 
   private ResultSet mockResultSet() throws SQLException {

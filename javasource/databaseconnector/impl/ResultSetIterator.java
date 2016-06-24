@@ -5,8 +5,10 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -50,14 +52,15 @@ public class ResultSetIterator implements Iterator<ResultSet> {
       throw new RuntimeException(e);
     }
 
-    final IMetaPrimitive primitive = metaObject.getMetaPrimitive(columnName);
+    final Predicate<IMetaPrimitive> caseInsensitiveName = (IMetaPrimitive mp) -> mp.getName().equalsIgnoreCase(columnName);
+    final Optional<? extends IMetaPrimitive> primitive = metaObject.getMetaPrimitives().stream().filter(caseInsensitiveName).findFirst();
 
-    if (primitive == null)
-      throw new RuntimeException(String.format("The entity type '%s' does not contain the primitive '%s' as specified in the query.",
-          metaObject.getName(),
-          columnName));
+    final IMetaPrimitive.PrimitiveType type = primitive.<RuntimeException>orElseThrow(() -> {
+      final String msg = "The entity type '%s' does not contain the primitive '%s' as specified in the query.";
+      throw new RuntimeException(String.format(msg, metaObject.getName(), columnName));
+    }).getType();
 
-    return new ColumnInfo(index, columnName, primitive.getType());
+    return new ColumnInfo(index, columnName, type);
   }
 
   @Override

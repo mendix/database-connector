@@ -17,13 +17,16 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.stream.Stream;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
@@ -63,12 +66,17 @@ public class JdbcConnectorTest {
     IMetaObject metaObject = mock(IMetaObject.class);
     when(metaObject.getName()).thenReturn(entityName);
 
+    final Collection<IMetaPrimitive> primitives = new ArrayList<>();
+
     Arrays.asList(entries).forEach(entry -> {
       IMetaPrimitive metaPrimitive = mock(IMetaPrimitive.class);
+      when(metaPrimitive.getName()).thenReturn(entry.getKey());
       when(metaPrimitive.getType()).thenReturn(entry.getValue());
       when(metaObject.getMetaPrimitive(entry.getKey())).thenReturn(metaPrimitive);
+      primitives.add(metaPrimitive);
     });
 
+    Mockito.<Collection<? extends IMetaPrimitive>>when(metaObject.getMetaPrimitives()).thenReturn(primitives);
     return metaObject;
   }
 
