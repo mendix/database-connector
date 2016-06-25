@@ -9,6 +9,7 @@
 
 package databaseconnectortest.actions;
 
+import java.util.function.Predicate;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
@@ -30,7 +31,7 @@ public class SetNullValues extends CustomJavaAction<Boolean>
 	{
 		// BEGIN USER CODE
 	  instance.getMetaObject().getMetaPrimitives().stream()
-	    .filter(this::isNotBoolean)
+	    .filter(isNotBoolean).filter(isNotHashString)
 	    .forEach(p -> instance.setValue(getContext(), p.getName(), null));
 
 		return true;
@@ -47,8 +48,7 @@ public class SetNullValues extends CustomJavaAction<Boolean>
 	}
 
 	// BEGIN EXTRA CODE
-	private boolean isNotBoolean(IMetaPrimitive primitive) {
-    return primitive.getType() != PrimitiveType.Boolean;
-  }
+	private Predicate<IMetaPrimitive> isNotBoolean = a -> a.getType() != PrimitiveType.Boolean;
+	private Predicate<IMetaPrimitive> isNotHashString = a -> a.getType() != PrimitiveType.HashString;
 	// END EXTRA CODE
 }
