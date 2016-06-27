@@ -13,6 +13,7 @@ import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -85,7 +86,12 @@ public class AssertEqualsListEntityValues extends CustomJavaAction<Boolean>
   private Optional<String> compare(IMendixObjectMember<?> expected, IMendixObjectMember<?> actual) {
     Object expectedValue = toComparableValue(expected.getValue(getContext()));
     Object actualValue = toComparableValue(actual.getValue(getContext()));
-    boolean isEqual = expectedValue == null ? actualValue == null : expectedValue.equals(actualValue);
+    boolean isEqual;
+
+    if (expectedValue instanceof byte[] && actualValue instanceof byte[])
+      isEqual = Arrays.equals((byte[]) expectedValue, (byte[]) actualValue);
+    else
+      isEqual = expectedValue == null ? actualValue == null : expectedValue.equals(actualValue);
 
     return isEqual ? Optional.empty() : Optional.of(format("%s (%s != %s)", expected.getName(), expectedValue, actualValue));
   }
