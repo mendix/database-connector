@@ -11,6 +11,7 @@ package databaseconnectortest.actions;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
@@ -72,15 +73,15 @@ public class AssertEqualsListEntityValues extends CustomJavaAction<Boolean>
     IntFunction<Optional<String>> compare = a -> compare(a + 1, expected.get(a), actual.get(a));
     String message = range.mapToObj(compare).flatMap(messagesFilter).collect(joining("," + System.lineSeparator()));
 
-    return Optional.ofNullable(message);
+    return isEmpty(message) ? Optional.empty() : Optional.of(message);
   }
 
   private Optional<String> compare(int objectNr, IMendixObject expected, IMendixObject actual) {
     Function<IMendixObjectMember<?>, Optional<String>> compare = a -> compare(a, actual.getMember(getContext(), a.getName()));
     Stream<Optional<String>> potentialMessages = expected.getPrimitives(getContext()).stream().map(compare);
-    String message = potentialMessages.flatMap(messagesFilter).collect(joining(", ", format("Row %s: ", objectNr), ""));
+    String message = potentialMessages.flatMap(messagesFilter).collect(joining(", "));
 
-    return Optional.ofNullable(message);
+    return isEmpty(message) ? Optional.empty() : Optional.of(format("Row %s: ", objectNr) + message);
   }
 
   private Optional<String> compare(IMendixObjectMember<?> expected, IMendixObjectMember<?> actual) {

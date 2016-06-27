@@ -12,6 +12,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import com.mendix.core.objectmanagement.member.MendixHashString;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
@@ -51,7 +52,10 @@ public class JdbcConnector {
         // apply two functions declared above
         Object convertedValue = value.map(toSuitableValue).orElseGet(defaultValue);
         // update object with converted value
-        obj.setValue(context, name, convertedValue);
+        if (primitiveType == PrimitiveType.HashString)
+          ((MendixHashString) obj.getMember(context, name)).setInitialHash((String) convertedValue);
+        else
+          obj.setValue(context, name, convertedValue);
       };
       columns.forEach(setMemberValue);
       logNode.trace("obj: " + obj);
