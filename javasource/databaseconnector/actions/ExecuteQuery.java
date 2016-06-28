@@ -81,7 +81,7 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 		Stream<IMendixObject> resultStream = connector.executeQuery(
 		    this.jdbcUrl, this.userName, this.password, metaObject, this.sql, this.getContext());
 		List<IMendixObject> resultList = resultStream.collect(Collectors.toList());
-		logNode.info(String.format("List: %d", resultList.size()));
+		logNode.trace(String.format("Result list count: %d", resultList.size()));
 
 		return resultList;
 		// END USER CODE

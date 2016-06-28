@@ -58,7 +58,7 @@ public class JdbcConnector {
           obj.setValue(context, name, convertedValue);
       };
       columns.forEach(setMemberValue);
-      logNode.trace("obj: " + obj);
+      logNode.trace("Instantiated object: " + obj);
       return obj;
     };
 
@@ -70,7 +70,7 @@ public class JdbcConnector {
   }
 
   public Stream<Map<String, Optional<Object>>> executeQuery(String jdbcUrl, String userName, String password, IMetaObject metaObject, String sql) throws SQLException {
-    logNode.info(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
+    logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql);
@@ -82,7 +82,7 @@ public class JdbcConnector {
   }
 
   public long executeStatement(String jdbcUrl, String userName, String password, String sql) throws SQLException {
-    logNode.info(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
+    logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
         PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
