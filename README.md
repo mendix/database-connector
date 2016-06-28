@@ -39,7 +39,8 @@ The result of this action is a list of objects of type Row, which is also the ou
 The result of this action is either an Integer or a Long value which usually represents the amount of affected rows.
 
 # Remarks
-It is a good practice to avoid having user input as part of your dynamic SQL queries and statements. In the future we will support using parameters with the queries or statements.
+* It is a good practice to avoid having user input as part of your dynamic SQL queries and statements. In the future we will support using parameters with the queries or statements.
+* Avoid fetching large amounts of data as it can lead to memory issues because all the ResultSet data is being loaded into memory at once.
 
 # Links to common JDBC drivers
 * [Amazon Redshift](http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html#download-jdbc-driver)
