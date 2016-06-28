@@ -14,6 +14,7 @@ import static java.util.stream.Collectors.joining;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -26,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 import com.mendix.webui.CustomJavaAction;
 import unittesting.proxies.microflows.Microflows;
 
@@ -77,22 +79,35 @@ public class AssertEqualsListEntityValues extends CustomJavaAction<Boolean>
   }
 
   private Optional<String> compare(int objectNr, IMendixObject expected, IMendixObject actual) {
-    Function<IMendixObjectMember<?>, Optional<String>> compare = a -> compare(a, actual.getMember(getContext(), a.getName()));
+    Function<IMendixObjectMember<?>, Optional<String>> compare = expectedMember -> {
+      PrimitiveType primitiveType = expected.getMetaObject().getMetaPrimitive(expectedMember.getName()).getType();
+      IMendixObjectMember<?> actualMember = actual.getMember(getContext(), expectedMember.getName());
+      return compare(primitiveType, expectedMember, actualMember);
+    };
     Stream<Optional<String>> potentialMessages = expected.getPrimitives(getContext()).stream().map(compare);
     String message = potentialMessages.flatMap(messagesFilter).collect(joining(", "));
 
     return isEmpty(message) ? Optional.empty() : Optional.of(format("Row %s: ", objectNr) + message);
   }
 
-  private Optional<String> compare(IMendixObjectMember<?> expected, IMendixObjectMember<?> actual) {
+  private Optional<String> compare(PrimitiveType primitiveType, IMendixObjectMember<?> expected, IMendixObjectMember<?> actual) {
     Object expectedValue = toComparableValue(expected.getValue(getContext()));
     Object actualValue = toComparableValue(actual.getValue(getContext()));
     boolean isEqual;
 
-    if (expectedValue instanceof byte[] && actualValue instanceof byte[])
-      isEqual = Arrays.equals((byte[]) expectedValue, (byte[]) actualValue);
-    else
-      isEqual = expectedValue == null ? actualValue == null : expectedValue.equals(actualValue);
+    if (expectedValue != null && actualValue != null) {
+      switch (primitiveType) {
+        case Binary:
+          isEqual = Arrays.equals((byte[]) expectedValue, (byte[]) actualValue);
+          break;
+        case Decimal:
+          isEqual = ((BigDecimal) expectedValue).compareTo((BigDecimal) actualValue) == 0;
+          break;
+        default:
+          isEqual = expectedValue.equals(actualValue);
+      }
+    } else
+      isEqual = expectedValue == null && actualValue == null;
 
     return isEqual ? Optional.empty() : Optional.of(format("%s (%s != %s)", expected.getName(), expectedValue, actualValue));
   }
