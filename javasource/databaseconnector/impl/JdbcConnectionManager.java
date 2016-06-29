@@ -43,10 +43,10 @@ public class JdbcConnectionManager implements ConnectionManager {
 
     final Integer connPoolKey = toConnPoolKey(jdbcUrl, userName);
     final HikariDataSource dataSource = connectionPool.computeIfAbsent(connPoolKey, k -> {
-      logNode.info(String.format("Creating data source in connection pool for [url=%s, user=%s]", jdbcUrl, userName));
+      logNode.trace(String.format("Creating data source in connection pool for [url=%s, user=%s]", jdbcUrl, userName));
       return createHikariDataSource(jdbcUrl, userName, password);
     });
-    logNode.info(String.format("Getting connection from data source in connection pool for [url=%s, user=%s]", jdbcUrl, userName));
+    logNode.trace(String.format("Getting connection from data source in connection pool for [url=%s, user=%s]", jdbcUrl, userName));
     return dataSource.getConnection();
   }
 
@@ -61,7 +61,7 @@ public class JdbcConnectionManager implements ConnectionManager {
       ServiceLoader<Driver> loader = ServiceLoader.load(Driver.class);
       Stream<String> driverNames = StreamSupport.stream(loader.spliterator(), false).map(a -> a.getClass().getName());
       String logMessage = driverNames.collect(Collectors.joining(", ", "Found JDBC Drivers: ", ""));
-      logNode.info(logMessage);
+      logNode.trace(logMessage);
       hasDriversInitialized = true;
     }
   }

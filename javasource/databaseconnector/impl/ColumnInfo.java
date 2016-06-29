@@ -1,12 +1,16 @@
 package databaseconnector.impl;
 
-public class ColumnInfo {
-  private int index;
-  private String name;
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 
-  public ColumnInfo(int index, String name) {
+public class ColumnInfo {
+  private final int index;
+  private final String name;
+  private final PrimitiveType type;
+
+  public ColumnInfo(final int index, final String name, final PrimitiveType type) {
     this.index = index;
     this.name = name;
+    this.type = type;
   }
 
   public int getIndex() {
@@ -15,5 +19,9 @@ public class ColumnInfo {
 
   public String getName() {
     return name;
+  }
+
+  public PrimitiveType getType() {
+    return type;
   }
 }

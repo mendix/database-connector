@@ -1,12 +1,20 @@
 package databaseconnector.impl;
 
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
-
+import java.util.Optional;
+import java.util.TimeZone;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 
 /**
  * ResultSetReader converts a given instance of {@link ResultSet} into a list of instances of Map<String, Object>, with key for column name
@@ -14,9 +22,10 @@ import java.util.stream.Collectors;
  */
 public class ResultSetReader {
   private final ResultSetIterator rsIter;
+  private final Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 
-  public ResultSetReader(final ResultSet resultSet) {
-    this.rsIter = new ResultSetIterator(resultSet);
+  public ResultSetReader(final ResultSet resultSet, final IMetaObject metaObject) {
+    this.rsIter = new ResultSetIterator(resultSet, metaObject);
   }
 
   /**
@@ -25,23 +34,59 @@ public class ResultSetReader {
    * @return list of records, where records are represented as map
    * @throws SQLException
    */
-  public List<Map<String, Object>> readAll() throws SQLException {
+  public List<Map<String, Optional<Object>>> readAll() throws SQLException {
     // Force the stream to read the whole ResultSet, so that the connection can be closed.
-    return rsIter.stream().map(rs -> getRowResult(rs)).collect(Collectors.toList());
+    return rsIter.stream().map(this::getRowResult).collect(toList());
   }
 
-  private Map<String, Object> getRowResult(final ResultSet rs) {
-    return rsIter.getColumnInfos().collect(Collectors.toMap(ColumnInfo::getName, curryGetColumnResult(rs)));
+  /**
+   * The Optional type for value is used because Collectors.toMap does not accept null for a value.
+   */
+  private Map<String, Optional<Object>> getRowResult(final ResultSet rs) {
+    return rsIter.getColumnInfos().collect(toMap(ColumnInfo::getName, curryGetColumnResult(rs)));
   }
 
-  private Function<ColumnInfo, Object> curryGetColumnResult(final ResultSet rs) {
+  private Function<ColumnInfo, Optional<Object>> curryGetColumnResult(final ResultSet rs) {
     return ci -> getColumnResult(rs, ci);
   }
 
-  private Object getColumnResult(final ResultSet rs, final ColumnInfo columnInfo) {
+  @SuppressWarnings("deprecation")
+  private Optional<Object> getColumnResult(final ResultSet rs, final ColumnInfo columnInfo) {
     try {
-      final Object columnValue = rs.getObject(columnInfo.getIndex());
-      return columnValue;
+      final int columnIndex = columnInfo.getIndex();
+      Object columnValue = null;
+      switch (columnInfo.getType()) {
+        case Integer:
+          columnValue = rs.getInt(columnIndex);
+          break;
+        case AutoNumber:
+        case Long:
+          columnValue = rs.getLong(columnIndex);
+          break;
+        case DateTime:
+          Timestamp timeStamp = rs.getTimestamp(columnIndex, calendar);
+          columnValue = (timeStamp != null) ? new Date(timeStamp.getTime()) : null;
+          break;
+        case Boolean:
+          columnValue = rs.getBoolean(columnIndex);
+          break;
+        case Decimal:
+          columnValue = rs.getBigDecimal(columnIndex);
+          break;
+        case Float:
+        case Currency:
+          columnValue = rs.getDouble(columnIndex);
+          break;
+        case HashString:
+        case Enum:
+        case String:
+          columnValue = rs.getString(columnIndex);
+          break;
+        case Binary:
+          columnValue = rs.getBytes(columnIndex);
+          break;
+      }
+      return rs.wasNull() ? Optional.empty() : Optional.ofNullable(columnValue);
     } catch (SQLException e) {
       throw new RuntimeException(e);
     }

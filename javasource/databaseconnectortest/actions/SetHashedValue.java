@@ -9,31 +9,33 @@
 
 package databaseconnectortest.actions;
 
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import com.mendix.core.objectmanagement.member.MendixHashString;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
-import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
 import com.mendix.webui.CustomJavaAction;
 
-public class HasEqualListEntityValues extends CustomJavaAction<Boolean>
+public class SetHashedValue extends CustomJavaAction<Boolean>
 {
-	private java.util.List<IMendixObject> Expected;
-	private java.util.List<IMendixObject> Actual;
+	private IMendixObject instance;
+	private String member;
+	private String hashedValue;
 
-	public HasEqualListEntityValues(IContext context, java.util.List<IMendixObject> Expected, java.util.List<IMendixObject> Actual)
+	public SetHashedValue(IContext context, IMendixObject instance, String member, String hashedValue)
 	{
 		super(context);
-		this.Expected = Expected;
-		this.Actual = Actual;
+		this.instance = instance;
+		this.member = member;
+		this.hashedValue = hashedValue;
 	}
 
 	@Override
 	public Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-    return getMemberArray(Expected).equals(getMemberArray(Actual));
+	  MendixHashString hashStringMember = (MendixHashString) instance.getMember(getContext(), member);
+	  hashStringMember.setInitialHash(hashedValue);
+
+		return true;
 		// END USER CODE
 	}
 
@@ -43,17 +45,9 @@ public class HasEqualListEntityValues extends CustomJavaAction<Boolean>
 	@Override
 	public String toString()
 	{
-		return "HasEqualListEntityValues";
+		return "SetHashedValue";
 	}
 
 	// BEGIN EXTRA CODE
-  private List<?> getMemberArray(List<IMendixObject> mendixObjects) {
-    return mendixObjects.stream().map(this::getMembers).collect(Collectors.toList());
-  }
-
-  private Map<String, ? extends IMendixObjectMember<?>> getMembers(IMendixObject mendixObject) {
-    return mendixObject.getMembers(getContext());
-  }
-
 	// END EXTRA CODE
 }
