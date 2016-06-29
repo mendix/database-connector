@@ -22,41 +22,46 @@ import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 import databaseconnector.interfaces.ConnectionManager;
 import databaseconnector.interfaces.ObjectInstantiator;
 
+/**
+ * JdbcConnector implements the execute query (and execute statement) functionality, and returns a {@link Stream} of {@link IMendixObject}s.
+ */
 public class JdbcConnector {
   private final ILogNode logNode;
-  private ObjectInstantiator objectInstantiator;
-  private ConnectionManager connectionManager;
+  private final ObjectInstantiator objectInstantiator;
+  private final ConnectionManager connectionManager;
 
-  public JdbcConnector(final ILogNode logNode, ObjectInstantiator objectInstantiator, ConnectionManager connectionManager) {
+  public JdbcConnector(final ILogNode logNode, final ObjectInstantiator objectInstantiator, final ConnectionManager connectionManager) {
     this.logNode = logNode;
     this.objectInstantiator = objectInstantiator;
     this.connectionManager = connectionManager;
   }
 
-  public JdbcConnector(ILogNode logNode) {
+  public JdbcConnector(final ILogNode logNode) {
     this(logNode, new ObjectInstantiatorImpl(), ConnectionManagerSingleton.getInstance());
   }
 
-  public Stream<IMendixObject> executeQuery(String jdbcUrl, String userName, String password, IMetaObject metaObject, String sql,
-      IContext context) throws SQLException {
+  public Stream<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password, final IMetaObject metaObject, final String sql,
+      final IContext context) throws SQLException {
     String entityName = metaObject.getName();
+    
     Function<Map<String, Optional<Object>>, IMendixObject> toMendixObject = columns -> {
-
       IMendixObject obj = objectInstantiator.instantiate(context, entityName);
+      
       BiConsumer<String, Optional<Object>> setMemberValue = (name, value) -> {
-        PrimitiveType primitiveType = metaObject.getMetaPrimitive(name).getType();
-        // convert to suitable value
-        Function<Object, Object> toSuitableValue = toSuitableValue(primitiveType);
+        PrimitiveType type = metaObject.getMetaPrimitive(name).getType();
+        // convert to suitable value (different for Binary type)
+        Function<Object, Object> toSuitableValue = toSuitableValue(type);
         // for Boolean type, convert null to false
-        Supplier<Object> defaultValue = () -> primitiveType == PrimitiveType.Boolean ? Boolean.FALSE : null;
+        Supplier<Object> defaultValue = () -> type == PrimitiveType.Boolean ? Boolean.FALSE : null;
         // apply two functions declared above
         Object convertedValue = value.map(toSuitableValue).orElseGet(defaultValue);
         // update object with converted value
-        if (primitiveType == PrimitiveType.HashString)
+        if (type == PrimitiveType.HashString)
           ((MendixHashString) obj.getMember(context, name)).setInitialHash((String) convertedValue);
         else
           obj.setValue(context, name, convertedValue);
       };
+      
       columns.forEach(setMemberValue);
       logNode.trace("Instantiated object: " + obj);
       return obj;
@@ -69,7 +74,7 @@ public class JdbcConnector {
     return v -> type == PrimitiveType.Binary ? new ByteArrayInputStream((byte[]) v) : v;
   }
 
-  public Stream<Map<String, Optional<Object>>> executeQuery(String jdbcUrl, String userName, String password, IMetaObject metaObject, String sql) throws SQLException {
+  private Stream<Map<String, Optional<Object>>> executeQuery(final String jdbcUrl, final String userName, final String password, final IMetaObject metaObject, final String sql) throws SQLException {
     logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
@@ -81,7 +86,7 @@ public class JdbcConnector {
     }
   }
 
-  public long executeStatement(String jdbcUrl, String userName, String password, String sql) throws SQLException {
+  public long executeStatement(final String jdbcUrl, final String userName, final String password, final String sql) throws SQLException {
     logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
     try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);

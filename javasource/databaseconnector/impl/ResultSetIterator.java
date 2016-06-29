@@ -22,7 +22,6 @@ import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
  * with that, it provides information about columns of the given result set.
  */
 public class ResultSetIterator implements Iterator<ResultSet> {
-
   private final ResultSet resultSet;
   private final List<ColumnInfo> columnInfos;
   private final IMetaObject metaObject;
@@ -43,7 +42,7 @@ public class ResultSetIterator implements Iterator<ResultSet> {
     }
   }
 
-  private ColumnInfo getColumnInfo(int index) {
+  private ColumnInfo getColumnInfo(final int index) {
     final String columnName;
 
     try {

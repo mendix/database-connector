@@ -4,5 +4,5 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 public interface ObjectInstantiator {
-  IMendixObject instantiate(IContext context, String entityName);
+  IMendixObject instantiate(final IContext context, final String entityName);
 }
