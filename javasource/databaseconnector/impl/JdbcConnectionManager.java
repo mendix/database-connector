@@ -15,6 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.util.Random;
 
 /**
  * Simple connection manager backed by HikariCP. It does not support shutdown at this moment that may lead to memory leak in case of
@@ -44,7 +45,7 @@ public class JdbcConnectionManager implements ConnectionManager {
     final Integer connPoolKey = toConnPoolKey(jdbcUrl, userName);
     final HikariDataSource dataSource = connectionPool.computeIfAbsent(connPoolKey, k -> {
       logNode.trace(String.format("Creating data source in connection pool for [url=%s, user=%s]", jdbcUrl, userName));
-      return createHikariDataSource(jdbcUrl, userName, password);
+      return createHikariDataSource(jdbcUrl, userName, password, connPoolKey);
     });
     logNode.trace(String.format("Getting connection from data source in connection pool for [url=%s, user=%s]", jdbcUrl, userName));
     return dataSource.getConnection();
@@ -70,9 +71,9 @@ public class JdbcConnectionManager implements ConnectionManager {
     return (jdbcUrl + userName).hashCode();
   }
 
-  private HikariDataSource createHikariDataSource(final String jdbcUrl, final String userName, final String password) {
+  private HikariDataSource createHikariDataSource(final String jdbcUrl, final String userName, final String password, Integer connPoolKey) {
     final HikariDataSource dataSource = new HikariDataSource();
-
+    dataSource.setPoolName(""+ connPoolKey);
     dataSource.setJdbcUrl(jdbcUrl);
     dataSource.setUsername(userName);
     dataSource.setPassword(password);
