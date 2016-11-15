@@ -15,7 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import java.util.Random;
 
 /**
  * Simple connection manager backed by HikariCP. It does not support shutdown at this moment that may lead to memory leak in case of
