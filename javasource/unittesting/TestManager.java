@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.junit.Test;
@@ -25,17 +24,17 @@ import org.junit.runners.JUnit4;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 
-import unittesting.proxies.TestSuite;
-import unittesting.proxies.UnitTest;
-import unittesting.proxies.UnitTestResult;
-
 import com.mendix.core.Core;
 import com.mendix.core.CoreException;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IDataType;
+import com.mendix.systemwideinterfaces.core.IMendixObject;
 
-import communitycommons.XPath;
+import objecthandling.XPath;
+import unittesting.proxies.TestSuite;
+import unittesting.proxies.UnitTest;
+import unittesting.proxies.UnitTestResult;
 
 /**
  * @author mwe
@@ -58,8 +57,6 @@ public class TestManager
 		}
 	}
 
-
-	private static final String	TEST_MICROFLOW_PREFIX_1	= "Test";
 	private static final String	TEST_MICROFLOW_PREFIX_2	= "UT_";
 
 	static final String	CLOUD_SECURITY_ERROR = "Unable to find JUnit test classes or methods. \n\n";
@@ -161,13 +158,15 @@ public class TestManager
 		//Context without transaction!
 		IContext context = Core.createSystemContext();
 		
-		for(TestSuite suite : XPath.create(context, TestSuite.class).all()) {
-			suite.setResult(null);
-			suite.commit();
+		List<IMendixObject> testsuites = Core.retrieveXPathQuery(context,"//" +TestSuite.entityName);
+		
+		for(IMendixObject suite : testsuites) {
+			suite.setValue(context, TestSuite.MemberNames.Result.toString(), null);;	
 		}
+		Core.commit(context, testsuites);
 
-		for(TestSuite suite : XPath.create(context, TestSuite.class).all()) {
-			runTestSuite(context, suite);
+		for(IMendixObject suite : testsuites) {
+			runTestSuite(context, TestSuite.load(context, suite.getId()));
 		}
 
 		LOG.info("Finished testrun on all suites");
@@ -253,8 +252,16 @@ public class TestManager
 	{
 		List<String> mfnames = new ArrayList<String>();
 
-		String basename1 = (testRun.getModule() + "." + TEST_MICROFLOW_PREFIX_1).toLowerCase();
-		String basename2 = (testRun.getModule() + "." + TEST_MICROFLOW_PREFIX_2).toLowerCase();
+		if(testRun.getPrefix1() == null) {
+			testRun.setPrefix1("Test_");
+		}
+		if(testRun.getPrefix2() == null) {
+			testRun.setPrefix2("UT_");
+		}
+			
+		
+		String basename1 = (testRun.getModule() + "." + testRun.getPrefix1()).toLowerCase();
+		String basename2 = (testRun.getModule() + "." + testRun.getPrefix2()).toLowerCase();
 		
 		//Find microflownames
 		for (String mf : Core.getMicroflowNames()) 

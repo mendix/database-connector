@@ -57,13 +57,13 @@ import databaseconnector.impl.JdbcConnector;
  */
 public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>>
 {
-	private String jdbcUrl;
-	private String userName;
-	private String password;
-	private String sql;
+	private java.lang.String jdbcUrl;
+	private java.lang.String userName;
+	private java.lang.String password;
+	private java.lang.String sql;
 	private IMendixObject resultObject;
 
-	public ExecuteQuery(IContext context, String jdbcUrl, String userName, String password, String sql, IMendixObject resultObject)
+	public ExecuteQuery(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, java.lang.String sql, IMendixObject resultObject)
 	{
 		super(context);
 		this.jdbcUrl = jdbcUrl;
@@ -91,7 +91,7 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 	 * Returns a string representation of this action
 	 */
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return "ExecuteQuery";
 	}

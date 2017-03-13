@@ -15,7 +15,7 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.webui.CustomJavaAction;
 import databaseconnectortest.tools.RedshiftClusterOperations;
 
-public class DeleteRedshiftCluster extends CustomJavaAction<Boolean>
+public class DeleteRedshiftCluster extends CustomJavaAction<java.lang.Boolean>
 {
 	public DeleteRedshiftCluster(IContext context)
 	{
@@ -23,7 +23,7 @@ public class DeleteRedshiftCluster extends CustomJavaAction<Boolean>
 	}
 
 	@Override
-	public Boolean executeAction() throws Exception
+	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
     new RedshiftClusterOperations(logNode).deleteCluster();
@@ -36,7 +36,7 @@ public class DeleteRedshiftCluster extends CustomJavaAction<Boolean>
 	 * Returns a string representation of this action
 	 */
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return "DeleteRedshiftCluster";
 	}

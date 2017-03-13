@@ -48,14 +48,14 @@ import databaseconnector.impl.JdbcConnector;
  * @return <Integer/Long>
  *    Number of affected rows.
  */
-public class ExecuteStatement extends CustomJavaAction<Long>
+public class ExecuteStatement extends CustomJavaAction<java.lang.Long>
 {
-	private String jdbcUrl;
-	private String userName;
-	private String password;
-	private String sql;
+	private java.lang.String jdbcUrl;
+	private java.lang.String userName;
+	private java.lang.String password;
+	private java.lang.String sql;
 
-	public ExecuteStatement(IContext context, String jdbcUrl, String userName, String password, String sql)
+	public ExecuteStatement(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, java.lang.String sql)
 	{
 		super(context);
 		this.jdbcUrl = jdbcUrl;
@@ -65,7 +65,7 @@ public class ExecuteStatement extends CustomJavaAction<Long>
 	}
 
 	@Override
-	public Long executeAction() throws Exception
+	public java.lang.Long executeAction() throws Exception
 	{
 		// BEGIN USER CODE
 	  return connector.executeStatement(jdbcUrl, userName, password, sql);
@@ -76,7 +76,7 @@ public class ExecuteStatement extends CustomJavaAction<Long>
 	 * Returns a string representation of this action
 	 */
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return "ExecuteStatement";
 	}
