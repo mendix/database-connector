@@ -31,7 +31,7 @@ import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 import com.mendix.webui.CustomJavaAction;
 import unittesting.proxies.microflows.Microflows;
 
-public class AssertEqualsListEntityValues extends CustomJavaAction<Boolean>
+public class AssertEqualsListEntityValues extends CustomJavaAction<java.lang.Boolean>
 {
 	private java.util.List<IMendixObject> Expected;
 	private java.util.List<IMendixObject> Actual;
@@ -44,7 +44,7 @@ public class AssertEqualsListEntityValues extends CustomJavaAction<Boolean>
 	}
 
 	@Override
-	public Boolean executeAction() throws Exception
+	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
 	  Consumer<String> assertMessage = a ->
@@ -60,7 +60,7 @@ public class AssertEqualsListEntityValues extends CustomJavaAction<Boolean>
 	 * Returns a string representation of this action
 	 */
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return "AssertEqualsListEntityValues";
 	}

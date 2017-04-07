@@ -14,18 +14,18 @@ import com.mendix.core.Core;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.webui.CustomJavaAction;
 
-public class StartRemoteApiServlet extends CustomJavaAction<Boolean>
+public class StartRemoteApiServlet extends CustomJavaAction<java.lang.Boolean>
 {
-	private String password;
+	private java.lang.String password;
 
-	public StartRemoteApiServlet(IContext context, String password)
+	public StartRemoteApiServlet(IContext context, java.lang.String password)
 	{
 		super(context);
 		this.password = password;
 	}
 
 	@Override
-	public Boolean executeAction() throws Exception
+	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
 		Core.addRequestHandler("unittests/", new RemoteApiServlet(password));
@@ -37,7 +37,7 @@ public class StartRemoteApiServlet extends CustomJavaAction<Boolean>
 	 * Returns a string representation of this action
 	 */
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return "StartRemoteApiServlet";
 	}

@@ -16,7 +16,7 @@ import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 import com.mendix.webui.CustomJavaAction;
 
-public class SetNullValues extends CustomJavaAction<Boolean>
+public class SetNullValues extends CustomJavaAction<java.lang.Boolean>
 {
 	private IMendixObject instance;
 
@@ -27,7 +27,7 @@ public class SetNullValues extends CustomJavaAction<Boolean>
 	}
 
 	@Override
-	public Boolean executeAction() throws Exception
+	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
 	  instance.getMetaObject().getMetaPrimitives().stream()
@@ -42,7 +42,7 @@ public class SetNullValues extends CustomJavaAction<Boolean>
 	 * Returns a string representation of this action
 	 */
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return "SetNullValues";
 	}

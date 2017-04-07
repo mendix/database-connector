@@ -14,13 +14,13 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.webui.CustomJavaAction;
 
-public class SetBinaryTextValue extends CustomJavaAction<Boolean>
+public class SetBinaryTextValue extends CustomJavaAction<java.lang.Boolean>
 {
 	private IMendixObject instance;
-	private String member;
-	private String value;
+	private java.lang.String member;
+	private java.lang.String value;
 
-	public SetBinaryTextValue(IContext context, IMendixObject instance, String member, String value)
+	public SetBinaryTextValue(IContext context, IMendixObject instance, java.lang.String member, java.lang.String value)
 	{
 		super(context);
 		this.instance = instance;
@@ -29,7 +29,7 @@ public class SetBinaryTextValue extends CustomJavaAction<Boolean>
 	}
 
 	@Override
-	public Boolean executeAction() throws Exception
+	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
 	  MendixBinary binaryMember = (MendixBinary) instance.getMember(getContext(), member);
@@ -43,7 +43,7 @@ public class SetBinaryTextValue extends CustomJavaAction<Boolean>
 	 * Returns a string representation of this action
 	 */
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return "SetBinaryTextValue";
 	}

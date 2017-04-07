@@ -116,7 +116,7 @@ public class UnitTestRunListener extends RunListener {
 
 	private String findProperExceptionLine(String trace)
 	{
-		String[] lines = StringUtils.split(trace,"\n");
+		String[] lines = trace.split("\n");
 		if (lines.length > 2)
 			for(int i = 1; i < lines.length; i++) {
 				String line = lines[i].trim();

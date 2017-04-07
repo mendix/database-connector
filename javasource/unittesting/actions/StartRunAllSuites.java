@@ -13,7 +13,7 @@ import unittesting.TestManager;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.webui.CustomJavaAction;
 
-public class StartRunAllSuites extends CustomJavaAction<Boolean>
+public class StartRunAllSuites extends CustomJavaAction<java.lang.Boolean>
 {
 	public StartRunAllSuites(IContext context)
 	{
@@ -21,7 +21,7 @@ public class StartRunAllSuites extends CustomJavaAction<Boolean>
 	}
 
 	@Override
-	public Boolean executeAction() throws Exception
+	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
 		TestManager.instance().runTestSuites();
@@ -33,7 +33,7 @@ public class StartRunAllSuites extends CustomJavaAction<Boolean>
 	 * Returns a string representation of this action
 	 */
 	@Override
-	public String toString()
+	public java.lang.String toString()
 	{
 		return "StartRunAllSuites";
 	}
