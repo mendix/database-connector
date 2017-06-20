@@ -72,7 +72,7 @@ public class JdbcConnectionManager implements ConnectionManager {
 
   private HikariDataSource createHikariDataSource(final String jdbcUrl, final String userName, final String password, Integer connPoolKey) {
     final HikariDataSource dataSource = new HikariDataSource();
-    dataSource.setPoolName(""+ connPoolKey);
+    dataSource.setPoolName(String.format("MxDbConnector-HikaryCP-%d", connPoolKey));
     dataSource.setJdbcUrl(jdbcUrl);
     dataSource.setUsername(userName);
     dataSource.setPassword(password);
