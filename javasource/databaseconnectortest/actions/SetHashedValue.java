@@ -28,12 +28,12 @@ public class SetHashedValue extends CustomJavaAction<java.lang.Boolean>
 		this.hashedValue = hashedValue;
 	}
 
-	@Override
+	@java.lang.Override
 	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
 	  MendixHashString hashStringMember = (MendixHashString) instance.getMember(getContext(), member);
-	  hashStringMember.setInitialHash(hashedValue);
+	  hashStringMember.setValue(context(), hashedValue);
 
 		return true;
 		// END USER CODE
@@ -42,7 +42,7 @@ public class SetHashedValue extends CustomJavaAction<java.lang.Boolean>
 	/**
 	 * Returns a string representation of this action
 	 */
-	@Override
+	@java.lang.Override
 	public java.lang.String toString()
 	{
 		return "SetHashedValue";

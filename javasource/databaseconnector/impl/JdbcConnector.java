@@ -57,7 +57,7 @@ public class JdbcConnector {
         Object convertedValue = value.map(toSuitableValue).orElseGet(defaultValue);
         // update object with converted value
         if (type == PrimitiveType.HashString)
-          ((MendixHashString) obj.getMember(context, name)).setInitialHash((String) convertedValue);
+          ((MendixHashString) obj.getMember(context, name)).setValue(context, (String) convertedValue);
         else
           obj.setValue(context, name, convertedValue);
       };

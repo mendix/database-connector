@@ -5,12 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.mendix.core.Core;
 import com.mendix.core.CoreException;
@@ -25,7 +21,6 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.IMendixObject.ObjectState;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember;
 import com.mendix.systemwideinterfaces.core.IMendixObjectMember.MemberState;
-import com.mendix.systemwideinterfaces.core.ISession;
 import com.mendix.systemwideinterfaces.core.meta.IMetaAssociation;
 import com.mendix.systemwideinterfaces.core.meta.IMetaAssociation.AssociationType;
 import com.mendix.systemwideinterfaces.core.meta.IMetaEnumValue;
@@ -180,8 +175,9 @@ public class ORM
 					throw new IllegalArgumentException("It is not possible to clone reverse referencesets: '" + fullAssocName + "'");
 				}
 				
-				List<IMendixObject> objs = Core.retrieveXPathQueryEscaped(ctx, "//%s[%s='%s']", 
-				        relationParent.getName(), assocname, String.valueOf(src.getId().toLong()));
+				List<IMendixObject> objs = Core.createXPathQuery(String.format("//%s[%s='$param']", relationParent.getName(), assocname))
+						.setVariable("param", src.getId().toLong())
+						.execute(ctx);
 				
 				for(IMendixObject obj : objs) {
 				    @SuppressWarnings("unused") // object is unused on purpose
