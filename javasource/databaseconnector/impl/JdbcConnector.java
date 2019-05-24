@@ -12,8 +12,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import com.mendix.core.objectmanagement.member.MendixHashString;
 import com.mendix.logging.ILogNode;
+import com.mendix.systemwideinterfaces.MendixRuntimeException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
@@ -57,7 +57,8 @@ public class JdbcConnector {
         Object convertedValue = value.map(toSuitableValue).orElseGet(defaultValue);
         // update object with converted value
         if (type == PrimitiveType.HashString)
-          ((MendixHashString) obj.getMember(context, name)).setValue(context, (String) convertedValue);
+          throw new MendixRuntimeException(String.format("Attribute type Hashed String for attribute '%1$s' on entity '%2$s' is not supported, "
+          		+ "please use attribute type 'String' instead", name, entityName));
         else
           obj.setValue(context, name, convertedValue);
       };

@@ -49,8 +49,7 @@ public class ResultSetReader {
   private Function<ColumnInfo, Optional<Object>> curryGetColumnResult(final ResultSet rs) {
     return ci -> getColumnResult(rs, ci);
   }
-
-  @SuppressWarnings("deprecation")
+  
   private Optional<Object> getColumnResult(final ResultSet rs, final ColumnInfo columnInfo) {
     try {
       final int columnIndex = columnInfo.getIndex();
@@ -73,11 +72,6 @@ public class ResultSetReader {
         case Decimal:
           columnValue = rs.getBigDecimal(columnIndex);
           break;
-        case Float:
-        case Currency:
-          columnValue = rs.getDouble(columnIndex);
-          break;
-        case HashString:
         case Enum:
         case String:
           columnValue = rs.getString(columnIndex);

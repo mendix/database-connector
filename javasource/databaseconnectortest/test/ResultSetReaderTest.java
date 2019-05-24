@@ -35,10 +35,6 @@ public class ResultSetReaderTest {
   private final IMetaPrimitive longPrimitive = mockMetaPrimitive(PrimitiveType.Long);
   private final IMetaPrimitive booleanPrimitive = mockMetaPrimitive(PrimitiveType.Boolean);
   private final IMetaPrimitive decimalPrimitive = mockMetaPrimitive(PrimitiveType.Decimal);
-  @SuppressWarnings("deprecation")
-  private final IMetaPrimitive floatPrimitive = mockMetaPrimitive(PrimitiveType.Float);
-  @SuppressWarnings("deprecation")
-  private final IMetaPrimitive currencyPrimitive = mockMetaPrimitive(PrimitiveType.Currency);
   private final IMetaPrimitive hashStringPrimitive = mockMetaPrimitive(PrimitiveType.HashString);
   private final IMetaPrimitive enumPrimitive = mockMetaPrimitive(PrimitiveType.Enum);
   private final IMetaPrimitive stringPrimitive = mockMetaPrimitive(PrimitiveType.String);
@@ -57,8 +53,6 @@ public class ResultSetReaderTest {
         longPrimitive,
         booleanPrimitive,
         decimalPrimitive,
-        floatPrimitive,
-        currencyPrimitive,
         hashStringPrimitive,
         enumPrimitive,
         stringPrimitive,
@@ -183,19 +177,16 @@ public class ResultSetReaderTest {
   public void testAllTypes() throws SQLException {
     final ResultSet rs = mock(ResultSet.class);
     final ResultSetMetaData md = mock(ResultSetMetaData.class);
-    when(md.getColumnCount()).thenReturn(12);
+    when(md.getColumnCount()).thenReturn(9);
     when(md.getColumnName(1)).thenReturn("Integer");
     when(md.getColumnName(2)).thenReturn("AutoNumber");
     when(md.getColumnName(3)).thenReturn("Long");
     when(md.getColumnName(4)).thenReturn("Boolean");
     when(md.getColumnName(5)).thenReturn("Decimal");
-    when(md.getColumnName(6)).thenReturn("Float");
-    when(md.getColumnName(7)).thenReturn("Currency");
-    when(md.getColumnName(8)).thenReturn("HashString");
-    when(md.getColumnName(9)).thenReturn("Enum");
-    when(md.getColumnName(10)).thenReturn("String");
-    when(md.getColumnName(11)).thenReturn("Binary");
-    when(md.getColumnName(12)).thenReturn("DateTime");
+    when(md.getColumnName(6)).thenReturn("Enum");
+    when(md.getColumnName(7)).thenReturn("String");
+    when(md.getColumnName(8)).thenReturn("Binary");
+    when(md.getColumnName(9)).thenReturn("DateTime");
     when(rs.getMetaData()).thenReturn(md);
 
     when(rs.next()).thenReturn(true, false);
@@ -204,28 +195,22 @@ public class ResultSetReaderTest {
     when(rs.getLong(3)).thenReturn(3L);
     when(rs.getBoolean(4)).thenReturn(true);
     when(rs.getBigDecimal(5)).thenReturn(new BigDecimal("123"));
-    when(rs.getDouble(6)).thenReturn(4.0);
-    when(rs.getDouble(7)).thenReturn(5.0);
-    when(rs.getString(8)).thenReturn("A0");
-    when(rs.getString(9)).thenReturn("A1");
-    when(rs.getString(10)).thenReturn("A2");
-    when(rs.getBytes(11)).thenReturn("привет мир".getBytes());
-    when(rs.getTimestamp(Mockito.eq(12), Mockito.any(Calendar.class))).thenReturn(new Timestamp(0L));
+    when(rs.getString(6)).thenReturn("A1");
+    when(rs.getString(7)).thenReturn("A2");
+    when(rs.getBytes(8)).thenReturn("привет мир".getBytes());
+    when(rs.getTimestamp(Mockito.eq(9), Mockito.any(Calendar.class))).thenReturn(new Timestamp(0L));
 
     final ResultSetReader rsr = new ResultSetReader(rs, metaObjectWithAllPrimitives);
     final List<Map<String, Optional<Object>>> records = rsr.readAll();
     assertEquals(1, records.size());
 
     final Map<String, Optional<Object>> record = records.get(0);
-    assertEquals(12, record.size());
+    assertEquals(9, record.size());
     assertEquals(1, record.get("Integer").get());
     assertEquals(2L, record.get("AutoNumber").get());
     assertEquals(3L, record.get("Long").get());
     assertEquals(true, record.get("Boolean").get());
     assertEquals(new BigDecimal("123"), record.get("Decimal").get());
-    assertEquals(4.0, record.get("Float").get());
-    assertEquals(5.0, record.get("Currency").get());
-    assertEquals("A0", record.get("HashString").get());
     assertEquals("A1", record.get("Enum").get());
     assertEquals("A2", record.get("String").get());
     assertEquals("привет мир", new String((byte[]) record.get("Binary").get()));
