@@ -54,7 +54,7 @@ The result of this action is either an Integer or a Long value which usually rep
 * [Microsoft SQL Server/SQL Database](https://www.microsoft.com/en-us/download/details.aspx?id=11774)
 * [MySQL](http://dev.mysql.com/downloads/connector/j/)
 * [Oracle Database](http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html)
-* [OrientDB](http://orientdb.com/download/)
+* [OrientDB](https://orientdb.com/download-2/)
 * [PostgreSQL](https://jdbc.postgresql.org/download.html)
 * [Presto](https://prestodb.io/docs/current/installation/jdbc.html)
 * [SQLite](https://bitbucket.org/xerial/sqlite-jdbc/downloads)

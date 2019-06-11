@@ -57,8 +57,6 @@ public class TestManager
 		}
 	}
 
-	private static final String	TEST_MICROFLOW_PREFIX_2	= "UT_";
-
 	static final String	CLOUD_SECURITY_ERROR = "Unable to find JUnit test classes or methods. \n\n";
 	
 	private static TestManager	instance;

@@ -73,7 +73,7 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 		this.resultObject = resultObject;
 	}
 
-	@Override
+	@java.lang.Override
 	public java.util.List<IMendixObject> executeAction() throws Exception
 	{
 		// BEGIN USER CODE
@@ -90,7 +90,7 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 	/**
 	 * Returns a string representation of this action
 	 */
-	@Override
+	@java.lang.Override
 	public java.lang.String toString()
 	{
 		return "ExecuteQuery";
