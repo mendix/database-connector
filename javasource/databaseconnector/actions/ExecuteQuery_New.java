@@ -49,35 +49,35 @@ import databaseconnector.impl.JdbcConnector;
  * @param <String> sql
  *    The SELECT query to be performed, relative to the database type.
  * 
- * @param <IMendixObject> resultObject
- *    An instance of the resulting object. This instance is used only for defining the type of object to be returned.
+ * @param <String> resultObjectType
+ *    A fully qualified name of the result object type. Concrete <IMetaObject> can be retrieved with a call to `Core.getMetaObject`.
  * 
  * @return <List<IMendixObject>>
  *    SELECT Query result as a list of objects.
  */
-public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>>
+public class ExecuteQuery_New extends CustomJavaAction<java.util.List<IMendixObject>>
 {
 	private java.lang.String jdbcUrl;
 	private java.lang.String userName;
 	private java.lang.String password;
 	private java.lang.String sql;
-	private IMendixObject resultObject;
+	private java.lang.String resultObjectType;
 
-	public ExecuteQuery(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, java.lang.String sql, IMendixObject resultObject)
+	public ExecuteQuery_New(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, java.lang.String sql, java.lang.String resultObjectType)
 	{
 		super(context);
 		this.jdbcUrl = jdbcUrl;
 		this.userName = userName;
 		this.password = password;
 		this.sql = sql;
-		this.resultObject = resultObject;
+		this.resultObjectType = resultObjectType;
 	}
 
 	@java.lang.Override
 	public java.util.List<IMendixObject> executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		IMetaObject metaObject = resultObject.getMetaObject();
+		IMetaObject metaObject = Core.getMetaObject(this.resultObjectType);
 		Stream<IMendixObject> resultStream = connector.executeQuery(
 		    this.jdbcUrl, this.userName, this.password, metaObject, this.sql, this.getContext());
 		List<IMendixObject> resultList = resultStream.collect(Collectors.toList());
@@ -93,7 +93,7 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 	@java.lang.Override
 	public java.lang.String toString()
 	{
-		return "ExecuteQuery";
+		return "ExecuteQuery_New";
 	}
 
 	// BEGIN EXTRA CODE
