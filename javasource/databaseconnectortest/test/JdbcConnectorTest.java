@@ -1,27 +1,13 @@
 package databaseconnectortest.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.stream.Stream;
-
+import com.mendix.logging.ILogNode;
+import com.mendix.systemwideinterfaces.core.IContext;
+import com.mendix.systemwideinterfaces.core.IMendixObject;
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
+import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
+import databaseconnector.impl.JdbcConnector;
+import databaseconnector.interfaces.ConnectionManager;
+import databaseconnector.interfaces.ObjectInstantiator;
 import org.junit.Rule;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -30,17 +16,21 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import com.mendix.logging.ILogNode;
-import com.mendix.systemwideinterfaces.core.IContext;
-import com.mendix.systemwideinterfaces.core.IMendixObject;
-import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
-import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
-import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.String;
-import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.Boolean;
+import java.sql.*;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import databaseconnector.impl.JdbcConnector;
-import databaseconnector.interfaces.ConnectionManager;
-import databaseconnector.interfaces.ObjectInstantiator;
+import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.Boolean;
+import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.String;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
+import static org.mockito.Matchers.*;
+import static org.mockito.Mockito.*;
 
 public class JdbcConnectorTest {
   private static final String jdbcUrl = "TestUrl";
@@ -48,6 +38,7 @@ public class JdbcConnectorTest {
   private static final String password = "TestPassword";
   private static final String sqlQuery = "TestSqlQuery";
   private static final String entityName = "TestEntityName";
+
 
   @Rule public MockitoRule rule = MockitoJUnit.rule();
 
@@ -61,6 +52,7 @@ public class JdbcConnectorTest {
   @Mock private ResultSetMetaData resultSetMetaData;
 
   @InjectMocks private JdbcConnector jdbcConnector;
+
 
   private IMetaObject mockIMetaObject(SimpleEntry<String, IMetaPrimitive.PrimitiveType>... entries) {
     IMetaObject metaObject = mock(IMetaObject.class);
@@ -111,8 +103,8 @@ public class JdbcConnectorTest {
 
     Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(), sqlQuery, context);
     try {
-     result.count();
-     fail("An exception should occur!");
+      result.collect(Collectors.toList());
+      fail("An exception should occur!");
     } catch(IllegalArgumentException iae) {}
 
     verify(objectInstantiator).instantiate(context, entityName);
@@ -151,8 +143,9 @@ public class JdbcConnectorTest {
 
     IMetaObject metaObject = mockIMetaObject(entry("a", Boolean), entry("b", Boolean));
     Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery, context);
+    List<IMendixObject> lst = result.collect(Collectors.toList());
 
-    assertEquals(4, result.count());
+    assertEquals(4, lst.size());
 
     verify(objectInstantiator, times(4)).instantiate(context, entityName);
     verify(connectionManager).getConnection(jdbcUrl, userName, password);
@@ -187,7 +180,8 @@ public class JdbcConnectorTest {
 
     IMetaObject metaObject = mockIMetaObject(entry(columnName1, String), entry(columnName2, String));
     Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery, context);
-    assertEquals(2, result.count());
+    List<IMendixObject> lst = result.collect(Collectors.toList());
+    assertEquals(2, lst.size());
 
     verify(resultObject1).setValue(context, columnName1, row1Value1);
     verify(resultObject1).setValue(context, columnName2, row1Value2);
@@ -215,7 +209,8 @@ public class JdbcConnectorTest {
 
     IMetaObject metaObject = mockIMetaObject(entry("Boolean", Boolean), entry("String", String));
     Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery, context);
-    assertEquals(1, result.count());
+    List<IMendixObject> lst = result.collect(Collectors.toList());
+    assertEquals(1, lst.size());
 
     verify(resultObject).setValue(context, "Boolean", false);
     verify(objectInstantiator, times(1)).instantiate(context, entityName);
