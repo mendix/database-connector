@@ -77,7 +77,13 @@ public class ExecuteTemplatedQuery extends CustomJavaAction<java.util.List<IMend
 	public java.util.List<IMendixObject> executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		throw new com.mendix.systemwideinterfaces.MendixRuntimeException("Java action was not implemented");
+		IMetaObject metaObject = Core.getMetaObject(this.resultObjectType);
+		Stream<IMendixObject> resultStream = connector.executeQuery(
+				this.jdbcUrl, this.userName, this.password, metaObject, this.sql, this.getContext());
+		List<IMendixObject> resultList = resultStream.collect(Collectors.toList());
+		logNode.trace(String.format("Result list count: %d", resultList.size()));
+
+		return resultList;
 		// END USER CODE
 	}
 

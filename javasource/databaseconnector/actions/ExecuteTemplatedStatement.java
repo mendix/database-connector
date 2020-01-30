@@ -68,7 +68,7 @@ public class ExecuteTemplatedStatement extends CustomJavaAction<java.lang.Long>
 	public java.lang.Long executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		throw new com.mendix.systemwideinterfaces.MendixRuntimeException("Java action was not implemented");
+		return connector.executeStatement(jdbcUrl, userName, password, sql);
 		// END USER CODE
 	}
 
