@@ -52,6 +52,7 @@ public class JdbcConnector {
 
     public Stream<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
                                               final IMetaObject metaObject, final IStringTemplate sql, final IContext context) throws SQLException {
+
         String queryTemplate = sql.replacePlaceholders((placeholderString, index) -> "?");
         List<ITemplateParameter> queryParameters = sql.getParameters();
 
@@ -85,7 +86,7 @@ public class JdbcConnector {
 
             switch (parameter.getParameterType()) {
                 case INTEGER:
-                    preparedStatement.setInt(i + 1, (int) parameter.getValue());
+                    preparedStatement.setLong(i + 1, (long) parameter.getValue());
                     break;
                 case STRING:
                     preparedStatement.setString(i + 1, (String) parameter.getValue());
@@ -99,9 +100,9 @@ public class JdbcConnector {
                 case DATETIME:
                     java.util.Date date = ((java.util.Date) parameter.getValue());
                     if (date == null)
-                        preparedStatement.setDate(i + 1, null);
+                        preparedStatement.setTimestamp(i + 1, null);
                     else
-                        preparedStatement.setDate(i + 1, new Date(date.getTime()));
+                        preparedStatement.setTimestamp(i + 1, new Timestamp(date.getTime()));
                     break;
             }
         }
