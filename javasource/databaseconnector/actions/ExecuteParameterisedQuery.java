@@ -9,23 +9,27 @@
 
 package databaseconnector.actions;
 
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import com.mendix.core.Core;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
+import com.mendix.systemwideinterfaces.core.IMendixObject;
+import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.webui.CustomJavaAction;
 import databaseconnector.impl.JdbcConnector;
 
 /**
  * <p>
- * This Java action provides a consistent environment for Mendix projects to perform an arbitrary SQL statement on relational
- * external databases.
+ * This Java action provides a consistent environment for Mendix projects to perform an arbitrary parameterised SELECT SQL query on relational external databases.
  * JDBC (Java Database Connectivity) API, a standard Java API, is used when this Java action attempts
  * to connect with a Relational Database for which a JDBC driver exists.
  * The JDBC drivers for the databases you want to connect to, must be placed inside the userlib directory of a project.
  * </p>
  * 
- * Do not use this Java action for SELECT queries.
- * This Java action returns number of affected rows.
+ * Do not use this Java action for INSERT, UPDATE, DELETE or DDL queries.
+ * This action returns a list of Mendix objects based on the JDBC result set.
  * The jdbcUrl argument must specify a database URL address that points to your relational database and is dependent
  * upon the particular database and JDBC driver. It will always begin with "jdbc:" protocol, but the rest is up to particular vendor.
  * For example 'jdbc:mysql://hostname/databaseName' jdbcUrl format can be used for MySQL databases.
@@ -42,33 +46,44 @@ import databaseconnector.impl.JdbcConnector;
  * @param <String> password 
  *    The password for logging into the database, relative to the jdbcUrl argument.
  * 
- * @param <String> sql
- *    The SQL statement to be performed, relative to the database type.
+ * @param <IStringTemplate> sql
+ *    A string template containing the SELECT query to be performed and the query parameters, relative to the database type.
  * 
- * @return <Integer/Long>
- *    Number of affected rows.
+ * @param <String> resultObjectType
+ *    A fully qualified name of the result object type. Concrete <IMetaObject> can be retrieved with a call to `Core.getMetaObject`.
+ * 
+ * @return <List<IMendixObject>>
+ *    SELECT Query result as a list of objects.
  */
-public class ExecuteTemplatedStatement extends CustomJavaAction<java.lang.Long>
+public class ExecuteParameterisedQuery extends CustomJavaAction<java.util.List<IMendixObject>>
 {
 	private java.lang.String jdbcUrl;
 	private java.lang.String userName;
 	private java.lang.String password;
 	private com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate sql;
+	private java.lang.String resultObjectType;
 
-	public ExecuteTemplatedStatement(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate sql)
+	public ExecuteParameterisedQuery(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate sql, java.lang.String resultObjectType)
 	{
 		super(context);
 		this.jdbcUrl = jdbcUrl;
 		this.userName = userName;
 		this.password = password;
 		this.sql = sql;
+		this.resultObjectType = resultObjectType;
 	}
 
 	@java.lang.Override
-	public java.lang.Long executeAction() throws Exception
+	public java.util.List<IMendixObject> executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		return connector.executeStatement(jdbcUrl, userName, password, sql);
+		IMetaObject metaObject = Core.getMetaObject(this.resultObjectType);
+		Stream<IMendixObject> resultStream = connector.executeQuery(
+				this.jdbcUrl, this.userName, this.password, metaObject, this.sql, this.getContext());
+		List<IMendixObject> resultList = resultStream.collect(Collectors.toList());
+		logNode.trace(String.format("Result list count: %d", resultList.size()));
+
+		return resultList;
 		// END USER CODE
 	}
 
@@ -78,12 +93,12 @@ public class ExecuteTemplatedStatement extends CustomJavaAction<java.lang.Long>
 	@java.lang.Override
 	public java.lang.String toString()
 	{
-		return "ExecuteTemplatedStatement";
+		return "ExecuteParameterisedQuery";
 	}
 
 	// BEGIN EXTRA CODE
 	private final ILogNode logNode = Core.getLogger(this.getClass().getName());
 
-  	private final JdbcConnector connector = new JdbcConnector(logNode);
+	private final JdbcConnector connector = new JdbcConnector(logNode);
 	// END EXTRA CODE
 }
