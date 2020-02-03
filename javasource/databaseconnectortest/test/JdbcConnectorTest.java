@@ -1,10 +1,14 @@
 package databaseconnectortest.test;
 
 import com.mendix.logging.ILogNode;
+import com.mendix.modules.microflowengine.actions.actioncall.parameters.stringtemplate.TemplateParameter;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
+import com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate;
+import com.mendix.systemwideinterfaces.javaactions.parameters.ITemplateParameter;
+import com.mendix.systemwideinterfaces.javaactions.parameters.TemplateParameterType;
 import databaseconnector.impl.JdbcConnector;
 import databaseconnector.interfaces.ConnectionManager;
 import databaseconnector.interfaces.ObjectInstantiator;
@@ -16,12 +20,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
+import java.math.BigDecimal;
 import java.sql.*;
+import java.util.*;
 import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.Date;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,7 +32,7 @@ import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.Primitive
 import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.String;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class JdbcConnectorTest {
@@ -287,5 +290,119 @@ public class JdbcConnectorTest {
 
     verify(connection).close();
     verify(preparedStatement).close();
+  }
+
+  @Test public void testExecuteQueryPlaceholders() throws SQLException{
+    when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatement.executeQuery()).thenReturn(resultSet);
+    when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
+    when(resultSet.next()).thenReturn(false);
+
+    StringTemplateBuilder builder = new StringTemplateBuilder();
+    builder.setText("Some query", "Updated query");
+
+    jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(), builder.build(), context);
+
+    verify(connection).prepareStatement("Updated query");
+  }
+
+  @Test public void testExecuteStatementPlaceholders() throws SQLException {
+    when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatement.executeUpdate()).thenReturn(1);
+
+    StringTemplateBuilder builder = new StringTemplateBuilder();
+    builder.setText("Some query", "Updated query");
+
+    jdbcConnector.executeStatement(jdbcUrl, userName, password, builder.build());
+
+    verify(connection).prepareStatement("Updated query");
+  }
+
+  @Test public void testExecuteQueryParameters() throws SQLException {
+    when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatement.executeQuery()).thenReturn(resultSet);
+    when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
+    when(resultSet.next()).thenReturn(false);
+
+    StringTemplateBuilder builder = new StringTemplateBuilder();
+    builder.setText("Some query", "Updated query");
+    Date date = new Date(2019, 5, 1, 14, 12, 11);
+    builder.addParameter(date, TemplateParameterType.DATETIME);
+    builder.addParameter(5l, TemplateParameterType.INTEGER);
+    builder.addParameter(true, TemplateParameterType.BOOLEAN);
+    builder.addParameter("Hello", TemplateParameterType.STRING);
+    builder.addParameter(new BigDecimal(45.5), TemplateParameterType.DECIMAL);
+    builder.addParameter(null, TemplateParameterType.DATETIME);
+    builder.addParameter(null, TemplateParameterType.STRING);
+
+    jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(), builder.build(), context);
+
+    verify(preparedStatement).setTimestamp(1, new Timestamp(date.getTime()));
+    verify(preparedStatement).setLong(2, 5l);
+    verify(preparedStatement).setBoolean(3, true);
+    verify(preparedStatement).setString(4, "Hello");
+    verify(preparedStatement).setBigDecimal(5, new BigDecimal(45.5));
+    verify(preparedStatement).setTimestamp(6, null);
+    verify(preparedStatement).setString(7, null);
+  }
+
+  @Test public void testExecuteStatementParameters() throws SQLException {
+    when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
+    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatement.executeUpdate()).thenReturn(1);
+
+    StringTemplateBuilder builder = new StringTemplateBuilder();
+    Date date = new Date(2019, 5, 1, 14, 12, 11);
+    builder.addParameter(date, TemplateParameterType.DATETIME);
+    builder.addParameter(5l, TemplateParameterType.INTEGER);
+    builder.addParameter(true, TemplateParameterType.BOOLEAN);
+    builder.addParameter("Hello", TemplateParameterType.STRING);
+    builder.addParameter(new BigDecimal(45.5), TemplateParameterType.DECIMAL);
+    builder.addParameter(null, TemplateParameterType.DATETIME);
+    builder.addParameter(null, TemplateParameterType.STRING);
+
+    jdbcConnector.executeStatement(jdbcUrl, userName, password, builder.build());
+
+    verify(preparedStatement).setTimestamp(1, new Timestamp(date.getTime()));
+    verify(preparedStatement).setLong(2, 5l);
+    verify(preparedStatement).setBoolean(3, true);
+    verify(preparedStatement).setString(4, "Hello");
+    verify(preparedStatement).setBigDecimal(5, new BigDecimal(45.5));
+    verify(preparedStatement).setTimestamp(6, null);
+    verify(preparedStatement).setString(7, null);
+  }
+}
+
+class StringTemplateBuilder{
+  ArrayList<ITemplateParameter> templateParameters = new ArrayList<>();
+  String template = "";
+  String updatedTemplate = "";
+
+  public StringTemplateBuilder addParameter(Object value, TemplateParameterType type){
+    ITemplateParameter mockParameter = mock(ITemplateParameter.class);
+    when(mockParameter.getValue()).thenReturn(value);
+    when(mockParameter.getParameterType()).thenReturn(type);
+
+    templateParameters.add(mockParameter);
+    return this;
+  }
+
+  public StringTemplateBuilder setText(String template, String updatedTemplate){
+    this.template = template;
+    this.updatedTemplate = updatedTemplate;
+    return this;
+  }
+
+  public IStringTemplate build(){
+    IStringTemplate stringTemplate = mock(IStringTemplate.class);
+
+    when(stringTemplate.getParameters()).thenReturn(templateParameters);
+    when(stringTemplate.getTemplate()).thenReturn(template);
+    when(stringTemplate.replacePlaceholders(any())).thenReturn(updatedTemplate);
+
+    return stringTemplate;
   }
 }
