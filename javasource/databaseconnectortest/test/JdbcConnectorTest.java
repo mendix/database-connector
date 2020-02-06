@@ -1,7 +1,6 @@
 package databaseconnectortest.test;
 
 import com.mendix.logging.ILogNode;
-import com.mendix.modules.microflowengine.actions.actioncall.parameters.stringtemplate.TemplateParameter;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
