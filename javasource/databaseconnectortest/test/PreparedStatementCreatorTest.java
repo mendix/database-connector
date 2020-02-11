@@ -1,5 +1,6 @@
 package databaseconnectortest.test;
 
+import com.amazon.dsi.exceptions.InvalidArgumentException;
 import com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate;
 import com.mendix.systemwideinterfaces.javaactions.parameters.ITemplateParameter;
 import com.mendix.systemwideinterfaces.javaactions.parameters.TemplateParameterType;
@@ -31,8 +32,10 @@ public class PreparedStatementCreatorTest {
     @Rule
     public MockitoRule rule = MockitoJUnit.rule();
 
-    @Mock private Connection connection;
-    @Mock private PreparedStatement preparedStatement;
+    @Mock
+    private Connection connection;
+    @Mock
+    private PreparedStatement preparedStatement;
 
     private PreparedStatementCreatorImpl sut;
 
@@ -43,7 +46,7 @@ public class PreparedStatementCreatorTest {
     }
 
     @Test
-    public void testReusedParameters() throws SQLException{
+    public void testReusedParameters() throws SQLException {
         StringTemplateBuilder builder = new StringTemplateBuilder();
         builder.addParameter("p1", TemplateParameterType.STRING);
         builder.addParameter("p2", TemplateParameterType.STRING);
@@ -59,7 +62,8 @@ public class PreparedStatementCreatorTest {
         verify(preparedStatement).setString(5, "p2");
     }
 
-    @Test public void testParameterTypes() throws SQLException {
+    @Test
+    public void testParameterTypes() throws SQLException {
         StringTemplateBuilder builder = new StringTemplateBuilder();
         Date date = new Date(2019, 5, 1, 14, 12, 11);
         builder.addParameter(date, TemplateParameterType.DATETIME);
@@ -81,7 +85,8 @@ public class PreparedStatementCreatorTest {
         verify(preparedStatement).setString(7, null);
     }
 
-    @Test public void testReplacePlaceholders() throws SQLException{
+    @Test
+    public void testReplacePlaceholders() throws SQLException {
 
         StringTemplateBuilder builder = new StringTemplateBuilder();
         builder.setText("Some query");
@@ -92,7 +97,8 @@ public class PreparedStatementCreatorTest {
         verify(connection).prepareStatement("Updated query");
     }
 
-    @Test public void testStringQuery() throws SQLException{
+    @Test
+    public void testStringQuery() throws SQLException {
         String query = "Some query";
 
         sut.create(query, connection);
@@ -100,15 +106,23 @@ public class PreparedStatementCreatorTest {
         verify(connection).prepareStatement(query);
         verifyNoInteractions(preparedStatement);
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testUnknownParameterType() throws InvalidArgumentException, SQLException {
+        StringTemplateBuilder builder = new StringTemplateBuilder();
+        builder.addParameter(null, TemplateParameterType.valueOf("nonexisting value"));
+
+        sut.create(builder.build(), connection);
+    }
 }
 
-class StringTemplateBuilder{
+class StringTemplateBuilder {
     ArrayList<ITemplateParameter> templateParameters = new ArrayList<>();
     String template = "";
     String updatedTemplate = "";
     List<Integer> placeholders;
 
-    public StringTemplateBuilder addParameter(Object value, TemplateParameterType type){
+    public StringTemplateBuilder addParameter(Object value, TemplateParameterType type) {
 
         ITemplateParameter mockParameter = mock(ITemplateParameter.class);
         when(mockParameter.getValue()).thenReturn(value);
@@ -118,31 +132,31 @@ class StringTemplateBuilder{
         return this;
     }
 
-    public StringTemplateBuilder setText(String template){
+    public StringTemplateBuilder setText(String template) {
         this.template = template;
         return this;
     }
 
-    public StringTemplateBuilder setUpdatedText(String updatedTemplate){
+    public StringTemplateBuilder setUpdatedText(String updatedTemplate) {
         this.updatedTemplate = updatedTemplate;
         return this;
     }
 
-    public StringTemplateBuilder setPlaceholders(List<Integer> placeholders){
+    public StringTemplateBuilder setPlaceholders(List<Integer> placeholders) {
         this.placeholders = placeholders;
         return this;
     }
 
-    public IStringTemplate build(){
+    public IStringTemplate build() {
         IStringTemplate stringTemplate = mock(IStringTemplate.class);
 
         when(stringTemplate.getParameters()).thenReturn(templateParameters);
         when(stringTemplate.getTemplate()).thenReturn(template);
         when(stringTemplate.replacePlaceholders(any())).thenAnswer(invocation -> {
             Object[] args = invocation.getArguments();
-            BiFunction<String, Integer, String> replacer = (BiFunction<String, Integer, String>)args[0];
+            BiFunction<String, Integer, String> replacer = (BiFunction<String, Integer, String>) args[0];
 
-            if(placeholders == null)
+            if (placeholders == null)
                 placeholders = IntStream.range(1, templateParameters.size() + 1).boxed().collect(Collectors.toList());
 
             placeholders.forEach(idx -> replacer.apply("parameter_" + idx, idx));

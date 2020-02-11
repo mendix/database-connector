@@ -34,7 +34,7 @@ public class PreparedStatementCreatorImpl implements PreparedStatementCreator {
         return preparedStatement;
     }
 
-    private void addPreparedStatementParameters(List<ITemplateParameter> queryParameters, PreparedStatement preparedStatement) throws SQLException {
+    private void addPreparedStatementParameters(List<ITemplateParameter> queryParameters, PreparedStatement preparedStatement) throws SQLException, IllegalArgumentException {
         for (int i = 0; i < queryParameters.size(); i++) {
             ITemplateParameter parameter = queryParameters.get(i);
 
@@ -58,6 +58,8 @@ public class PreparedStatementCreatorImpl implements PreparedStatementCreator {
                     else
                         preparedStatement.setTimestamp(i + 1, new Timestamp(date.getTime()));
                     break;
+                default:
+                    throw new IllegalArgumentException("Invalid parameter type: " + parameter.getParameterType());
             }
         }
     }

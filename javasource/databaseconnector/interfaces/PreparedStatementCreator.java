@@ -9,5 +9,5 @@ import java.sql.SQLException;
 public interface PreparedStatementCreator {
     PreparedStatement create(String query, Connection connection) throws SQLException;
 
-    PreparedStatement create(IStringTemplate sql, Connection connection) throws SQLException;
+    PreparedStatement create(IStringTemplate sql, Connection connection) throws SQLException, IllegalArgumentException;
 }

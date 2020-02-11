@@ -51,30 +51,27 @@ public class JdbcConnector {
 
     public Stream<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
                                               final IMetaObject metaObject, final String sql, final IContext context) throws SQLException {
-
         logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
         try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
              PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
              ResultSet resultSet = preparedStatement.executeQuery()) {
-                ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
-                return resultSetReader.readAll().stream().map(CreateMendixObjectConverter(context, metaObject));
+            ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
+            return resultSetReader.readAll().stream().map(CreateMendixObjectConverter(context, metaObject));
         }
     }
 
     public Stream<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
                                               final IMetaObject metaObject, final IStringTemplate sql, final IContext context) throws SQLException {
-
         logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
         try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
              PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
              ResultSet resultSet = preparedStatement.executeQuery()) {
-                ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
-                return resultSetReader.readAll().stream().map(CreateMendixObjectConverter(context, metaObject));
+            ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
+            return resultSetReader.readAll().stream().map(CreateMendixObjectConverter(context, metaObject));
         }
     }
-
 
     private Function<Object, Object> toSuitableValue(final PrimitiveType type) {
         return v -> type == PrimitiveType.Binary ? new ByteArrayInputStream((byte[]) v) : v;
@@ -133,9 +130,8 @@ public class JdbcConnector {
         logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
         try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
-            PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
+             PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
             return preparedStatement.executeUpdate();
         }
     }
-
 }
