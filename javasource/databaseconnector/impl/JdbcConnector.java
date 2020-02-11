@@ -1,17 +1,5 @@
 package databaseconnector.impl;
 
-import java.io.ByteArrayInputStream;
-import java.math.BigDecimal;
-import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.MendixRuntimeException;
 import com.mendix.systemwideinterfaces.core.IContext;
@@ -19,11 +7,22 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
-
 import com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate;
-import com.mendix.systemwideinterfaces.javaactions.parameters.ITemplateParameter;
 import databaseconnector.interfaces.ConnectionManager;
 import databaseconnector.interfaces.ObjectInstantiator;
+import databaseconnector.interfaces.PreparedStatementCreator;
+
+import java.io.ByteArrayInputStream;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  * JdbcConnector implements the execute query (and execute statement)
@@ -33,79 +32,52 @@ public class JdbcConnector {
     private final ILogNode logNode;
     private final ObjectInstantiator objectInstantiator;
     private final ConnectionManager connectionManager;
+    private final PreparedStatementCreator preparedStatementCreator;
 
     public JdbcConnector(final ILogNode logNode, final ObjectInstantiator objectInstantiator,
-                         final ConnectionManager connectionManager) {
+                         final ConnectionManager connectionManager, final PreparedStatementCreator preparedStatementCreator) {
         this.logNode = logNode;
         this.objectInstantiator = objectInstantiator;
         this.connectionManager = connectionManager;
+        this.preparedStatementCreator = preparedStatementCreator;
     }
 
     public JdbcConnector(final ILogNode logNode) {
-        this(logNode, new ObjectInstantiatorImpl(), ConnectionManagerSingleton.getInstance());
+        this(logNode,
+                new ObjectInstantiatorImpl(),
+                ConnectionManagerSingleton.getInstance(),
+                new PreparedStatementCreatorImpl());
     }
 
     public Stream<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
                                               final IMetaObject metaObject, final String sql, final IContext context) throws SQLException {
-        return executeQuery(jdbcUrl, userName, password, metaObject, sql, new ArrayList<>()).map(CreateMendixObjectConverter(context, metaObject));
+
+        logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
+
+        try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
+             PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+                ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
+                return resultSetReader.readAll().stream().map(CreateMendixObjectConverter(context, metaObject));
+        }
     }
 
     public Stream<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
                                               final IMetaObject metaObject, final IStringTemplate sql, final IContext context) throws SQLException {
 
-        String queryTemplate = sql.replacePlaceholders((placeholderString, index) -> "?");
-        List<ITemplateParameter> queryParameters = sql.getParameters();
+        logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
-        return executeQuery(jdbcUrl, userName, password, metaObject, queryTemplate, queryParameters).map(CreateMendixObjectConverter(context, metaObject));
+        try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
+             PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
+             ResultSet resultSet = preparedStatement.executeQuery()) {
+                ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
+                return resultSetReader.readAll().stream().map(CreateMendixObjectConverter(context, metaObject));
+        }
     }
+
 
     private Function<Object, Object> toSuitableValue(final PrimitiveType type) {
         return v -> type == PrimitiveType.Binary ? new ByteArrayInputStream((byte[]) v) : v;
-    }
-
-    private Stream<Map<String, Optional<Object>>> executeQuery(final String jdbcUrl, final String userName,
-                                                               final String password, final IMetaObject metaObject, final String queryTemplate, final List<ITemplateParameter> queryParameters) throws SQLException {
-        logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, queryTemplate));
-
-
-        try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
-             PreparedStatement preparedStatement = connection.prepareStatement(queryTemplate)) {
-
-            addPreparedStatementParameters(queryParameters, preparedStatement);
-
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
-                return resultSetReader.readAll().stream();
-            }
-        }
-    }
-
-    private void addPreparedStatementParameters(List<ITemplateParameter> queryParameters, PreparedStatement preparedStatement) throws SQLException {
-        for (int i = 0; i < queryParameters.size(); i++) {
-            ITemplateParameter parameter = queryParameters.get(i);
-
-            switch (parameter.getParameterType()) {
-                case INTEGER:
-                    preparedStatement.setLong(i + 1, (long) parameter.getValue());
-                    break;
-                case STRING:
-                    preparedStatement.setString(i + 1, (String) parameter.getValue());
-                    break;
-                case BOOLEAN:
-                    preparedStatement.setBoolean(i + 1, (Boolean) parameter.getValue());
-                    break;
-                case DECIMAL:
-                    preparedStatement.setBigDecimal(i + 1, (BigDecimal) parameter.getValue());
-                    break;
-                case DATETIME:
-                    java.util.Date date = ((java.util.Date) parameter.getValue());
-                    if (date == null)
-                        preparedStatement.setTimestamp(i + 1, null);
-                    else
-                        preparedStatement.setTimestamp(i + 1, new Timestamp(date.getTime()));
-                    break;
-            }
-        }
     }
 
     private Function<Map<String, Optional<Object>>, IMendixObject> CreateMendixObjectConverter(final IContext context, final IMetaObject metaObject) {
@@ -151,7 +123,7 @@ public class JdbcConnector {
         logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
         try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+             PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
             return preparedStatement.executeUpdate();
         }
     }
@@ -160,13 +132,8 @@ public class JdbcConnector {
             throws SQLException {
         logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
-        String queryTemplate = sql.replacePlaceholders((placeholderString, index) -> "?");
-        List<ITemplateParameter> queryParameters = sql.getParameters();
-
         try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
-             PreparedStatement preparedStatement = connection.prepareStatement(queryTemplate)) {
-            addPreparedStatementParameters(queryParameters, preparedStatement);
-
+            PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
             return preparedStatement.executeUpdate();
         }
     }
