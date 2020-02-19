@@ -32,8 +32,6 @@ import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 public class ORM
 {
 
-
-
 	public static Long getGUID(IMendixObject item)
 	{
 		return item.getId().toLong();
@@ -175,9 +173,8 @@ public class ORM
 					throw new IllegalArgumentException("It is not possible to clone reverse referencesets: '" + fullAssocName + "'");
 				}
 				
-				List<IMendixObject> objs = Core.createXPathQuery(String.format("//%s[%s='$param']", relationParent.getName(), assocname))
-						.setVariable("param", src.getId().toLong())
-						.execute(ctx);
+				List<IMendixObject> objs = Core.retrieveXPathQuery(ctx, String.format("//%s[%s='%s']", 
+				        relationParent.getName(), assocname, String.valueOf(src.getId().toLong())));
 				
 				for(IMendixObject obj : objs) {
 				    @SuppressWarnings("unused") // object is unused on purpose
