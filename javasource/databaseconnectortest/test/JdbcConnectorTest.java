@@ -6,6 +6,7 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 import databaseconnector.impl.JdbcConnector;
+import databaseconnector.impl.PreparedStatementCreatorImpl;
 import databaseconnector.interfaces.ConnectionManager;
 import databaseconnector.interfaces.ObjectInstantiator;
 import org.junit.Rule;
@@ -29,7 +30,7 @@ import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.Primitive
 import static com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType.String;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class JdbcConnectorTest {
@@ -50,6 +51,7 @@ public class JdbcConnectorTest {
   @Mock private PreparedStatement preparedStatement;
   @Mock private ResultSet resultSet;
   @Mock private ResultSetMetaData resultSetMetaData;
+  @Mock private PreparedStatementCreatorImpl preparedStatementCreator;
 
   @InjectMocks private JdbcConnector jdbcConnector;
 
@@ -80,7 +82,7 @@ public class JdbcConnectorTest {
     Exception testException = new SQLException("Test Exception Text");
 
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenThrow(testException);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenThrow(testException);
 
     try {
       jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(), sqlQuery, context);
@@ -95,7 +97,7 @@ public class JdbcConnectorTest {
     Exception testException = new IllegalArgumentException("Test Exception Text");
 
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
     when(resultSet.next()).thenReturn(true, false);
@@ -115,7 +117,7 @@ public class JdbcConnectorTest {
 
   @Test public void testConnectionClose() throws SQLException {
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
 
@@ -132,7 +134,7 @@ public class JdbcConnectorTest {
     IMendixObject resultObject = mock(IMendixObject.class);
 
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
     when(resultSetMetaData.getColumnName(anyInt())).thenReturn("a", "b");
@@ -149,7 +151,7 @@ public class JdbcConnectorTest {
 
     verify(objectInstantiator, times(4)).instantiate(context, entityName);
     verify(connectionManager).getConnection(jdbcUrl, userName, password);
-    verify(connection).prepareStatement(sqlQuery);
+    verify(preparedStatementCreator).create(sqlQuery, connection);
     verify(resultSet, times(3)).getMetaData();
     verify(resultSetMetaData).getColumnCount();
     verify(resultSet, times(5)).next();
@@ -167,7 +169,7 @@ public class JdbcConnectorTest {
     IMendixObject resultObject2 = mock(IMendixObject.class);
 
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject1, resultObject2);
     when(resultSetMetaData.getColumnCount()).thenReturn(2);
@@ -195,7 +197,7 @@ public class JdbcConnectorTest {
     IMendixObject resultObject = mock(IMendixObject.class);
 
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
 
@@ -221,7 +223,7 @@ public class JdbcConnectorTest {
     IMendixObject resultObject = mock(IMendixObject.class);
 
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
     when(preparedStatement.executeQuery()).thenReturn(resultSet);
     when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
     when(resultSetMetaData.getColumnCount()).thenReturn(2);
@@ -247,7 +249,7 @@ public class JdbcConnectorTest {
     Exception testException = new SQLException("Test Exception Text");
 
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenThrow(testException);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenThrow(testException);
 
     try {
       jdbcConnector.executeStatement(jdbcUrl, userName, password, sqlQuery);
@@ -263,7 +265,7 @@ public class JdbcConnectorTest {
     Exception testException = new SQLException("Test Exception Text");
 
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
     when(preparedStatement.executeUpdate()).thenThrow(testException);
 
     try {
@@ -278,7 +280,7 @@ public class JdbcConnectorTest {
 
   @Test public void testCloseResourcesForExecuteStatement() throws SQLException {
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
-    when(connection.prepareStatement(anyString())).thenReturn(preparedStatement);
+    when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
     when(preparedStatement.executeUpdate()).thenReturn(5);
 
     long result = jdbcConnector.executeStatement(jdbcUrl, userName, password, sqlQuery);
