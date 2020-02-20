@@ -78,7 +78,8 @@ public class JdbcConnectorTest {
     return new SimpleEntry<>(name, type);
   }
 
-  @Test public void testStatementCreationException() throws SQLException {
+  @Test(expected = SQLException.class)
+  public void testStatementCreationException() throws SQLException {
     Exception testException = new SQLException("Test Exception Text");
 
     when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
@@ -87,10 +88,11 @@ public class JdbcConnectorTest {
     try {
       jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(), sqlQuery, context);
       fail("An exception should occur!");
-    } catch(SQLException sqlException) {}
-
-    verify(connection).close();
-    verify(preparedStatement, never()).close();
+    }
+    finally {
+      verify(connection).close();
+      verify(preparedStatement, never()).close();
+    }
   }
 
   @Test public void testObjectInstantiatorException() throws SQLException {
