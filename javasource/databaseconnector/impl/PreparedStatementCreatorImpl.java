@@ -5,10 +5,7 @@ import com.mendix.systemwideinterfaces.javaactions.parameters.ITemplateParameter
 import databaseconnector.interfaces.PreparedStatementCreator;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,26 +34,40 @@ public class PreparedStatementCreatorImpl implements PreparedStatementCreator {
     private void addPreparedStatementParameters(List<ITemplateParameter> queryParameters, PreparedStatement preparedStatement) throws SQLException, IllegalArgumentException {
         for (int i = 0; i < queryParameters.size(); i++) {
             ITemplateParameter parameter = queryParameters.get(i);
+            Object parameterValue = parameter.getValue();
 
             switch (parameter.getParameterType()) {
                 case INTEGER:
-                    preparedStatement.setLong(i + 1, (long) parameter.getValue());
+                    if (parameterValue == null)
+                        preparedStatement.setNull(i + 1, Types.BIGINT);
+                    else
+                        preparedStatement.setLong(i + 1, (long) parameter.getValue());
                     break;
                 case STRING:
-                    preparedStatement.setString(i + 1, (String) parameter.getValue());
+                    if (parameterValue == null)
+                        preparedStatement.setNull(i + 1, Types.VARCHAR);
+                    else
+                        preparedStatement.setString(i + 1, (String) parameter.getValue());
                     break;
                 case BOOLEAN:
-                    preparedStatement.setBoolean(i + 1, (Boolean) parameter.getValue());
+                    if (parameterValue == null)
+                        preparedStatement.setNull(i + 1, Types.BOOLEAN);
+                    else
+                        preparedStatement.setBoolean(i + 1, (Boolean) parameter.getValue());
                     break;
                 case DECIMAL:
-                    preparedStatement.setBigDecimal(i + 1, (BigDecimal) parameter.getValue());
+                    if (parameterValue == null)
+                        preparedStatement.setNull(i + 1, Types.DECIMAL);
+                    else
+                        preparedStatement.setBigDecimal(i + 1, (BigDecimal) parameter.getValue());
                     break;
                 case DATETIME:
-                    java.util.Date date = ((java.util.Date) parameter.getValue());
-                    if (date == null)
-                        preparedStatement.setTimestamp(i + 1, null);
-                    else
+                    if (parameterValue == null)
+                        preparedStatement.setNull(i + 1, Types.TIMESTAMP);
+                    else {
+                        java.util.Date date = ((java.util.Date) parameter.getValue());
                         preparedStatement.setTimestamp(i + 1, new Timestamp(date.getTime()));
+                    }
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid parameter type: " + parameter.getParameterType());

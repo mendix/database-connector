@@ -4,7 +4,6 @@ import com.amazon.dsi.exceptions.InvalidArgumentException;
 import com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate;
 import com.mendix.systemwideinterfaces.javaactions.parameters.ITemplateParameter;
 import com.mendix.systemwideinterfaces.javaactions.parameters.TemplateParameterType;
-import com.sap.db.jdbcext.wrapper.PreparedStatement;
 import databaseconnector.impl.PreparedStatementCreatorImpl;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,9 +13,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import java.math.BigDecimal;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Timestamp;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -71,8 +68,11 @@ public class PreparedStatementCreatorTest {
         builder.addParameter(true, TemplateParameterType.BOOLEAN);
         builder.addParameter("Hello", TemplateParameterType.STRING);
         builder.addParameter(new BigDecimal(45.5), TemplateParameterType.DECIMAL);
-        builder.addParameter(null, TemplateParameterType.DATETIME);
         builder.addParameter(null, TemplateParameterType.STRING);
+        builder.addParameter(null, TemplateParameterType.DATETIME);
+        builder.addParameter(null, TemplateParameterType.DECIMAL);
+        builder.addParameter(null, TemplateParameterType.BOOLEAN);
+        builder.addParameter(null, TemplateParameterType.INTEGER);
 
         sut.create(builder.build(), connection);
 
@@ -81,8 +81,11 @@ public class PreparedStatementCreatorTest {
         verify(preparedStatement).setBoolean(3, true);
         verify(preparedStatement).setString(4, "Hello");
         verify(preparedStatement).setBigDecimal(5, new BigDecimal(45.5));
-        verify(preparedStatement).setTimestamp(6, null);
-        verify(preparedStatement).setString(7, null);
+        verify(preparedStatement).setNull(6, Types.VARCHAR);
+        verify(preparedStatement).setNull(7, Types.TIMESTAMP);
+        verify(preparedStatement).setNull(8, Types.DECIMAL);
+        verify(preparedStatement).setNull(9, Types.BOOLEAN);
+        verify(preparedStatement).setNull(10, Types.BIGINT);
     }
 
     @Test
