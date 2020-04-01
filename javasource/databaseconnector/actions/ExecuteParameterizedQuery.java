@@ -22,7 +22,7 @@ import databaseconnector.impl.JdbcConnector;
 
 /**
  * <p>
- * This Java action provides a consistent environment for Mendix projects to perform an arbitrary parameterised SELECT SQL query on relational external databases.
+ * This Java action provides a consistent environment for Mendix projects to perform an arbitrary parameterized SELECT SQL query on relational external databases.
  * JDBC (Java Database Connectivity) API, a standard Java API, is used when this Java action attempts
  * to connect with a Relational Database for which a JDBC driver exists.
  * The JDBC drivers for the databases you want to connect to, must be placed inside the userlib directory of a project.
@@ -55,7 +55,7 @@ import databaseconnector.impl.JdbcConnector;
  * @return <List<IMendixObject>>
  *    SELECT Query result as a list of objects.
  */
-public class ExecuteParameterisedQuery extends CustomJavaAction<java.util.List<IMendixObject>>
+public class ExecuteParameterizedQuery extends CustomJavaAction<java.util.List<IMendixObject>>
 {
 	private java.lang.String jdbcUrl;
 	private java.lang.String userName;
@@ -63,7 +63,7 @@ public class ExecuteParameterisedQuery extends CustomJavaAction<java.util.List<I
 	private com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate sql;
 	private java.lang.String resultObjectType;
 
-	public ExecuteParameterisedQuery(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate sql, java.lang.String resultObjectType)
+	public ExecuteParameterizedQuery(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate sql, java.lang.String resultObjectType)
 	{
 		super(context);
 		this.jdbcUrl = jdbcUrl;
@@ -93,7 +93,7 @@ public class ExecuteParameterisedQuery extends CustomJavaAction<java.util.List<I
 	@java.lang.Override
 	public java.lang.String toString()
 	{
-		return "ExecuteParameterisedQuery";
+		return "ExecuteParameterizedQuery";
 	}
 
 	// BEGIN EXTRA CODE
