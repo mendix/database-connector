@@ -1,6 +1,5 @@
 package databaseconnectortest.test;
 
-import com.amazon.dsi.exceptions.InvalidArgumentException;
 import com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate;
 import com.mendix.systemwideinterfaces.javaactions.parameters.ITemplateParameter;
 import com.mendix.systemwideinterfaces.javaactions.parameters.TemplateParameterType;
@@ -111,7 +110,7 @@ public class PreparedStatementCreatorTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testUnknownParameterType() throws InvalidArgumentException, SQLException {
+    public void testUnknownParameterType() throws SQLException {
         StringTemplateBuilder builder = new StringTemplateBuilder();
         builder.addParameter(null, TemplateParameterType.valueOf("nonexisting value"));
 
