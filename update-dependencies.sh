@@ -8,7 +8,7 @@ rm -f userlib/*DatabaseConnector.RequiredLib
 
 # Recreate those RequiredLib files:
 mvn dependency:list \
-    | sed -ne 's#[^\s]*    \(.*\):\(.*\):jar:\(.*\):runtime#userlib/\1.\2-\3.jar.DatabaseConnector.RequiredLib#p' \
+    | sed -nE 's#[^\s]*    (.*):(.*):jar:(.*):(compile|runtime)#userlib/\1.\2-\3.jar.DatabaseConnector.RequiredLib#p' \
     | xargs touch
 
 # Update the license report file
