@@ -16,7 +16,7 @@ mvn project-info-reports:dependencies
 
 # Create a neat zip file with that information
 cd target/site
-zip -r ../../userlib/dependency-info.zip .
+zip -r ../../userlib/database-connector-dependencies.zip .
 cd ../../
 
 # Clean up
