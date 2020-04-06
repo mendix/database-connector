@@ -11,7 +11,6 @@ package databaseconnectortest.actions;
 
 import static java.lang.String.format;
 import static java.util.stream.Collectors.joining;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -88,6 +87,10 @@ public class AssertEqualsListEntityValues extends CustomJavaAction<java.lang.Boo
     String message = potentialMessages.flatMap(messagesFilter).collect(joining(", "));
 
     return isEmpty(message) ? Optional.empty() : Optional.of(format("Row %s: ", objectNr) + message);
+  }
+
+  private boolean isEmpty(String message) {
+    return message == null || message.isBlank();
   }
 
   private Optional<String> compare(PrimitiveType primitiveType, IMendixObjectMember<?> expected, IMendixObjectMember<?> actual) {
