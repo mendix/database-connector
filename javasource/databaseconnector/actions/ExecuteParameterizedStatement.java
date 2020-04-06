@@ -17,7 +17,7 @@ import databaseconnector.impl.JdbcConnector;
 
 /**
  * <p>
- * This Java action provides a consistent environment for Mendix projects to perform an arbitrary parameterised SQL statement on relational
+ * This Java action provides a consistent environment for Mendix projects to perform an arbitrary parameterized SQL statement on relational
  * external databases.
  * JDBC (Java Database Connectivity) API, a standard Java API, is used when this Java action attempts
  * to connect with a Relational Database for which a JDBC driver exists.
@@ -48,14 +48,14 @@ import databaseconnector.impl.JdbcConnector;
  * @return <Integer/Long>
  *    Number of affected rows.
  */
-public class ExecuteParameterisedStatement extends CustomJavaAction<java.lang.Long>
+public class ExecuteParameterizedStatement extends CustomJavaAction<java.lang.Long>
 {
 	private java.lang.String jdbcUrl;
 	private java.lang.String userName;
 	private java.lang.String password;
 	private com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate sql;
 
-	public ExecuteParameterisedStatement(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate sql)
+	public ExecuteParameterizedStatement(IContext context, java.lang.String jdbcUrl, java.lang.String userName, java.lang.String password, com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate sql)
 	{
 		super(context);
 		this.jdbcUrl = jdbcUrl;
@@ -78,7 +78,7 @@ public class ExecuteParameterisedStatement extends CustomJavaAction<java.lang.Lo
 	@java.lang.Override
 	public java.lang.String toString()
 	{
-		return "ExecuteParameterisedStatement";
+		return "ExecuteParameterizedStatement";
 	}
 
 	// BEGIN EXTRA CODE
