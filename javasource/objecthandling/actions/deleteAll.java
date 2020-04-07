@@ -31,7 +31,7 @@ public class deleteAll extends CustomJavaAction<java.lang.Boolean>
 	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-		return XPath.create(this.getContext(), entityType.toString()).deleteAll();
+		return XPath.create(this.getContext(), entityType.getType()).deleteAll();
 		// END USER CODE
 	}
 
