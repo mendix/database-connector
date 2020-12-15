@@ -13,6 +13,7 @@ import com.mendix.core.objectmanagement.member.MendixBinary;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.webui.CustomJavaAction;
+import java.io.ByteArrayInputStream;
 
 public class SetBinaryTextValue extends CustomJavaAction<java.lang.Boolean>
 {
@@ -33,7 +34,7 @@ public class SetBinaryTextValue extends CustomJavaAction<java.lang.Boolean>
 	{
 		// BEGIN USER CODE
 	  MendixBinary binaryMember = (MendixBinary) instance.getMember(getContext(), member);
-	  binaryMember.setValue(getContext(), value.getBytes());
+	  binaryMember.setValue(getContext(), new ByteArrayInputStream(value.getBytes()));
 
 	  return true;
 		// END USER CODE

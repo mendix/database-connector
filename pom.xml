@@ -6,7 +6,7 @@
 
     <groupId>com.mendix.databaseconnector</groupId>
     <artifactId>databaseconnector-main</artifactId>
-    <version>3.1.0</version>
+    <version>4.0.0</version>
     <licenses>
         <license>
             <name>Apache License, Version 2.0</name>
