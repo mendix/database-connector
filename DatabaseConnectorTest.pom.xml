@@ -7,12 +7,12 @@
     <parent>
         <groupId>com.mendix.databaseconnector</groupId>
         <artifactId>databaseconnector-main</artifactId>
-        <version>3.1.0</version>
+        <version>4.0.0</version>
         <relativePath>.</relativePath>
     </parent>
 
     <artifactId>databaseconnectortest</artifactId>
-    <version>3.1.0</version>
+    <version>4.0.0</version>
 
     <dependencies>
         <dependency>
@@ -23,7 +23,7 @@
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
-            <version>2.3</version>
+            <version>2.6</version>
         </dependency>
     </dependencies>
 </project>
