@@ -1,0 +1,36 @@
+apply plugin: 'application'
+
+import org.gradle.api.internal.file.copy.CopySpecInternal
+
+sourceCompatibility = '1.8'
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Test dependencies
+    compile 'org.mockito:mockito-core:3.2.4'
+    compile 'commons-io:commons-io:2.6'
+
+    // Module dependencies
+    compile 'com.zaxxer:HikariCP:3.4.5'
+    compile 'org.slf4j:slf4j-api:1.7.28'
+    compile 'com.ibm.db2.jcc:db2jcc:db2jcc4'
+    compile 'org.hsqldb:hsqldb:2.5.0'
+    compile 'org.mariadb.jdbc:mariadb-java-client:2.6.0'
+    compile 'com.microsoft.sqlserver:mssql-jdbc:8.2.2.jre11'
+    compile 'com.oracle.database.jdbc:ojdbc8:19.6.0.0'
+    compile 'org.postgresql:postgresql:42.2.14'
+    compile 'com.sap.cloud.db.jdbc:ngdbc:2.4.76'
+
+    // UnitTesting
+    compile group: 'junit', name: 'junit', version: '4.11', { transitive = false }
+    compile group: 'commons-io', name: 'commons-io', version: '2.3', { transitive = false }
+    compile group: 'org.apache.httpcomponents', name: 'httpcore-osgi', version: '4.4.1', { transitive = false }
+    compile group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: '4.4.1', { transitive = false }
+
+    // UnitTesting and ObjectHandling
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1', { transitive = false }
+}
