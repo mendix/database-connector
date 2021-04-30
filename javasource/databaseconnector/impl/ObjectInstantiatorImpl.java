@@ -8,8 +8,8 @@ import databaseconnector.interfaces.ObjectInstantiator;
 
 class ObjectInstantiatorImpl implements ObjectInstantiator {
 
-  @Override
-  public IMendixObject instantiate(final IContext context, final String entityName) {
-    return Core.instantiate(context, entityName);
-  }
+	@Override
+	public IMendixObject instantiate(final IContext context, final String entityName) {
+		return Core.instantiate(context, entityName);
+	}
 }
