@@ -46,12 +46,12 @@ public class AssertEqualsListEntityValues extends CustomJavaAction<java.lang.Boo
 	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-	  Consumer<String> assertMessage = a ->
-	    Microflows.assertTrue2(getContext(), false, "The values of some entities in both lists do not match.\n" + a);
-	  Optional<String> notEqualMessage = compare(Expected, Actual);
-	  notEqualMessage.ifPresent(assertMessage);
+		Consumer<String> assertMessage = a -> Microflows.assertTrue2(getContext(), false,
+				"The values of some entities in both lists do not match.\n" + a);
+		Optional<String> notEqualMessage = compare(Expected, Actual);
+		notEqualMessage.ifPresent(assertMessage);
 
-    return !notEqualMessage.isPresent();
+		return !notEqualMessage.isPresent();
 		// END USER CODE
 	}
 
@@ -65,72 +65,76 @@ public class AssertEqualsListEntityValues extends CustomJavaAction<java.lang.Boo
 	}
 
 	// BEGIN EXTRA CODE
-  private Optional<String> compare(List<IMendixObject> expected, List<IMendixObject> actual) {
-    if (expected.size() != actual.size())
-      return Optional.of(format("The list of expected items contains %s items,"
-          + " the list of actual items %s", expected.size(), actual.size()));
+	private Optional<String> compare(List<IMendixObject> expected, List<IMendixObject> actual) {
+		if (expected.size() != actual.size())
+			return Optional.of(format("The list of expected items contains %s items," + " the list of actual items %s",
+					expected.size(), actual.size()));
 
-    IntStream range = IntStream.range(0, expected.size());
-    IntFunction<Optional<String>> compare = a -> compare(a + 1, expected.get(a), actual.get(a));
-    String message = range.mapToObj(compare).flatMap(messagesFilter).collect(joining("," + System.lineSeparator()));
+		IntStream range = IntStream.range(0, expected.size());
+		IntFunction<Optional<String>> compare = a -> compare(a + 1, expected.get(a), actual.get(a));
+		String message = range.mapToObj(compare).flatMap(messagesFilter).collect(joining("," + System.lineSeparator()));
 
-    return isEmpty(message) ? Optional.empty() : Optional.of(message);
-  }
+		return isEmpty(message) ? Optional.empty() : Optional.of(message);
+	}
 
-  private Optional<String> compare(int objectNr, IMendixObject expected, IMendixObject actual) {
-    Function<IMendixObjectMember<?>, Optional<String>> compare = expectedMember -> {
-      PrimitiveType primitiveType = expected.getMetaObject().getMetaPrimitive(expectedMember.getName()).getType();
-      IMendixObjectMember<?> actualMember = actual.getMember(getContext(), expectedMember.getName());
-      return compare(primitiveType, expectedMember, actualMember);
-    };
-    Stream<Optional<String>> potentialMessages = expected.getPrimitives(getContext()).stream().map(compare);
-    String message = potentialMessages.flatMap(messagesFilter).collect(joining(", "));
+	private Optional<String> compare(int objectNr, IMendixObject expected, IMendixObject actual) {
+		Function<IMendixObjectMember<?>, Optional<String>> compare = expectedMember -> {
+			PrimitiveType primitiveType = expected.getMetaObject().getMetaPrimitive(expectedMember.getName()).getType();
+			IMendixObjectMember<?> actualMember = actual.getMember(getContext(), expectedMember.getName());
+			return compare(primitiveType, expectedMember, actualMember);
+		};
+		Stream<Optional<String>> potentialMessages = expected.getPrimitives(getContext()).stream().map(compare);
+		String message = potentialMessages.flatMap(messagesFilter).collect(joining(", "));
 
-    return isEmpty(message) ? Optional.empty() : Optional.of(format("Row %s: ", objectNr) + message);
-  }
+		return isEmpty(message) ? Optional.empty() : Optional.of(format("Row %s: ", objectNr) + message);
+	}
 
-  private boolean isEmpty(String message) {
-    return message == null || message.isBlank();
-  }
+	private boolean isEmpty(String message) {
+		return message == null || message.isBlank();
+	}
 
-  private Optional<String> compare(PrimitiveType primitiveType, IMendixObjectMember<?> expected, IMendixObjectMember<?> actual) {
-    Object expectedValue = toComparableValue(expected.getValue(getContext()));
-    Object actualValue = toComparableValue(actual.getValue(getContext()));
-    boolean isEqual;
+	private Optional<String> compare(PrimitiveType primitiveType, IMendixObjectMember<?> expected,
+			IMendixObjectMember<?> actual) {
+		Object expectedValue = toComparableValue(expected.getValue(getContext()));
+		Object actualValue = toComparableValue(actual.getValue(getContext()));
+		boolean isEqual;
 
-    if (expectedValue != null && actualValue != null) {
-      switch (primitiveType) {
-        case Binary:
-          isEqual = Arrays.equals((byte[]) expectedValue, (byte[]) actualValue);
-          break;
-        case Decimal:
-          isEqual = ((BigDecimal) expectedValue).compareTo((BigDecimal) actualValue) == 0;
-          break;
-        default:
-          isEqual = expectedValue.equals(actualValue);
-      }
-    } else
-      isEqual = expectedValue == null && actualValue == null;
+		if (expectedValue != null && actualValue != null) {
+			switch (primitiveType) {
+			case Binary:
+				isEqual = Arrays.equals((byte[]) expectedValue, (byte[]) actualValue);
+				break;
+			case Decimal:
+				isEqual = ((BigDecimal) expectedValue).compareTo((BigDecimal) actualValue) == 0;
+				break;
+			default:
+				isEqual = expectedValue.equals(actualValue);
+			}
+		} else
+			isEqual = expectedValue == null && actualValue == null;
 
-    return isEqual ? Optional.empty() : Optional.of(format("%s (%s != %s)", expected.getName(), expectedValue, actualValue));
-  }
+		return isEqual ? Optional.empty()
+				: Optional.of(format("%s (%s != %s)", expected.getName(), expectedValue, actualValue));
+	}
 
-  /**
-   * Convert the value to a comparable value, like InputStream to byte array.
-   */
-  private Object toComparableValue(Object value) {
-    if (value instanceof InputStream) try {
-      return IOUtils.toByteArray((InputStream) value);
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    } catch (NullPointerException e) {
-      // this will occur in some kind of InputStream where an underlying input stream is null.
-      return null;
-    }
+	/**
+	 * Convert the value to a comparable value, like InputStream to byte array.
+	 */
+	private Object toComparableValue(Object value) {
+		if (value instanceof InputStream)
+			try {
+				return IOUtils.toByteArray((InputStream) value);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			} catch (NullPointerException e) {
+				// this will occur in some kind of InputStream where an underlying input stream
+				// is null.
+				return null;
+			}
 
-    return value;
-  }
+		return value;
+	}
 
-  private Function<Optional<String>, Stream<String>> messagesFilter = a -> a.map(Stream::of).orElseGet(Stream::empty);
+	private Function<Optional<String>, Stream<String>> messagesFilter = a -> a.map(Stream::of).orElseGet(Stream::empty);
 	// END EXTRA CODE
 }

@@ -35,7 +35,7 @@ public class JdbcConnector {
 	private final PreparedStatementCreator preparedStatementCreator;
 
 	public JdbcConnector(final ILogNode logNode, final ObjectInstantiator objectInstantiator,
-						 final ConnectionManager connectionManager, final PreparedStatementCreator preparedStatementCreator) {
+			final ConnectionManager connectionManager, final PreparedStatementCreator preparedStatementCreator) {
 		this.logNode = logNode;
 		this.objectInstantiator = objectInstantiator;
 		this.connectionManager = connectionManager;
@@ -43,28 +43,29 @@ public class JdbcConnector {
 	}
 
 	public JdbcConnector(final ILogNode logNode) {
-		this(logNode, new ObjectInstantiatorImpl(), ConnectionManagerSingleton.getInstance(), new PreparedStatementCreatorImpl());
+		this(logNode, new ObjectInstantiatorImpl(), ConnectionManagerSingleton.getInstance(),
+				new PreparedStatementCreatorImpl());
 	}
 
 	public Stream<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
-											  final IMetaObject metaObject, final String sql, final IContext context) throws SQLException {
+			final IMetaObject metaObject, final String sql, final IContext context) throws SQLException {
 		logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
-			 PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
-			 ResultSet resultSet = preparedStatement.executeQuery()) {
+				PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
+				ResultSet resultSet = preparedStatement.executeQuery()) {
 			ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
 			return resultSetReader.readAll().stream().map(CreateMendixObjectConverter(context, metaObject));
 		}
 	}
 
 	public Stream<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
-											  final IMetaObject metaObject, final IStringTemplate sql, final IContext context) throws SQLException {
+			final IMetaObject metaObject, final IStringTemplate sql, final IContext context) throws SQLException {
 		logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
-			 PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
-			 ResultSet resultSet = preparedStatement.executeQuery()) {
+				PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
+				ResultSet resultSet = preparedStatement.executeQuery()) {
 			ResultSetReader resultSetReader = new ResultSetReader(resultSet, metaObject);
 			return resultSetReader.readAll().stream().map(CreateMendixObjectConverter(context, metaObject));
 		}
@@ -74,7 +75,8 @@ public class JdbcConnector {
 		return v -> type == PrimitiveType.Binary ? new ByteArrayInputStream((byte[]) v) : v;
 	}
 
-	private Function<Map<String, Optional<Object>>, IMendixObject> CreateMendixObjectConverter(final IContext context, final IMetaObject metaObject) {
+	private Function<Map<String, Optional<Object>>, IMendixObject> CreateMendixObjectConverter(final IContext context,
+			final IMetaObject metaObject) {
 		return columns -> {
 			String entityName = metaObject.getName();
 			IMendixObject obj = objectInstantiator.instantiate(context, entityName);
@@ -117,17 +119,17 @@ public class JdbcConnector {
 		logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
-			 PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
+				PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
 			return preparedStatement.executeUpdate();
 		}
 	}
 
-	public long executeStatement(final String jdbcUrl, final String userName, final String password, final IStringTemplate sql)
-			throws SQLException {
+	public long executeStatement(final String jdbcUrl, final String userName, final String password,
+			final IStringTemplate sql) throws SQLException {
 		logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
-			 PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
+				PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
 			return preparedStatement.executeUpdate();
 		}
 	}

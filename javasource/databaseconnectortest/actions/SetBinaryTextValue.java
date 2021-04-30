@@ -33,10 +33,10 @@ public class SetBinaryTextValue extends CustomJavaAction<java.lang.Boolean>
 	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-	  MendixBinary binaryMember = (MendixBinary) instance.getMember(getContext(), member);
-	  binaryMember.setValue(getContext(), new ByteArrayInputStream(value.getBytes()));
+		MendixBinary binaryMember = (MendixBinary) instance.getMember(getContext(), member);
+		binaryMember.setValue(getContext(), new ByteArrayInputStream(value.getBytes()));
 
-	  return true;
+		return true;
 		// END USER CODE
 	}
 

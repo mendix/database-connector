@@ -30,9 +30,8 @@ public class SetNullValues extends CustomJavaAction<java.lang.Boolean>
 	public java.lang.Boolean executeAction() throws Exception
 	{
 		// BEGIN USER CODE
-	  instance.getMetaObject().getMetaPrimitives().stream()
-	    .filter(isNotBoolean).filter(isNotHashString)
-	    .forEach(p -> instance.setValue(getContext(), p.getName(), null));
+		instance.getMetaObject().getMetaPrimitives().stream().filter(isNotBoolean).filter(isNotHashString)
+				.forEach(p -> instance.setValue(getContext(), p.getName(), null));
 
 		return true;
 		// END USER CODE

@@ -22,38 +22,42 @@ import databaseconnector.impl.JdbcConnector;
 
 /**
  * <p>
- * This Java action provides a consistent environment for Mendix projects to perform an arbitrary SELECT SQL query on relational external databases.
- * JDBC (Java Database Connectivity) API, a standard Java API, is used when this Java action attempts
- * to connect with a Relational Database for which a JDBC driver exists.
- * The JDBC drivers for the databases you want to connect to, must be placed inside the userlib directory of a project.
+ * This Java action provides a consistent environment for Mendix projects to
+ * perform an arbitrary SELECT SQL query on relational external databases. JDBC
+ * (Java Database Connectivity) API, a standard Java API, is used when this Java
+ * action attempts to connect with a Relational Database for which a JDBC driver
+ * exists. The JDBC drivers for the databases you want to connect to, must be
+ * placed inside the userlib directory of a project.
  * </p>
  * 
- * Do not use this Java action for INSERT, UPDATE, DELETE or DDL queries.
- * This action returns a list of Mendix objects based on the JDBC result set.
- * The jdbcUrl argument must specify a database URL address that points to your relational database and is dependent
- * upon the particular database and JDBC driver. It will always begin with "jdbc:" protocol, but the rest is up to particular vendor.
- * For example 'jdbc:mysql://hostname/databaseName' jdbcUrl format can be used for MySQL databases.
- * Note: Proper security must be applied as this action can allow SQL Injection in your Mendix application.
+ * Do not use this Java action for INSERT, UPDATE, DELETE or DDL queries. This
+ * action returns a list of Mendix objects based on the JDBC result set. The
+ * jdbcUrl argument must specify a database URL address that points to your
+ * relational database and is dependent upon the particular database and JDBC
+ * driver. It will always begin with "jdbc:" protocol, but the rest is up to
+ * particular vendor. For example 'jdbc:mysql://hostname/databaseName' jdbcUrl
+ * format can be used for MySQL databases. Note: Proper security must be applied
+ * as this action can allow SQL Injection in your Mendix application.
  * 
- * @see    JdbcConnector
- * @since  Mendix World 2016
- * @param <String> jdbcUrl
- *    A database URL address that points to your database.
+ * @see JdbcConnector
+ * @since Mendix World 2016
+ * @param <String>        jdbcUrl A database URL address that points to your
+ *                        database.
  * 
- * @param <String> userName 
- *    The user name for logging into the database, relative to the jdbcUrl argument.
+ * @param <String>        userName The user name for logging into the database,
+ *                        relative to the jdbcUrl argument.
  * 
- * @param <String> password 
- *    The password for logging into the database, relative to the jdbcUrl argument.
+ * @param <String>        password The password for logging into the database,
+ *                        relative to the jdbcUrl argument.
  * 
- * @param <String> sql
- *    The SELECT query to be performed, relative to the database type.
+ * @param <String>        sql The SELECT query to be performed, relative to the
+ *                        database type.
  * 
- * @param <IMendixObject> resultObject
- *    An instance of the resulting object. This instance is used only for defining the type of object to be returned.
+ * @param <IMendixObject> resultObject An instance of the resulting object. This
+ *                        instance is used only for defining the type of object
+ *                        to be returned.
  * 
- * @return <List<IMendixObject>>
- *    SELECT Query result as a list of objects.
+ * @return <List<IMendixObject>> SELECT Query result as a list of objects.
  */
 public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>>
 {
@@ -78,8 +82,8 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 	{
 		// BEGIN USER CODE
 		IMetaObject metaObject = resultObject.getMetaObject();
-		Stream<IMendixObject> resultStream = connector.executeQuery(
-		    this.jdbcUrl, this.userName, this.password, metaObject, this.sql, this.getContext());
+		Stream<IMendixObject> resultStream = connector.executeQuery(this.jdbcUrl, this.userName, this.password,
+				metaObject, this.sql, this.getContext());
 		List<IMendixObject> resultList = resultStream.collect(Collectors.toList());
 		logNode.trace(String.format("Result list count: %d", resultList.size()));
 
