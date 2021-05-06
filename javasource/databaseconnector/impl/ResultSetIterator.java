@@ -46,7 +46,7 @@ public class ResultSetIterator implements Iterator<ResultSet> {
     final String columnName;
 
     try {
-      columnName = resultSet.getMetaData().getColumnName(index);
+      columnName = resultSet.getMetaData().getColumnLabel(index);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
