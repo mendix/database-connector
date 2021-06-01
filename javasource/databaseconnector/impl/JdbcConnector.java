@@ -7,9 +7,13 @@ import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive.PrimitiveType;
 import com.mendix.systemwideinterfaces.javaactions.parameters.IStringTemplate;
+
+import databaseconnector.impl.callablestatement.StatementWrapper;
+import databaseconnector.interfaces.CallableStatementCreator;
 import databaseconnector.interfaces.ConnectionManager;
 import databaseconnector.interfaces.ObjectInstantiator;
 import databaseconnector.interfaces.PreparedStatementCreator;
+import databaseconnector.proxies.Statement;
 
 import java.io.ByteArrayInputStream;
 import java.sql.Connection;
@@ -33,18 +37,21 @@ public class JdbcConnector {
 	private final ObjectInstantiator objectInstantiator;
 	private final ConnectionManager connectionManager;
 	private final PreparedStatementCreator preparedStatementCreator;
+	private final CallableStatementCreator callableStatementCreator;
 
 	public JdbcConnector(final ILogNode logNode, final ObjectInstantiator objectInstantiator,
-			final ConnectionManager connectionManager, final PreparedStatementCreator preparedStatementCreator) {
+			final ConnectionManager connectionManager, final PreparedStatementCreator preparedStatementCreator,
+			final CallableStatementCreator callableStatementCreator) {
 		this.logNode = logNode;
 		this.objectInstantiator = objectInstantiator;
 		this.connectionManager = connectionManager;
 		this.preparedStatementCreator = preparedStatementCreator;
+		this.callableStatementCreator = callableStatementCreator;
 	}
 
 	public JdbcConnector(final ILogNode logNode) {
 		this(logNode, new ObjectInstantiatorImpl(), ConnectionManagerSingleton.getInstance(),
-				new PreparedStatementCreatorImpl());
+				new PreparedStatementCreatorImpl(), new CallableStatementCreatorImpl());
 	}
 
 	public List<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
@@ -139,6 +146,16 @@ public class JdbcConnector {
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
 				PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
 			return preparedStatement.executeUpdate();
+		}
+	}
+
+	public void executeCallableStatement(final String jdbcUrl, final String userName, final String password,
+			final Statement stmt) throws SQLException, DatabaseConnectorException {
+		logNode.trace(String.format("executeCallableStatement: %s, %s, %s", jdbcUrl, userName, stmt.getContent()));
+
+		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
+				StatementWrapper callableStatement = callableStatementCreator.create(stmt, connection)) {
+			callableStatement.execute();
 		}
 	}
 }
