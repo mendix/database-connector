@@ -14,6 +14,7 @@ import databaseconnector.impl.callablestatement.SqlParameter;
 import databaseconnector.impl.callablestatement.SqlParameterDatetime;
 import databaseconnector.impl.callablestatement.SqlParameterDecimal;
 import databaseconnector.impl.callablestatement.SqlParameterLong;
+import databaseconnector.impl.callablestatement.SqlParameterObject;
 import databaseconnector.impl.callablestatement.SqlParameterPrimitiveValue;
 import databaseconnector.impl.callablestatement.SqlParameterString;
 import databaseconnector.impl.callablestatement.StatementWrapper;
@@ -22,6 +23,7 @@ import databaseconnector.proxies.Parameter;
 import databaseconnector.proxies.ParameterDatetime;
 import databaseconnector.proxies.ParameterDecimal;
 import databaseconnector.proxies.ParameterLong;
+import databaseconnector.proxies.ParameterObject;
 import databaseconnector.proxies.ParameterString;
 import databaseconnector.proxies.Statement;
 
@@ -59,6 +61,13 @@ public class CallableStatementCreatorImpl implements CallableStatementCreator {
 			break;
 		case ParameterDecimal.entityName:
 			ret = new SqlParameterDecimal(context, mendixObject);
+			break;
+		case ParameterObject.entityName:
+			List<SqlParameterPrimitiveValue<?>> fields = Core
+					.retrieveByPath(context, mendixObject, Parameter.MemberNames.MemberOfObject.toString(), true)
+					.stream().map(p -> (SqlParameterPrimitiveValue<?>) initialize(context, p)).sorted()
+					.collect(Collectors.toList());
+			ret = new SqlParameterObject(context, mendixObject, fields);
 			break;
 		default:
 			throw new IllegalArgumentException(
