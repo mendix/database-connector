@@ -49,6 +49,33 @@ public class TestCallableStatement {
 			"  :2 := TO_CHAR(l_long);\r\n" + 
 			"end;";
 
+	private final static String TAKE_OBJECT_RETURN_MEMBERS =
+			"declare\r\n" +
+			"  l_rec NAME_AND_AGE := :1;\r\n" + 
+			"begin\r\n" + 
+			"  :2 := l_rec.name;\r\n" + 
+			"  :3 := l_rec.age;\r\n" + 
+			"end;";
+
+	private final static String TAKE_MEMBERS_RETURN_OBJECT =
+			"declare\r\n" +
+			"  name VARCHAR2(100) := :1;\r\n" + 
+			"  age NUMBER := :2;\r\n" + 
+			"begin\r\n" + 
+			"  :3 := NAME_AND_AGE(name, age);\r\n" + 
+			"end;";
+
+	private final static String TAKE_OBJECTS_RETURN_OBJECTS =
+			"declare\r\n" +
+			"  input1 NAME_AND_AGE := :1;\r\n" + 
+			"  input2 NAME_AND_AGE := :2;\r\n" + 
+			"  input3 NAME_AND_AGE := :3;\r\n" + 
+			"begin\r\n" + 
+			"  :4 := input3;\r\n" + 
+			"  :5 := input2;\r\n" + 
+			"  :6 := input1;\r\n" + 
+			"end;";
+
 	private final JdbcConnector connector = new JdbcConnector(logNode);
 	
 	@Rule
@@ -66,9 +93,18 @@ public class TestCallableStatement {
 		
 		executeStatement(new StatementBuilder(context)
 				.withContent(
-					"create or replace type new_type is object (\r\n" +
+					"create or replace type name_and_age is object (\r\n" +
 					"    name VARCHAR2(100), age NUMBER\r\n" +
 					")")
+				.getStatement());
+		
+		executeStatement(new StatementBuilder(context)
+				.withContent(
+					"CREATE OR REPLACE PROCEDURE object_to_same_object (lval IN OUT NAME_AND_AGE) AS\r\n" + 
+					"   BEGIN\r\n" + 
+					"   lval.age := lval.age * 2;\r\n" + 
+					"   lval.name := 'new value';\r\n" + 
+					" END;")
 				.getStatement());
 	}
 	
@@ -239,28 +275,16 @@ public class TestCallableStatement {
 		executeStatement(builder.getStatement());
 	}
 
-
 	@Test
 	public void testObjectInput() throws Exception {
-		String content =
-				"declare\r\n" +
-				"  l_rec new_type := :1;\r\n" + 
-				"begin\r\n" + 
-				"  :2 := l_rec.name;\r\n" + 
-				"  :3 := l_rec.age;\r\n" + 
-				"end;";
-		
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
 		inputObjectFields.add(builder.initStringParameter(1, null, TEST_STRING, ParameterMode.INPUT));
 		inputObjectFields.add(builder.initLongParameter(2, null, AU, ParameterMode.INPUT));
 		
-		builder = builder
-				.withObjectInputParameter(1, null, inputObjectFields, "NEW_TYPE")
-				.withOutputParameter(2, null, ParameterString.class)
-				.withOutputParameter(3, null, ParameterLong.class)
-				.withContent(content);
+		builder = builderFromObjectToMembers(builder, inputObjectFields)
+				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
 		
 		executeStatement(builder.getStatement());
 
@@ -269,26 +293,61 @@ public class TestCallableStatement {
 	}
 	
 	@Test
-	public void testObjectOutput() throws Exception {
-		String content =
-				"declare\r\n" +
-				"  name VARCHAR2(100) := :1;\r\n" + 
-				"  age NUMBER := :2;\r\n" + 
-				"begin\r\n" + 
-				"  :3 := new_type(name, age);\r\n" + 
-				"end;";
+	public void testObjectInputTooManyMembers() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		inputObjectFields.add(builder.initStringParameter(1, null, TEST_STRING, ParameterMode.INPUT));
+		inputObjectFields.add(builder.initLongParameter(2, null, AU, ParameterMode.INPUT));
+		inputObjectFields.add(builder.initLongParameter(3, null, AU, ParameterMode.INPUT));
 		
+		builder = builderFromObjectToMembers(builder, inputObjectFields)
+				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
+		
+		// TODO: what should be the error?
+		executeStatement(builder.getStatement());
+	}
+	
+	@Test
+	public void testObjectInputTooFewMembers() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		inputObjectFields.add(builder.initStringParameter(1, null, TEST_STRING, ParameterMode.INPUT));
+
+		builder = builderFromObjectToMembers(builder, inputObjectFields)
+				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
+		
+		// TODO: what should be the error?
+		executeStatement(builder.getStatement());
+	}
+	
+	@Test
+	public void testObjectInputMixedUpTypes() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		inputObjectFields.add(builder.initLongParameter(1, null, AU, ParameterMode.INPUT));
+		inputObjectFields.add(builder.initStringParameter(2, null, TEST_STRING, ParameterMode.INPUT));
+		
+		builder = builderFromObjectToMembers(builder, inputObjectFields)
+				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
+		
+		exceptionRule.expect(NumberFormatException.class);
+		exceptionRule.expectMessage("For input string");
+		executeStatement(builder.getStatement());
+	}
+
+	@Test
+	public void testObjectOutput() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
-		outputObjectFields.add(builder.initStringParameter(1, null, TEST_STRING, ParameterMode.OUTPUT));
-		outputObjectFields.add(builder.initLongParameter(2, null, AU, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.initStringParameter(1, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.initLongParameter(2, null, null, ParameterMode.OUTPUT));
 		
-		builder = builder
-				.withInputParameter(1, null, TEST_STRING, ParameterString.class)
-				.withInputParameter(2, null, AU, ParameterLong.class)
-				.withObjectOutputParameter(3, null, outputObjectFields, "NEW_TYPE")
-				.withContent(content);
+		builder = builderFromMembersToObject(builder, outputObjectFields)
+				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
 
 		executeStatement(builder.getStatement());
 
@@ -302,13 +361,140 @@ public class TestCallableStatement {
 		assertEquals(TEST_STRING, ((ParameterString) outputObjectFields.get(0)).getValue());
 		assertEquals(AU, ((ParameterLong) outputObjectFields.get(1)).getValue());
 	}
+
+	@Test
+	public void testObjectOutputTooFewParameters() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		outputObjectFields.add(builder.initStringParameter(1, null, null, ParameterMode.OUTPUT));
+		
+		builder = builderFromMembersToObject(builder, outputObjectFields)
+				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
+
+		executeStatement(builder.getStatement());
+		
+		assertEquals(TEST_STRING, ((ParameterString) outputObjectFields.get(0)).getValue());
+
+	}
+
+	@Test
+	public void testObjectOutputDuplicateKeys() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		outputObjectFields.add(builder.initStringParameter(2, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.initLongParameter(2, null, null, ParameterMode.OUTPUT));
+		
+		builder = builderFromMembersToObject(builder, outputObjectFields)
+				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
+
+		// TODO: what should be the error?
+		executeStatement(builder.getStatement());
+	}
+
+	@Test
+	public void testObjectOutputTooManyParameters() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		outputObjectFields.add(builder.initStringParameter(1, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.initLongParameter(2, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.initLongParameter(3, null, null, ParameterMode.OUTPUT));
+
+		builder = builderFromMembersToObject(builder, outputObjectFields)
+				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
+
+		// TODO: what should be the error?
+		executeStatement(builder.getStatement());
+	}
+
+	@Test
+	public void testObjectOutputMixedUpParameters() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		outputObjectFields.add(builder.initLongParameter(1, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.initStringParameter(2, null, null, ParameterMode.OUTPUT));
+
+		builder = builderFromMembersToObject(builder, outputObjectFields)
+				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
+
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage("Unable to set Long parameter from value");
+		executeStatement(builder.getStatement());
+	}
+
+	@Test
+	public void multipleObjects() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> outputFields4 = objectFields(null, null, builder);
+		List<Parameter> outputFields5 = objectFields(null, null, builder);
+		List<Parameter> outputFields6 = objectFields(null, null, builder);
+		
+		builder = builder
+				.withObjectInputParameter(1, null, objectFields("A", 1L, builder), "NAME_AND_AGE")
+				.withObjectInputParameter(2, null, objectFields("B", 2L, builder), "NAME_AND_AGE")
+				.withObjectInputParameter(3, null, objectFields("C", 3L, builder), "NAME_AND_AGE")
+				.withObjectOutputParameter(4, null, outputFields4, "NAME_AND_AGE")
+				.withObjectOutputParameter(5, null, outputFields5, "NAME_AND_AGE")
+				.withObjectOutputParameter(6, null, outputFields6, "NAME_AND_AGE")
+				.withContent(TAKE_OBJECTS_RETURN_OBJECTS);
+
+		executeStatement(builder.getStatement());
+
+		assertEquals("C", ((ParameterString) outputFields4.get(0)).getValue());
+		assertEquals((Long)3L, ((ParameterLong) outputFields4.get(1)).getValue());
+		assertEquals("B", ((ParameterString) outputFields5.get(0)).getValue());
+		assertEquals((Long)2L, ((ParameterLong) outputFields5.get(1)).getValue());
+		assertEquals("A", ((ParameterString) outputFields6.get(0)).getValue());
+		assertEquals((Long)1L, ((ParameterLong) outputFields6.get(1)).getValue());
+	}
 	
+
+	@Test
+	public void inOutObject() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> fields = objectFields(TEST_STRING, AU, builder);
+		
+		builder = builder
+				.withObjectInOutParameter(1, null, fields, "NAME_AND_AGE")
+				.withContent("{ call object_to_same_object(:1) }");
+
+		executeStatement(builder.getStatement());
+
+		assertEquals("new value", ((ParameterString) fields.get(0)).getValue());
+		assertEquals((Long)(AU * 2), ((ParameterLong) fields.get(1)).getValue());
+	}
+
+
 	@Test
 	public void testAllArgumentTypes() throws Exception {
 		// TODO
 	}
 	
+	private List<Parameter> objectFields(String name, Long age, StatementBuilder builder) throws Exception {
+		List<Parameter> objectFields = new LinkedList<Parameter>();
+		objectFields.add(builder.initStringParameter(1, null, name, ParameterMode.INPUT));
+		objectFields.add(builder.initLongParameter(2, null, age, ParameterMode.INPUT));
+		return objectFields;
+	}
 	
+	private StatementBuilder builderFromObjectToMembers(StatementBuilder builder, List<Parameter> inputObjectFields) throws Exception {
+		return builder
+				.withObjectInputParameter(1, null, inputObjectFields, "NAME_AND_AGE")
+				.withOutputParameter(2, null, ParameterString.class)
+				.withOutputParameter(3, null, ParameterLong.class);
+	}
+	
+	private StatementBuilder builderFromMembersToObject(StatementBuilder builder, List<Parameter> outputObjectFields) throws Exception {
+		return builder
+				.withInputParameter(1, null, TEST_STRING, ParameterString.class)
+				.withInputParameter(2, null, AU, ParameterLong.class)
+				.withObjectOutputParameter(3, null, outputObjectFields, "NAME_AND_AGE");
+	}
 	
 	private void executeStatement(Statement statement) throws SQLException {
 		connector.executeCallableStatement("jdbc:oracle:thin:@//" + Constants.getOracleAddress(), Constants.getOracleUserName(), Constants.getOraclePassword(), statement);

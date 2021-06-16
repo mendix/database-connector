@@ -73,7 +73,6 @@ public class StatementBuilder {
 		return this.withParameter(position, name, null, ParameterMode.OUTPUT, parameterClass);
 	}
 	
-
 	public <T> StatementBuilder withObjectOutputParameter(Integer position, String name, List<Parameter> value, String sqlTypeName) throws Exception {
 		
 		Parameter parameter = initObjectParameter(position, name, value, ParameterMode.OUTPUT, sqlTypeName);
@@ -87,7 +86,15 @@ public class StatementBuilder {
 		return this.withParameter(position, name, value, ParameterMode.INOUT, parameterClass);
 	}
 	
-	@SuppressWarnings("unchecked")
+	public <T> StatementBuilder withObjectInOutParameter(Integer position, String name, List<Parameter> value, String sqlTypeName) throws Exception {
+		
+		Parameter parameter = initObjectParameter(position, name, value, ParameterMode.INOUT, sqlTypeName);
+		parameters.add(parameter);
+		parameter.setParameter_Statement(statement);
+	
+		return this;
+	}
+	
 	private <T> StatementBuilder withParameter(Integer position, String name, T value, ParameterMode parameterMode, Class<?> parameterClass) throws Exception {
 		
 		Parameter parameter;
