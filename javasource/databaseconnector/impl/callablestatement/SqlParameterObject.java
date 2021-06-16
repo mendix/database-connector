@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.mendix.systemwideinterfaces.MendixRuntimeException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
@@ -101,11 +102,18 @@ public class SqlParameterObject implements SqlParameter {
 			Struct objStruct = retrieveResultStruct(cStatement);
 
 			Object[] values = objStruct.getAttributes();
+			if (values.length != this.objectFields.size()) {
+				throw new MendixRuntimeException(String.format("Number of values for object do not match number of expected fields. Expected %d, retrieved %d.", this.objectFields.size(), values.length));
+			}
 
-			int index = 0;
-			for (SqlParameterPrimitiveValue<?> field : objectFields) {
-				field.setMxObjectValue(values[index]);
-				index++;
+			try {
+				int index = 0;
+				for (SqlParameterPrimitiveValue<?> field : objectFields) {
+					field.setMxObjectValue(values[index]);
+					index++;
+				}
+			} catch (IllegalArgumentException e) {
+				throw new MendixRuntimeException("Unable to set field of ParameterObject", e);
 			}
 		}
 	}

@@ -46,6 +46,10 @@ public class SqlParameterDecimal extends SqlParameterPrimitiveValue<ParameterDec
 
 	@Override
 	protected void setMxObjectValue(Object value) {
-		this.mxObject.setValue((BigDecimal) value);
+		if (value instanceof BigDecimal) {
+			this.mxObject.setValue((BigDecimal) value);
+		} else {
+			throw new IllegalArgumentException("Unable to set value of ParameterDecimal from " + value.toString());
+		}
 	}
 }

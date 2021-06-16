@@ -45,6 +45,10 @@ public class SqlParameterString extends SqlParameterPrimitiveValue<ParameterStri
 
 	@Override
 	protected void setMxObjectValue(Object value) {
-		this.mxObject.setValue((String) value);
+		if (value instanceof String) {
+			this.mxObject.setValue((String) value);
+		} else {
+			throw new IllegalArgumentException("Unable to set value of ParameterString from " + value.toString());
+		}
 	}
 }

@@ -51,7 +51,7 @@ public class SqlParameterLong extends SqlParameterPrimitiveValue<ParameterLong> 
 		} else if (value instanceof BigDecimal) {
 			this.mxObject.setValue(((BigDecimal) value).longValue());
 		} else {
-			throw new IllegalArgumentException("Unable to set Long parameter from value " + value.toString());
+			throw new IllegalArgumentException("Unable to set value of ParameterLong from " + value.toString());
 		}
 	}
 }

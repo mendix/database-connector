@@ -48,6 +48,10 @@ public class SqlParameterDatetime extends SqlParameterPrimitiveValue<ParameterDa
 
 	@Override
 	protected void setMxObjectValue(Object value) {
-		this.mxObject.setValue((Date) value);
+		if (value instanceof Date) {
+			this.mxObject.setValue((Date) value);
+		} else {
+			throw new IllegalArgumentException("Unable to set value of ParameterDate from " + value.toString());
+		}
 	}
 }
