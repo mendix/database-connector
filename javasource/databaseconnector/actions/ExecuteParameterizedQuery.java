@@ -10,8 +10,6 @@
 package databaseconnector.actions;
 
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import com.mendix.core.Core;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
@@ -83,9 +81,8 @@ public class ExecuteParameterizedQuery extends CustomJavaAction<java.util.List<I
 	{
 		// BEGIN USER CODE
 		IMetaObject metaObject = Core.getMetaObject(this.resultObjectType);
-		Stream<IMendixObject> resultStream = connector.executeQuery(this.jdbcUrl, this.userName, this.password,
+		List<IMendixObject> resultList = connector.executeQuery(this.jdbcUrl, this.userName, this.password,
 				metaObject, this.sql, this.getContext());
-		List<IMendixObject> resultList = resultStream.collect(Collectors.toList());
 		logNode.trace(String.format("Result list count: %d", resultList.size()));
 
 		return resultList;
