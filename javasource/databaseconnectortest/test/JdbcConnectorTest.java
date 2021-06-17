@@ -5,6 +5,8 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaObject;
 import com.mendix.systemwideinterfaces.core.meta.IMetaPrimitive;
+
+import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.impl.JdbcConnector;
 import databaseconnector.impl.PreparedStatementCreatorImpl;
 import databaseconnector.interfaces.ConnectionManager;
@@ -88,7 +90,7 @@ public class JdbcConnectorTest {
 	}
 
 	@Test(expected = SQLException.class)
-	public void testStatementCreationException() throws SQLException {
+	public void testStatementCreationException() throws SQLException, DatabaseConnectorException {
 		Exception testException = new SQLException("Test Exception Text");
 
 		when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
@@ -104,7 +106,7 @@ public class JdbcConnectorTest {
 	}
 
 	@Test
-	public void testObjectInstantiatorException() throws SQLException {
+	public void testObjectInstantiatorException() throws SQLException, DatabaseConnectorException {
 		Exception testException = new IllegalArgumentException("Test Exception Text");
 
 		when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
@@ -114,10 +116,8 @@ public class JdbcConnectorTest {
 		when(resultSet.next()).thenReturn(true, false);
 		when(objectInstantiator.instantiate(anyObject(), anyString())).thenThrow(testException);
 
-		Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(),
-				sqlQuery, context);
 		try {
-			result.collect(Collectors.toList());
+			jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(), sqlQuery, context);
 			fail("An exception should occur!");
 		} catch (IllegalArgumentException iae) {
 		}
@@ -129,16 +129,16 @@ public class JdbcConnectorTest {
 	}
 
 	@Test
-	public void testConnectionClose() throws SQLException {
+	public void testConnectionClose() throws SQLException, DatabaseConnectorException {
 		when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
 		when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
 		when(preparedStatement.executeQuery()).thenReturn(resultSet);
 		when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
 
-		Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(),
+		List<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(),
 				sqlQuery, context);
 
-		assertEquals(0, result.count());
+		assertEquals(0, result.size());
 
 		verify(connection).close();
 		verify(preparedStatement).close();
@@ -146,7 +146,7 @@ public class JdbcConnectorTest {
 	}
 
 	@Test
-	public void testSomeResults() throws SQLException {
+	public void testSomeResults() throws SQLException, DatabaseConnectorException {
 		IMendixObject resultObject = mock(IMendixObject.class);
 
 		when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
@@ -160,11 +160,10 @@ public class JdbcConnectorTest {
 		when(resultSet.next()).thenReturn(true, true, true, true, false);
 
 		IMetaObject metaObject = mockIMetaObject(entry("a", Boolean), entry("b", Boolean));
-		Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery,
+		List<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery,
 				context);
-		List<IMendixObject> lst = result.collect(Collectors.toList());
 
-		assertEquals(4, lst.size());
+		assertEquals(4, result.size());
 
 		verify(objectInstantiator, times(4)).instantiate(context, entityName);
 		verify(connectionManager).getConnection(jdbcUrl, userName, password);
@@ -175,7 +174,7 @@ public class JdbcConnectorTest {
 	}
 
 	@Test
-	public void testSomeResultsWithTwoColumns() throws SQLException {
+	public void testSomeResultsWithTwoColumns() throws SQLException, DatabaseConnectorException {
 		String columnName1 = "TestColumnName1";
 		String columnName2 = "TestColumnName2";
 		String row1Value1 = "TestRow1Value1";
@@ -199,10 +198,9 @@ public class JdbcConnectorTest {
 		when(resultSet.getString(2)).thenReturn(row1Value2, row2Value2);
 
 		IMetaObject metaObject = mockIMetaObject(entry(columnName1, String), entry(columnName2, String));
-		Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery,
+		List<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery,
 				context);
-		List<IMendixObject> lst = result.collect(Collectors.toList());
-		assertEquals(2, lst.size());
+		assertEquals(2, result.size());
 
 		verify(resultObject1).setValue(context, columnName1, row1Value1);
 		verify(resultObject1).setValue(context, columnName2, row1Value2);
@@ -213,7 +211,7 @@ public class JdbcConnectorTest {
 	}
 
 	@Test
-	public void testResultForBoolean() throws SQLException {
+	public void testResultForBoolean() throws SQLException, DatabaseConnectorException {
 		IMendixObject resultObject = mock(IMendixObject.class);
 
 		when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
@@ -230,10 +228,9 @@ public class JdbcConnectorTest {
 		// when(resultSet.getBoolean(1)).thenReturn(null);
 
 		IMetaObject metaObject = mockIMetaObject(entry("Boolean", Boolean), entry("String", String));
-		Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery,
+		List<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery,
 				context);
-		List<IMendixObject> lst = result.collect(Collectors.toList());
-		assertEquals(1, lst.size());
+		assertEquals(1, result.size());
 
 		verify(resultObject).setValue(context, "Boolean", false);
 		verify(objectInstantiator, times(1)).instantiate(context, entityName);
@@ -255,10 +252,10 @@ public class JdbcConnectorTest {
 		when(resultSet.next()).thenReturn(false);
 
 		IMetaObject metaObject = mockIMetaObject(entry("a", String), entry("b", Boolean));
-		Stream<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery,
+		List<IMendixObject> result = jdbcConnector.executeQuery(jdbcUrl, userName, password, metaObject, sqlQuery,
 				context);
 
-		assertEquals(0, result.count());
+		assertEquals(0, result.size());
 
 		verify(objectInstantiator, never()).instantiate(context, entityName);
 		verify(resultSet, times(1)).next();
