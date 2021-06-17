@@ -8,10 +8,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.mendix.systemwideinterfaces.MendixRuntimeException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
+import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
 
@@ -97,13 +97,13 @@ public class SqlParameterObject implements SqlParameter {
 	}
 
 	@Override
-	public void retrieveResult(CallableStatement cStatement) throws SQLException {
+	public void retrieveResult(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		if (mxObject.getParameterMode().equals(ParameterMode.OUTPUT) || mxObject.getParameterMode().equals(ParameterMode.INOUT)) {
 			Struct objStruct = retrieveResultStruct(cStatement);
 
 			Object[] values = objStruct.getAttributes();
 			if (values.length != this.objectFields.size()) {
-				throw new MendixRuntimeException(String.format("Number of values for object do not match number of expected fields. Expected %d, retrieved %d.", this.objectFields.size(), values.length));
+				throw new DatabaseConnectorException(String.format("Number of values for object do not match number of expected fields. Expected %d, retrieved %d.", this.objectFields.size(), values.length));
 			}
 
 			try {
@@ -113,7 +113,7 @@ public class SqlParameterObject implements SqlParameter {
 					index++;
 				}
 			} catch (IllegalArgumentException e) {
-				throw new MendixRuntimeException("Unable to set field of ParameterObject", e);
+				throw new DatabaseConnectorException("Unable to set field of ParameterObject", e);
 			}
 		}
 	}

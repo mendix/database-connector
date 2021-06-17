@@ -18,6 +18,7 @@ import com.mendix.core.Core;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 
+import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.impl.JdbcConnector;
 import databaseconnector.proxies.Parameter;
 import databaseconnector.proxies.ParameterDatetime;
@@ -213,7 +214,6 @@ public class TestCallableStatement {
 		((ParameterLong)builder.getParameter(0)).setValue(0L);
 		
 		exceptionRule.expect(SQLDataException.class);
-		exceptionRule.expectMessage("ORA-01476");
 		executeStatement(builder.getStatement());
 	}
 	
@@ -271,7 +271,6 @@ public class TestCallableStatement {
 				.withContent(TAKE_LONG_RETURN_LONG);
 
 		exceptionRule.expect(SQLException.class);
-		exceptionRule.expectMessage("ORA-06502");
 		executeStatement(builder.getStatement());
 	}
 
@@ -304,7 +303,7 @@ public class TestCallableStatement {
 		builder = builderFromObjectToMembers(builder, inputObjectFields)
 				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
 		
-		// TODO: what should be the error?
+		exceptionRule.expect(SQLException.class);
 		executeStatement(builder.getStatement());
 	}
 	
@@ -317,8 +316,8 @@ public class TestCallableStatement {
 
 		builder = builderFromObjectToMembers(builder, inputObjectFields)
 				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
-		
-		// TODO: what should be the error?
+
+		exceptionRule.expect(SQLException.class);
 		executeStatement(builder.getStatement());
 	}
 	
@@ -335,6 +334,22 @@ public class TestCallableStatement {
 		
 		exceptionRule.expect(NumberFormatException.class);
 		exceptionRule.expectMessage("For input string");
+		executeStatement(builder.getStatement());
+	}
+	
+	@Test
+	public void testObjectInputDuplicatePosition() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		inputObjectFields.add(builder.initLongParameter(2, null, AU, ParameterMode.INPUT));
+		inputObjectFields.add(builder.initStringParameter(2, null, TEST_STRING, ParameterMode.INPUT));
+		
+		builder = builderFromObjectToMembers(builder, inputObjectFields)
+				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
+
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage("Duplicate field position in object parameter at position 2.");
 		executeStatement(builder.getStatement());
 	}
 
@@ -372,9 +387,9 @@ public class TestCallableStatement {
 		builder = builderFromMembersToObject(builder, outputObjectFields)
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
 
+		exceptionRule.expect(DatabaseConnectorException.class);
+		exceptionRule.expectMessage("Number of values for object do not match number of expected fields. Expected 1, retrieved 2.");
 		executeStatement(builder.getStatement());
-		
-		assertEquals(TEST_STRING, ((ParameterString) outputObjectFields.get(0)).getValue());
 
 	}
 
@@ -389,7 +404,8 @@ public class TestCallableStatement {
 		builder = builderFromMembersToObject(builder, outputObjectFields)
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
 
-		// TODO: what should be the error?
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage("Duplicate field position in object parameter at position 2.");
 		executeStatement(builder.getStatement());
 	}
 
@@ -405,7 +421,8 @@ public class TestCallableStatement {
 		builder = builderFromMembersToObject(builder, outputObjectFields)
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
 
-		// TODO: what should be the error?
+		exceptionRule.expect(DatabaseConnectorException.class);
+		exceptionRule.expectMessage("Number of values for object do not match number of expected fields. Expected 3, retrieved 2.");
 		executeStatement(builder.getStatement());
 	}
 
@@ -420,8 +437,8 @@ public class TestCallableStatement {
 		builder = builderFromMembersToObject(builder, outputObjectFields)
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
 
-		exceptionRule.expect(IllegalArgumentException.class);
-		exceptionRule.expectMessage("Unable to set Long parameter from value");
+		exceptionRule.expect(DatabaseConnectorException.class);
+		exceptionRule.expectMessage("Unable to set field of ParameterObject");
 		executeStatement(builder.getStatement());
 	}
 
@@ -496,7 +513,7 @@ public class TestCallableStatement {
 				.withObjectOutputParameter(3, null, outputObjectFields, "NAME_AND_AGE");
 	}
 	
-	private void executeStatement(Statement statement) throws SQLException {
+	private void executeStatement(Statement statement) throws SQLException, DatabaseConnectorException {
 		connector.executeCallableStatement("jdbc:oracle:thin:@//" + Constants.getOracleAddress(), Constants.getOracleUserName(), Constants.getOraclePassword(), statement);
 	}
 }

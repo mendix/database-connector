@@ -150,7 +150,7 @@ public class JdbcConnector {
 	}
 
 	public void executeCallableStatement(final String jdbcUrl, final String userName, final String password,
-			final Statement stmt) throws SQLException {
+			final Statement stmt) throws SQLException, DatabaseConnectorException {
 		logNode.trace(String.format("executeCallableStatement: %s, %s, %s", jdbcUrl, userName, stmt.getContent()));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);

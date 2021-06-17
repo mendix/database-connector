@@ -4,6 +4,8 @@ import java.sql.CallableStatement;
 import java.sql.SQLException;
 import java.util.List;
 
+import databaseconnector.impl.DatabaseConnectorException;
+
 public class StatementWrapper implements AutoCloseable {
 	final private CallableStatement cStatement;
 	final private List<SqlParameter> parameters;
@@ -13,7 +15,7 @@ public class StatementWrapper implements AutoCloseable {
 		this.parameters = parameters;
 	}
 
-	public void execute() throws SQLException {
+	public void execute() throws SQLException, DatabaseConnectorException {
 		this.cStatement.execute();
 
 		for (SqlParameter p : this.parameters) {
