@@ -13,6 +13,7 @@ import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.Parameter;
 import databaseconnector.proxies.ParameterDatetime;
 import databaseconnector.proxies.ParameterDecimal;
+import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterObject;
 import databaseconnector.proxies.ParameterString;
@@ -44,6 +45,13 @@ public interface SqlParameter {
 					.stream().map(p -> (SqlParameterPrimitiveValue<?>) initialize(context, p)).sorted()
 					.collect(Collectors.toList());
 			ret = new SqlParameterObject(context, mendixObject, fields);
+			break;
+		case ParameterList.entityName:
+			List<SqlParameterPrimitiveValue<?>> elements = Core
+					.retrieveByPath(context, mendixObject, Parameter.MemberNames.MemberOfList.toString(), true)
+					.stream().map(p -> (SqlParameterPrimitiveValue<?>) initialize(context, p)).sorted()
+					.collect(Collectors.toList());
+			ret = new SqlParameterList(context, mendixObject, elements);
 			break;
 		default:
 			throw new IllegalArgumentException(
