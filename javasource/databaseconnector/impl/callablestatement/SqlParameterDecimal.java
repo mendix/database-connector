@@ -7,49 +7,28 @@ import java.sql.SQLException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
-import databaseconnector.proxies.ParameterDecimal;
-
-public class SqlParameterDecimal extends SqlParameterPrimitiveValue<ParameterDecimal> {
+public class SqlParameterDecimal extends SqlParameterPrimitiveValue {
 	public SqlParameterDecimal(final IContext context, IMendixObject mendixObject) {
 		super(context, mendixObject, java.sql.Types.DECIMAL);
 	}
 
 	@Override
-	protected void setValueInput(CallableStatement cStatement, int index, String name) throws SQLException {
-		if (name == null) {
-			cStatement.setBigDecimal(index, this.mxObject.getValue());
-		} else {
-			cStatement.setBigDecimal(name, this.mxObject.getValue());
-		}
+	protected Object getStatementValue(CallableStatement cStatement, String name) throws SQLException {
+		return cStatement.getBigDecimal(name);
 	}
 
 	@Override
-	protected void retrieveResult(CallableStatement cStatement, int index, String name) throws SQLException {
-		final BigDecimal value;
-		if (name == null) {
-			value = cStatement.getBigDecimal(index);
-		} else {
-			value = cStatement.getBigDecimal(name);
-		}
-		this.mxObject.setValue(value);
+	protected Object getStatementValue(CallableStatement cStatement, int position) throws SQLException {
+		return cStatement.getBigDecimal(position);
 	}
 
 	@Override
-	public boolean isValueNull() {
-		return this.mxObject.getValue() == null;
+	protected void setStatementValue(CallableStatement cStatement, String name, Object value) throws SQLException {
+		cStatement.setBigDecimal(name, (BigDecimal) value);
 	}
 
 	@Override
-	protected Object getMxObjectValue() {
-		return this.mxObject.getValue();
-	}
-
-	@Override
-	protected void setMxObjectValue(Object value) {
-		if (value instanceof BigDecimal) {
-			this.mxObject.setValue((BigDecimal) value);
-		} else {
-			throw new IllegalArgumentException("Unable to set value of ParameterDecimal from " + value.toString());
-		}
+	protected void setStatementValue(CallableStatement cStatement, int position, Object value) throws SQLException {
+		cStatement.setBigDecimal(position, (BigDecimal) value);
 	}
 }

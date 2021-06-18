@@ -6,81 +6,67 @@ import java.sql.SQLException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
-import databaseconnector.proxies.Parameter;
-import databaseconnector.proxies.ParameterMode;
-
-public abstract class SqlParameterPrimitiveValue<P extends Parameter> implements SqlParameter, Comparable<SqlParameterPrimitiveValue<?>> {
-	protected final P mxObject;
+public abstract class SqlParameterPrimitiveValue extends SqlParameter {
 	protected final int SQL_TYPE;
 
 	@SuppressWarnings("unchecked")
 	protected SqlParameterPrimitiveValue(final IContext context, IMendixObject mendixObject, int SQL_TYPE) {
-		this.mxObject = (P) Parameter.initialize(context, mendixObject);
+		super(context, mendixObject);
 		this.SQL_TYPE = SQL_TYPE;
-		
-		if ((this.mxObject.getName() == null || this.mxObject.getName().isBlank()) && this.mxObject.getPosition() == null) {
-			throw new IllegalArgumentException("Parameter was initialized with neither name or position.");
-		}
 	}
 
-	public void prepareCall(CallableStatement cStatement) throws SQLException {
-		String name = mxObject.getName();
-		int index = mxObject.getPosition();
-
-		switch (mxObject.getParameterMode()) {
-		case INPUT:
-			prepareInput(cStatement, index, name);
-			break;
-		case OUTPUT:
-			prepareOutput(cStatement, index, name);
-			break;
-		case INOUT:
-			prepareInput(cStatement, index, name);
-			prepareOutput(cStatement, index, name);
-			break;
-		default:
-			throw new IllegalArgumentException(
-					"Unrecognized parameter type" + mxObject.getParameterMode().toString());
-		}
-	}
-
-	private void prepareInput(CallableStatement cStatement, int index, String name) throws SQLException {
-		if (isValueNull()) {
+	public void prepareInput(CallableStatement cStatement) throws SQLException {
+		String name = this.getName();
+		if (this.getMxObjectValue() == null) {
 			if (name == null || name.isBlank()) {
-				cStatement.setNull(index, SQL_TYPE);
+				cStatement.setNull(this.getPosition(), SQL_TYPE);
 			} else {
 				cStatement.setNull(name, SQL_TYPE);
 			}
 		} else {
-			setValueInput(cStatement, index, name);
+			if (name == null || name.isBlank()) {
+				setStatementValue(cStatement, this.getPosition(), getMxObjectValue());
+			} else {
+				setStatementValue(cStatement, name, getMxObjectValue());
+			}
 		}
 	}
 
-	private void prepareOutput(CallableStatement cStatement, int index, String name) throws SQLException {
+	public void prepareOutput(CallableStatement cStatement) throws SQLException {
+		String name = this.getName();
 		if (name == null || name.isBlank()) {
-			cStatement.registerOutParameter(index, SQL_TYPE);
+			cStatement.registerOutParameter(this.getPosition(), SQL_TYPE);
 		} else {
 			cStatement.registerOutParameter(name, SQL_TYPE);
 		}
 	}
 
-	public void retrieveResult(CallableStatement cStatement) throws SQLException {
-		String name = mxObject.getName();
-		int index = mxObject.getPosition();
-
-		if (mxObject.getParameterMode().equals(ParameterMode.OUTPUT) || mxObject.getParameterMode().equals(ParameterMode.INOUT)) {
-			retrieveResult(cStatement, index, name);
-		}
+	@Override
+	public Object getMxObjectValue() {
+		return this.parameterObject.getMendixObject().getValue(this.parameterObject.getContext(), "Value");
 	}
 	
-	protected abstract void setValueInput(CallableStatement cStatement, int index, String name) throws SQLException;
-	protected abstract void retrieveResult(CallableStatement cStatement, int index, String name) throws SQLException;
-	protected abstract boolean isValueNull();
-	protected abstract Object getMxObjectValue();
-	protected abstract void setMxObjectValue(Object value);
+	@Override
+	public void setMxObjectValue(Object value) {
+		this.parameterObject.getMendixObject().setValue(this.parameterObject.getContext(), "Value", value);
+	}
 
 	@Override
-	public int compareTo(SqlParameterPrimitiveValue<?> other) {
-		return this.mxObject.getPosition() - other.mxObject.getPosition();
+	public void getValueOutput(CallableStatement cStatement) throws SQLException {
+		final Object value;
+		final String name = this.getName();
+		if (name == null || name.isBlank()) {
+			value = getStatementValue(cStatement, this.getPosition());
+		} else {
+			value = getStatementValue(cStatement, name);
+		}
+		setMxObjectValue(value);
 	}
+	
+
+	protected abstract Object getStatementValue(CallableStatement cStatement, String name) throws SQLException;
+	protected abstract Object getStatementValue(CallableStatement cStatement, int position) throws SQLException;
+
+	protected abstract void setStatementValue(CallableStatement cStatement, String name, Object value) throws SQLException;
+	protected abstract void setStatementValue(CallableStatement cStatement, int position, Object value) throws SQLException;
 }

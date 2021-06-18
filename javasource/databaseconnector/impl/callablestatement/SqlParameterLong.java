@@ -9,49 +9,37 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 import databaseconnector.proxies.ParameterLong;
 
-public class SqlParameterLong extends SqlParameterPrimitiveValue<ParameterLong> {
+public class SqlParameterLong extends SqlParameterPrimitiveValue {
 	public SqlParameterLong(final IContext context, IMendixObject mendixObject) {
 		super(context, mendixObject, java.sql.Types.NUMERIC);
 	}
 
 	@Override
-	protected void setValueInput(CallableStatement cStatement, int index, String name) throws SQLException {
-		if (name == null) {
-			cStatement.setLong(index, this.mxObject.getValue());
+	public void setMxObjectValue(Object value) {
+		if (value instanceof BigDecimal) {
+			((ParameterLong) this.parameterObject).setValue(((BigDecimal) value).longValue());
 		} else {
-			cStatement.setLong(name, this.mxObject.getValue());
+			((ParameterLong) this.parameterObject).setValue(((Long) value));
 		}
 	}
 
 	@Override
-	protected void retrieveResult(CallableStatement cStatement, int index, String name) throws SQLException {
-		final Long value;
-		if (name == null) {
-			value = cStatement.getLong(index);
-		} else {
-			value = cStatement.getLong(name);
-		}
-		this.mxObject.setValue(value);
+	protected Object getStatementValue(CallableStatement cStatement, String name) throws SQLException {
+		return cStatement.getLong(name);
 	}
 
 	@Override
-	public boolean isValueNull() {
-		return this.mxObject.getValue() == null;
+	protected Object getStatementValue(CallableStatement cStatement, int position) throws SQLException {
+		return cStatement.getLong(position);
 	}
 
 	@Override
-	protected Object getMxObjectValue() {
-		return this.mxObject.getValue();
+	protected void setStatementValue(CallableStatement cStatement, String name, Object value) throws SQLException {
+		cStatement.setLong(name, (Long) value);
 	}
 
 	@Override
-	protected void setMxObjectValue(Object value) {
-		if (value instanceof Long) {
-			this.mxObject.setValue((Long) value);
-		} else if (value instanceof BigDecimal) {
-			this.mxObject.setValue(((BigDecimal) value).longValue());
-		} else {
-			throw new IllegalArgumentException("Unable to set value of ParameterLong from " + value.toString());
-		}
+	protected void setStatementValue(CallableStatement cStatement, int position, Object value) throws SQLException {
+		cStatement.setLong(position, (Long) value);
 	}
 }

@@ -6,49 +6,28 @@ import java.sql.SQLException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
-import databaseconnector.proxies.ParameterString;
-
-public class SqlParameterString extends SqlParameterPrimitiveValue<ParameterString> {
+public class SqlParameterString extends SqlParameterPrimitiveValue {
 	public SqlParameterString(final IContext context, IMendixObject mendixObject) {
 		super(context, mendixObject, java.sql.Types.VARCHAR);
 	}
 
 	@Override
-	protected void setValueInput(CallableStatement cStatement, int index, String name) throws SQLException {
-		if (name == null) {
-			cStatement.setString(index, this.mxObject.getValue());
-		} else {
-			cStatement.setString(name, this.mxObject.getValue());
-		}
+	protected Object getStatementValue(CallableStatement cStatement, String name) throws SQLException {
+		return cStatement.getString(name);
 	}
 
 	@Override
-	protected void retrieveResult(CallableStatement cStatement, int index, String name) throws SQLException {
-		final String value;
-		if (name == null) {
-			value = cStatement.getString(index);
-		} else {
-			value = cStatement.getString(name);
-		}
-		this.mxObject.setValue(value);
+	protected Object getStatementValue(CallableStatement cStatement, int position) throws SQLException {
+		return cStatement.getString(position);
 	}
 
 	@Override
-	public boolean isValueNull() {
-		return this.mxObject.getValue() == null;
+	protected void setStatementValue(CallableStatement cStatement, String name, Object value) throws SQLException {
+		cStatement.setString(name, (String) value);
 	}
 
 	@Override
-	protected Object getMxObjectValue() {
-		return this.mxObject.getValue();
-	}
-
-	@Override
-	protected void setMxObjectValue(Object value) {
-		if (value instanceof String) {
-			this.mxObject.setValue((String) value);
-		} else {
-			throw new IllegalArgumentException("Unable to set value of ParameterString from " + value.toString());
-		}
+	protected void setStatementValue(CallableStatement cStatement, int position, Object value) throws SQLException {
+		cStatement.setString(position, (String) value);
 	}
 }

@@ -8,122 +8,102 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.mendix.core.Core;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
-import databaseconnector.proxies.Parameter;
+import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterMode;
 
-public class SqlParameterList implements SqlParameter {
+public class SqlParameterList extends SqlParameter {
 	private final static int SQL_TYPE = java.sql.Types.ARRAY;
-	
-	private final ParameterList mxObject;
-	private List<SqlParameterPrimitiveValue<?>> elements;
+	private List<SqlParameter> elements;
 
-	public SqlParameterList(final IContext context, IMendixObject mendixObject, List<SqlParameterPrimitiveValue<?>> elements) {
-		this.mxObject = ParameterList.initialize(context, mendixObject);
+	public SqlParameterList(final IContext context, IMendixObject mendixObject, List<SqlParameter> elements) {
+		super(context, mendixObject);
 		this.elements = elements;
 
-		if (this.mxObject.getPosition() == null) {
-			throw new IllegalArgumentException("List parameter was initialized without a position.");
-		}
-
-		if (this.mxObject.getParameterMode().equals(ParameterMode.OUTPUT)) {
-			if (this.elements.size() != 1) {
-				throw new IllegalArgumentException("List parameters should have a single element in OUTPUT mode.");
+		if (this.getParameterMode().equals(ParameterMode.OUTPUT)) {
+			if (!this.elements.isEmpty()) {
+				throw new IllegalArgumentException("List parameters should have no elements when in OUTPUT mode.");
 			}
 		} else {
+			if (this.getPosition() == null) {
+				throw new IllegalArgumentException("List parameter used as an input was initialized without a position.");
+			}
 			Set<Integer> positions = new HashSet<Integer>();
-			for (SqlParameterPrimitiveValue<?> elem : elements) {
-				if (elem.mxObject.getPosition() == null) {
+			for (SqlParameter elem : elements) {
+				if (elem.parameterObject.getPosition() == null) {
 					throw new IllegalArgumentException("Missing position information for element in list.");
 				}
 				
-				if (positions.contains(elem.mxObject.getPosition())) {
-					throw new IllegalArgumentException(String.format("Duplicate element at position %d for list parameter.", elem.mxObject.getPosition()));
+				if (positions.contains(elem.parameterObject.getPosition())) {
+					throw new IllegalArgumentException(String.format("Duplicate element at position %d for list parameter.", elem.parameterObject.getPosition()));
 				}
-				positions.add(elem.mxObject.getPosition());
+				positions.add(elem.parameterObject.getPosition());
 			}
 		}
 	}
 
 	@Override
-	public void prepareCall(CallableStatement cStatement) throws SQLException {
-		int index = mxObject.getPosition();
-
-		switch (mxObject.getParameterMode()) {
-		case INPUT:
-			prepareInput(cStatement, index);
-			break;
-		case OUTPUT:
-			prepareOutput(cStatement, index);
-			break;
-		case INOUT:
-			prepareInput(cStatement, index);
-			prepareOutput(cStatement, index);
-			break;
-		default:
-			throw new IllegalArgumentException(
-					"Unrecognized parameter type" + mxObject.getParameterMode().toString());
-		}
-	}
-
-	private void prepareInput(CallableStatement cStatement, int index) throws SQLException {
+	protected void prepareInput(CallableStatement cStatement) throws SQLException {
 		Array inputArray = createArray(cStatement.getConnection());
 		
 		if (inputArray == null) {
 			throw new IllegalArgumentException("Argument was not an array or not possible to convert to an array.");
 		} else {
-			cStatement.setArray(index, inputArray);
+			cStatement.setArray(this.getPosition(), inputArray);
 		}
 	}
 
 	private Array createArray(Connection connection) throws SQLException {
-		String SQLTypeName = this.mxObject.getSQLTypeName();
-		Object[] attrVals = this.elements.stream().map(SqlParameterPrimitiveValue::getMxObjectValue).toArray();
-		return connection.createArrayOf(SQLTypeName, attrVals);
-	}
-
-	private void prepareOutput(CallableStatement cStatement, int index) throws SQLException {
-		String SQLTypeName = this.mxObject.getSQLTypeName();
-		cStatement.registerOutParameter(index, SQL_TYPE, SQLTypeName);
+		String sqlTypeName = ((ParameterList) this.parameterObject).getSQLTypeName();
+		Object[] attrVals = this.elements.stream().map(SqlParameter::getMxObjectValue).toArray();
+		return connection.createArrayOf(sqlTypeName, attrVals);
 	}
 
 	@Override
-	public void retrieveResult(CallableStatement cStatement) throws SQLException {
-		SqlParameterPrimitiveValue<?> template = elements.get(0);
-		if (mxObject.getParameterMode().equals(ParameterMode.OUTPUT) || mxObject.getParameterMode().equals(ParameterMode.INOUT)) {
-			Array objStruct = retrieveResultStruct(cStatement);
-			Object[] values = (Object[]) objStruct.getArray();
-			
-			int index = 0;
-			for (Object value : values) {
-				this.elements.add(newValueFromTemplate(template, index, value));
-				index++;
-			}
+	protected void prepareOutput(CallableStatement cStatement) throws SQLException {
+		String sqlTypeName = ((ParameterList) this.parameterObject).getSQLTypeName();
+		cStatement.registerOutParameter(this.getPosition(), SQL_TYPE, sqlTypeName);
+	}
+
+	@Override
+	protected void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
+		Array objStruct = retrieveResultArray(cStatement);
+		Object[] values = (Object[]) objStruct.getArray();
+		IContext context = this.parameterObject.getContext();
+		
+		int index = 0;
+		for (Object value : values) {
+			SqlParameter valueSqlParameter = SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, value);
+			valueSqlParameter.parameterObject.setMemberOfList((ParameterList) this.parameterObject);
+			this.elements.add(valueSqlParameter);
+			index++;
 		}
 	}
 
-	private SqlParameterPrimitiveValue<?> newValueFromTemplate(SqlParameterPrimitiveValue<?> template, int index, Object value) {
-		final IContext context = this.mxObject.getContext();
-		IMendixObject newObject = Core.instantiate(context, template.mxObject.getMendixObject().getType());
-		newObject.setValue(context, Parameter.MemberNames.ParameterMode.toString(), this.mxObject.getParameterMode().toString());
-		newObject.setValue(context, Parameter.MemberNames.MemberOfList.toString(), this.mxObject.getMendixObject().getId());
-		newObject.setValue(context, Parameter.MemberNames.Position.toString(), index);
-		SqlParameterPrimitiveValue<?> newValue = (SqlParameterPrimitiveValue<?>) SqlParameter.initialize(context, newObject);
-		newValue.setMxObjectValue(value);
-		return newValue;
-	}
 
-	private Array retrieveResultStruct(CallableStatement cStatement) throws SQLException {
-		String name = mxObject.getName();
-		
+	private Array retrieveResultArray(CallableStatement cStatement) throws SQLException {
+		String name = this.getName();
+
 		if (name == null || name.isBlank()) {
-			return cStatement.getArray(this.mxObject.getPosition());
+			return cStatement.getArray(this.getPosition());
 		} else {
 			return cStatement.getArray(name);
 		}
+	}
+
+	
+	@Override
+	Object getMxObjectValue() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	void setMxObjectValue(Object value) {
+		// TODO Auto-generated method stub
+		
 	}
 }

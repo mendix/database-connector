@@ -12,119 +12,110 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 import databaseconnector.impl.DatabaseConnectorException;
-import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
 
-public class SqlParameterObject implements SqlParameter {
+public class SqlParameterObject extends SqlParameter {
 	private final static int SQL_TYPE = java.sql.Types.STRUCT;
 	
-	private final ParameterObject mxObject;
-	private List<SqlParameterPrimitiveValue<?>> objectFields;
+	private List<SqlParameterPrimitiveValue> objectFields;
 
-	public SqlParameterObject(final IContext context, IMendixObject mendixObject, List<SqlParameterPrimitiveValue<?>> objectFields) {
-		this.mxObject = ParameterObject.initialize(context, mendixObject);
+	public SqlParameterObject(final IContext context, IMendixObject mendixObject, List<SqlParameterPrimitiveValue> objectFields) {
+		super(context, mendixObject);
 		this.objectFields = objectFields;
-		
-		if ((this.mxObject.getName() == null || this.mxObject.getName().isBlank()) && this.mxObject.getPosition() == null) {
-			throw new IllegalArgumentException("Parameter was initialized with neither name or position.");
-		}
 
 		Set<Integer> positions = new HashSet<Integer>();
-		for (SqlParameterPrimitiveValue<?> field : objectFields) {
-			if (field.mxObject.getPosition() == null) {
-				String objectNameOrPosition = (this.mxObject.getName() == null || this.mxObject.getName().isBlank()) ? this.mxObject.getPosition().toString() : this.mxObject.getName();
-				throw new IllegalArgumentException(String.format("Missing position information for field of type %s of ParameterObject %s.", field.mxObject.getMendixObject().getType(), objectNameOrPosition));
+		for (SqlParameterPrimitiveValue field : objectFields) {
+			if (field.getPosition() == null) {
+				String objectNameOrPosition = (this.parameterObject.getName() == null || this.parameterObject.getName().isBlank()) ? this.parameterObject.getPosition().toString() : this.parameterObject.getName();
+				throw new IllegalArgumentException(String.format("Missing position information for field of type %s of ParameterObject %s.", field.parameterObject.getMendixObject().getType(), objectNameOrPosition));
 			}
-			
-			if (positions.contains(field.mxObject.getPosition())) {
-				throw new IllegalArgumentException(String.format("Duplicate field position in object parameter at position %d.", field.mxObject.getPosition()));
+
+			if (positions.contains(field.getPosition())) {
+				throw new IllegalArgumentException(String.format("Duplicate field position in object parameter at position %d.", field.getPosition()));
 			}
-			positions.add(field.mxObject.getPosition());
+			positions.add(field.getPosition());
+		}
+	}
+
+
+	@Override
+	protected void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
+		Struct objStruct = retrieveResultStruct(cStatement);
+
+		Object[] values = objStruct.getAttributes();
+		if (values.length != this.objectFields.size()) {
+			throw new DatabaseConnectorException(String.format("Number of values for object do not match number of expected fields. Expected %d, retrieved %d.", this.objectFields.size(), values.length));
+		}
+
+		try {
+			int index = 0;
+			for (SqlParameterPrimitiveValue field : objectFields) {
+				field.setMxObjectValue(values[index]);
+				index++;
+			}
+		} catch (IllegalArgumentException e) {
+			throw new DatabaseConnectorException("Unable to set field of ParameterObject", e);
 		}
 	}
 
 	@Override
-	public void prepareCall(CallableStatement cStatement) throws SQLException {
-		String name = mxObject.getName();
-		int index = mxObject.getPosition();
-
-		switch (mxObject.getParameterMode()) {
-		case INPUT:
-			prepareInput(cStatement, index, name);
-			break;
-		case OUTPUT:
-			prepareOutput(cStatement, index, name);
-			break;
-		case INOUT:
-			prepareInput(cStatement, index, name);
-			prepareOutput(cStatement, index, name);
-			break;
-		default:
-			throw new IllegalArgumentException(
-					"Unrecognized parameter type" + mxObject.getParameterMode().toString());
+	protected void prepareOutput(CallableStatement cStatement) throws SQLException {
+		final String name = this.getName();
+		final String sqlTypeName = ((ParameterObject) this.parameterObject).getSQLTypeName();
+		
+		if (name == null || name.isBlank()) {
+			cStatement.registerOutParameter(this.getPosition(), SQL_TYPE, sqlTypeName);
+		} else {
+			cStatement.registerOutParameter(name, SQL_TYPE, sqlTypeName);
 		}
 	}
 
-	private void prepareInput(CallableStatement cStatement, int index, String name) throws SQLException {
+	@Override
+	protected void prepareInput(CallableStatement cStatement) throws SQLException {
 		Struct objStruct = createConnectionStruct(cStatement.getConnection());
+		final String name = this.getName();
 		
 		if (objStruct == null) {
-			if (name == null) {
-				cStatement.setNull(index, SQL_TYPE);
+			if (name == null || name.isBlank()) {
+				cStatement.setNull(this.getPosition(), SQL_TYPE);
 			} else {
 				cStatement.setNull(name, SQL_TYPE);
 			}
 		} else {
 			if (name == null) {
-				cStatement.setObject(index, objStruct);
+				cStatement.setObject(this.getPosition(), objStruct);
 			} else {
 				cStatement.setObject(name, objStruct);
 			}
 		}
 	}
 
-	private Struct createConnectionStruct(Connection connection) throws SQLException {
-		Object[] attrVals = this.objectFields.stream().map(SqlParameterPrimitiveValue::getMxObjectValue).toArray();
-		return connection.createStruct(this.mxObject.getSQLTypeName(), attrVals);
-	}
-
-	private void prepareOutput(CallableStatement cStatement, int index, String name) throws SQLException {
-		if (name == null || name.isBlank()) {
-			cStatement.registerOutParameter(index, SQL_TYPE, this.mxObject.getSQLTypeName().toUpperCase());
-		} else {
-			cStatement.registerOutParameter(name, SQL_TYPE, this.mxObject.getSQLTypeName().toUpperCase());
-		}
+	@Override
+	Object getMxObjectValue() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	@Override
-	public void retrieveResult(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
-		if (mxObject.getParameterMode().equals(ParameterMode.OUTPUT) || mxObject.getParameterMode().equals(ParameterMode.INOUT)) {
-			Struct objStruct = retrieveResultStruct(cStatement);
+	void setMxObjectValue(Object value) {
+		// TODO Auto-generated method stub
+		
+	}
 
-			Object[] values = objStruct.getAttributes();
-			if (values.length != this.objectFields.size()) {
-				throw new DatabaseConnectorException(String.format("Number of values for object do not match number of expected fields. Expected %d, retrieved %d.", this.objectFields.size(), values.length));
-			}
-
-			try {
-				int index = 0;
-				for (SqlParameterPrimitiveValue<?> field : objectFields) {
-					field.setMxObjectValue(values[index]);
-					index++;
-				}
-			} catch (IllegalArgumentException e) {
-				throw new DatabaseConnectorException("Unable to set field of ParameterObject", e);
-			}
-		}
+	private Struct createConnectionStruct(Connection connection) throws SQLException {
+		Object[] attrVals = this.objectFields.stream().map(SqlParameterPrimitiveValue::getMxObjectValue).toArray();
+		String sqlTypeName = ((ParameterObject) this.parameterObject).getSQLTypeName();
+		return connection.createStruct(sqlTypeName, attrVals);
 	}
 
 	private Struct retrieveResultStruct(CallableStatement cStatement) throws SQLException {
-		String name = mxObject.getName();
+		String name = this.getName();
 		
 		if (name == null || name.isBlank()) {
-			return (Struct) cStatement.getObject(this.mxObject.getPosition());
+			return (Struct) cStatement.getObject(this.getPosition());
 		} else {
 			return (Struct) cStatement.getObject(name);
 		}
 	}
+
 }
