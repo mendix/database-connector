@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -106,6 +107,11 @@ public class TestCallableStatement {
 					"   lval.age := lval.age * 2;\r\n" + 
 					"   lval.name := 'new value';\r\n" + 
 					" END;")
+				.getStatement());
+		
+		executeStatement(new StatementBuilder(context)
+				.withContent(
+					"create or replace type array_number is VARRAY(2) OF number(20);")
 				.getStatement());
 	}
 	
@@ -468,7 +474,39 @@ public class TestCallableStatement {
 		assertEquals("A", ((ParameterString) outputFields6.get(0)).getValue());
 		assertEquals((Long)1L, ((ParameterLong) outputFields6.get(1)).getValue());
 	}
-	
+
+	@Test
+	public void testListOutput() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		outputObjectFields.add(builder.initLongParameter(1, null, null, ParameterMode.OUTPUT));
+		
+		builder = builder
+				.withInputParameter(1, null, 1L, ParameterLong.class)
+				.withInputParameter(2, null, 2L, ParameterLong.class)
+				.withListOutputParameter(3, null, outputObjectFields, "ARRAY_NUMBER")
+				.withContent(
+						"declare\r\n" + 
+						"  l_val1 number(20,0) := :1;\r\n" +
+						"  l_val2 number(20,0) := :2;\r\n" +
+						"begin\r\n" +
+						"  :3 := array_number(l_val1, l_val2);\r\n" +
+						"end;");
+		
+		executeStatement(builder.getStatement());
+
+		List<ParameterLong> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+				.stream()
+				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
+				.flatMap(p -> Core.retrieveByPath(context, p, Parameter.MemberNames.MemberOfList.toString(), true).stream())
+				.map(p -> ParameterLong.initialize(context, p))
+				.collect(Collectors.toList());
+		
+		assertEquals(2, outputParameters.size());
+		assertEquals((Long) 1L, outputParameters.get(0).getValue());
+		assertEquals((Long) 2L, outputParameters.get(1).getValue());
+	}
 
 	@Test
 	public void inOutObject() throws Exception {

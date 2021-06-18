@@ -14,6 +14,7 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import databaseconnector.proxies.Parameter;
 import databaseconnector.proxies.ParameterDatetime;
 import databaseconnector.proxies.ParameterDecimal;
+import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
@@ -68,6 +69,15 @@ public class StatementBuilder {
 	
 		return this;
 	}
+	
+	public <T> StatementBuilder withListInputParameter(Integer position, String name, List<Parameter> value, String sqlTypeName) throws Exception {
+		
+		Parameter parameter = initListParameter(position, name, value, ParameterMode.INPUT, sqlTypeName);
+		parameters.add(parameter);
+		parameter.setParameter_Statement(statement);
+	
+		return this;
+	}
 
 	public <T> StatementBuilder withOutputParameter(Integer position, String name, Class<?> parameterClass) throws Exception {
 		return this.withParameter(position, name, null, ParameterMode.OUTPUT, parameterClass);
@@ -76,6 +86,15 @@ public class StatementBuilder {
 	public <T> StatementBuilder withObjectOutputParameter(Integer position, String name, List<Parameter> value, String sqlTypeName) throws Exception {
 		
 		Parameter parameter = initObjectParameter(position, name, value, ParameterMode.OUTPUT, sqlTypeName);
+		parameters.add(parameter);
+		parameter.setParameter_Statement(statement);
+	
+		return this;
+	}
+	
+	public <T> StatementBuilder withListOutputParameter(Integer position, String name, List<Parameter> value, String sqlTypeName) throws Exception {
+		
+		Parameter parameter = initListParameter(position, name, value, ParameterMode.OUTPUT, sqlTypeName);
 		parameters.add(parameter);
 		parameter.setParameter_Statement(statement);
 	
@@ -153,6 +172,18 @@ public class StatementBuilder {
 
 		if (value != null) {
 			value.forEach(paramValue -> paramValue.setMemberOfObject(parameterInitialized));
+		}
+		
+		return parameterInitialized;
+	}
+
+	public ParameterList initListParameter(Integer position, String name, List<Parameter> value, ParameterMode parameterMode, String sqlTypeName) throws Exception {
+		ParameterList parameter = ParameterList.initialize(context, Core.instantiate(context, ParameterList.entityName));
+		ParameterList parameterInitialized = initParameter(position, name, parameterMode, parameter);
+		parameterInitialized.setSQLTypeName(sqlTypeName);
+
+		if (value != null) {
+			value.forEach(paramValue -> paramValue.setMemberOfList(parameterInitialized));
 		}
 		
 		return parameterInitialized;
