@@ -137,34 +137,6 @@ public class StatementBuilder {
 		return this;
 	}
 	
-	public ParameterDatetime initDatetimeParameter(Integer position, String name, Date value, ParameterMode parameterMode) throws Exception {
-		ParameterDatetime parameter = ParameterDatetime.initialize(context, Core.instantiate(context, ParameterDatetime.entityName));
-		parameter = initParameter(position, name, parameterMode, parameter);
-		if (value != null) parameter.setValue(value);
-		return parameter;
-	}
-	
-	public ParameterDecimal initDecimalParameter(Integer position, String name, BigDecimal value, ParameterMode parameterMode) throws Exception {
-		ParameterDecimal parameter = ParameterDecimal.initialize(context, Core.instantiate(context, ParameterDecimal.entityName));
-		parameter = initParameter(position, name, parameterMode, parameter);
-		if (value != null) parameter.setValue(value);
-		return parameter;
-	}
-	
-	public ParameterLong initLongParameter(Integer position, String name, Long value, ParameterMode parameterMode) throws Exception {
-		ParameterLong parameter = ParameterLong.initialize(context, Core.instantiate(context, ParameterLong.entityName));
-		parameter = initParameter(position, name, parameterMode, parameter);
-		if (value != null) parameter.setValue(value);
-		return parameter;
-	}
-	
-	public ParameterString initStringParameter(Integer position, String name, String value, ParameterMode parameterMode) throws Exception {
-		ParameterString parameter = ParameterString.initialize(context, Core.instantiate(context, ParameterString.entityName));
-		parameter = initParameter(position, name, parameterMode, parameter);
-		if (value != null) parameter.setValue(value);
-		return parameter;
-	}
-	
 	public ParameterObject initObjectParameter(Integer position, String name, List<Parameter> value, ParameterMode parameterMode, String sqlTypeName) throws Exception {
 		ParameterObject parameter = ParameterObject.initialize(context, Core.instantiate(context, ParameterObject.entityName));
 		ParameterObject parameterInitialized = initParameter(position, name, parameterMode, parameter);
@@ -187,6 +159,51 @@ public class StatementBuilder {
 		}
 		
 		return parameterInitialized;
+	}
+	
+	public ParameterDatetime datetimeField(Integer position, Date value) throws Exception {
+		return initDatetimeParameter(position, null, value, ParameterMode.INPUT);
+	}
+	
+	public ParameterDecimal decimalField(Integer position, BigDecimal value) throws Exception {
+		return initDecimalParameter(position, null, value, ParameterMode.INPUT);
+
+	}
+	
+	public ParameterLong longField(Integer position, Long value) throws Exception {
+		return initLongParameter(position, null, value, ParameterMode.INPUT);
+	}
+	
+	public ParameterString stringField(Integer position, String value) throws Exception {
+		return initStringParameter(position, null, value, ParameterMode.INPUT);
+	}
+	
+	private ParameterDatetime initDatetimeParameter(Integer position, String name, Date value, ParameterMode parameterMode) throws Exception {
+		ParameterDatetime parameter = ParameterDatetime.initialize(context, Core.instantiate(context, ParameterDatetime.entityName));
+		parameter = initParameter(position, name, parameterMode, parameter);
+		if (value != null) parameter.setValue(value);
+		return parameter;
+	}
+	
+	private ParameterDecimal initDecimalParameter(Integer position, String name, BigDecimal value, ParameterMode parameterMode) throws Exception {
+		ParameterDecimal parameter = ParameterDecimal.initialize(context, Core.instantiate(context, ParameterDecimal.entityName));
+		parameter = initParameter(position, name, parameterMode, parameter);
+		if (value != null) parameter.setValue(value);
+		return parameter;
+	}
+	
+	private ParameterLong initLongParameter(Integer position, String name, Long value, ParameterMode parameterMode) throws Exception {
+		ParameterLong parameter = ParameterLong.initialize(context, Core.instantiate(context, ParameterLong.entityName));
+		parameter = initParameter(position, name, parameterMode, parameter);
+		if (value != null) parameter.setValue(value);
+		return parameter;
+	}
+	
+	private ParameterString initStringParameter(Integer position, String name, String value, ParameterMode parameterMode) throws Exception {
+		ParameterString parameter = ParameterString.initialize(context, Core.instantiate(context, ParameterString.entityName));
+		parameter = initParameter(position, name, parameterMode, parameter);
+		if (value != null) parameter.setValue(value);
+		return parameter;
 	}
 	
 	private <T extends Parameter> T initParameter(Integer position, String name, ParameterMode parameterMode, T parameter) throws Exception {

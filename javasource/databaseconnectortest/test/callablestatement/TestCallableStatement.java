@@ -2,6 +2,7 @@ package databaseconnectortest.test.callablestatement;
 
 import static org.junit.Assert.assertEquals;
 
+
 import java.math.BigDecimal;
 import java.sql.SQLDataException;
 import java.sql.SQLException;
@@ -9,6 +10,7 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,6 +20,7 @@ import org.junit.rules.ExpectedException;
 import com.mendix.core.Core;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
+import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.impl.JdbcConnector;
@@ -77,6 +80,29 @@ public class TestCallableStatement {
 			"  :5 := input2;\r\n" + 
 			"  :6 := input1;\r\n" + 
 			"end;";
+	
+	private final static String TAKE_TWO_LONGS_RETURN_LIST_OF_6 =
+			"declare\r\n" + 
+			"  l_val1 number(20,0) := :1;\r\n" +
+			"  l_val2 number(20,0) := :2;\r\n" +
+			"begin\r\n" +
+			"  :3 := array_6_numbers(l_val1, l_val2, l_val1, l_val2, l_val1, l_val2);\r\n" +
+			"end;";
+
+	private final static String TAKE_DATE_RETURN_LIST_OF_1 =
+			"declare\r\n" + 
+			"  l_val1 date := :1;\r\n" +
+			"begin\r\n" +
+			"  :2 := array_1_date(l_val1);\r\n" +
+			"end;";
+
+	private final static String TAKE_DECIMAL_RETURN_LIST_OF_STRING_AND_LIST_OF_DECIMAL =
+			"declare\r\n" + 
+			"  l_val1 number(20,2) := :1;\r\n" +
+			"begin\r\n" +
+			"  :2 := array_6_numbers(l_val1, l_val1);\r\n" +
+			"  :3 := array_6_strings('test', 'test', 'test');\r\n" +
+			"end;";
 
 	private final JdbcConnector connector = new JdbcConnector(logNode);
 	
@@ -85,34 +111,23 @@ public class TestCallableStatement {
 	
 	@Before
 	public void prepare() throws Exception {
-		executeStatement(new StatementBuilder(context)
-				.withContent(
+		executeStatement(
 					"CREATE OR REPLACE PROCEDURE long_to_long (lval IN OUT NUMBER) AS\r\n" + 
 					"   BEGIN\r\n" + 
 					"   lval := lval * 2;\r\n" + 
-					" END;")
-				.getStatement());
+					" END;");
 		
-		executeStatement(new StatementBuilder(context)
-				.withContent(
-					"create or replace type name_and_age is object (\r\n" +
-					"    name VARCHAR2(100), age NUMBER\r\n" +
-					")")
-				.getStatement());
-		
-		executeStatement(new StatementBuilder(context)
-				.withContent(
+		executeStatement(
 					"CREATE OR REPLACE PROCEDURE object_to_same_object (lval IN OUT NAME_AND_AGE) AS\r\n" + 
 					"   BEGIN\r\n" + 
 					"   lval.age := lval.age * 2;\r\n" + 
 					"   lval.name := 'new value';\r\n" + 
-					" END;")
-				.getStatement());
+					" END;");
 		
-		executeStatement(new StatementBuilder(context)
-				.withContent(
-					"create or replace type array_number is VARRAY(2) OF number(20);")
-				.getStatement());
+		executeStatement("create or replace type name_and_age is object (name VARCHAR2(100), age NUMBER)");
+		executeStatement("create or replace type array_6_numbers is VARRAY(6) OF number(20);");
+		executeStatement("create or replace type array_1_date is VARRAY(1) OF date;");
+		executeStatement("create or replace type array_6_strings is VARRAY(6) OF VARCHAR2(100);");
 	}
 	
 	@Test
@@ -285,8 +300,8 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
-		inputObjectFields.add(builder.initStringParameter(1, null, TEST_STRING, ParameterMode.INPUT));
-		inputObjectFields.add(builder.initLongParameter(2, null, AU, ParameterMode.INPUT));
+		inputObjectFields.add(builder.stringField(1, TEST_STRING));
+		inputObjectFields.add(builder.longField(2, AU));
 		
 		builder = builderFromObjectToMembers(builder, inputObjectFields)
 				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
@@ -302,9 +317,9 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
-		inputObjectFields.add(builder.initStringParameter(1, null, TEST_STRING, ParameterMode.INPUT));
-		inputObjectFields.add(builder.initLongParameter(2, null, AU, ParameterMode.INPUT));
-		inputObjectFields.add(builder.initLongParameter(3, null, AU, ParameterMode.INPUT));
+		inputObjectFields.add(builder.stringField(1, TEST_STRING));
+		inputObjectFields.add(builder.longField(2, AU));
+		inputObjectFields.add(builder.longField(3, AU));
 		
 		builder = builderFromObjectToMembers(builder, inputObjectFields)
 				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
@@ -318,7 +333,7 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
-		inputObjectFields.add(builder.initStringParameter(1, null, TEST_STRING, ParameterMode.INPUT));
+		inputObjectFields.add(builder.stringField(1, TEST_STRING));
 
 		builder = builderFromObjectToMembers(builder, inputObjectFields)
 				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
@@ -332,8 +347,8 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
-		inputObjectFields.add(builder.initLongParameter(1, null, AU, ParameterMode.INPUT));
-		inputObjectFields.add(builder.initStringParameter(2, null, TEST_STRING, ParameterMode.INPUT));
+		inputObjectFields.add(builder.longField(1, AU));
+		inputObjectFields.add(builder.stringField(2, TEST_STRING));
 		
 		builder = builderFromObjectToMembers(builder, inputObjectFields)
 				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
@@ -348,8 +363,8 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
-		inputObjectFields.add(builder.initLongParameter(2, null, AU, ParameterMode.INPUT));
-		inputObjectFields.add(builder.initStringParameter(2, null, TEST_STRING, ParameterMode.INPUT));
+		inputObjectFields.add(builder.longField(2, AU));
+		inputObjectFields.add(builder.stringField(2, TEST_STRING));
 		
 		builder = builderFromObjectToMembers(builder, inputObjectFields)
 				.withContent(TAKE_OBJECT_RETURN_MEMBERS);
@@ -364,8 +379,8 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
-		outputObjectFields.add(builder.initStringParameter(1, null, null, ParameterMode.OUTPUT));
-		outputObjectFields.add(builder.initLongParameter(2, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.stringField(1, null));
+		outputObjectFields.add(builder.longField(2, null));
 		
 		builder = builderFromMembersToObject(builder, outputObjectFields)
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
@@ -388,7 +403,7 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
-		outputObjectFields.add(builder.initStringParameter(1, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.stringField(1, null));
 		
 		builder = builderFromMembersToObject(builder, outputObjectFields)
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
@@ -404,8 +419,8 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
-		outputObjectFields.add(builder.initStringParameter(2, null, null, ParameterMode.OUTPUT));
-		outputObjectFields.add(builder.initLongParameter(2, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.stringField(2, null));
+		outputObjectFields.add(builder.longField(2, null));
 		
 		builder = builderFromMembersToObject(builder, outputObjectFields)
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
@@ -420,9 +435,9 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
-		outputObjectFields.add(builder.initStringParameter(1, null, null, ParameterMode.OUTPUT));
-		outputObjectFields.add(builder.initLongParameter(2, null, null, ParameterMode.OUTPUT));
-		outputObjectFields.add(builder.initLongParameter(3, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.stringField(1, null));
+		outputObjectFields.add(builder.longField(2, null));
+		outputObjectFields.add(builder.longField(3, null));
 
 		builder = builderFromMembersToObject(builder, outputObjectFields)
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
@@ -437,8 +452,8 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
-		outputObjectFields.add(builder.initLongParameter(1, null, null, ParameterMode.OUTPUT));
-		outputObjectFields.add(builder.initStringParameter(2, null, null, ParameterMode.OUTPUT));
+		outputObjectFields.add(builder.longField(1, null));
+		outputObjectFields.add(builder.stringField(2, null));
 
 		builder = builderFromMembersToObject(builder, outputObjectFields)
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
@@ -476,37 +491,74 @@ public class TestCallableStatement {
 	}
 
 	@Test
-	public void testListOutput() throws Exception {
+	public void testLongListOutput_MultipleValues() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
-		outputObjectFields.add(builder.initLongParameter(1, null, null, ParameterMode.OUTPUT));
-		
 		builder = builder
-				.withInputParameter(1, null, 1L, ParameterLong.class)
-				.withInputParameter(2, null, 2L, ParameterLong.class)
-				.withListOutputParameter(3, null, outputObjectFields, "ARRAY_NUMBER")
-				.withContent(
-						"declare\r\n" + 
-						"  l_val1 number(20,0) := :1;\r\n" +
-						"  l_val2 number(20,0) := :2;\r\n" +
-						"begin\r\n" +
-						"  :3 := array_number(l_val1, l_val2);\r\n" +
-						"end;");
+				.withInputParameter(1, null, 0L, ParameterLong.class)
+				.withInputParameter(2, null, 1L, ParameterLong.class)
+				.withListOutputParameter(3, null, List.of(builder.longField(1, null)), "ARRAY_6_NUMBERS")
+				.withContent(TAKE_TWO_LONGS_RETURN_LIST_OF_6);
 		
 		executeStatement(builder.getStatement());
 
-		List<ParameterLong> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
-				.stream()
-				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
-				.flatMap(p -> Core.retrieveByPath(context, p, Parameter.MemberNames.MemberOfList.toString(), true).stream())
+		List<ParameterLong> outputParameters = getMembersOfList(builder.getStatement(), 3)
 				.map(p -> ParameterLong.initialize(context, p))
 				.collect(Collectors.toList());
 		
-		assertEquals(2, outputParameters.size());
-		assertEquals((Long) 1L, outputParameters.get(0).getValue());
-		assertEquals((Long) 2L, outputParameters.get(1).getValue());
+		assertEquals(6, outputParameters.size());
+		for (long i = 0; i < outputParameters.size(); i ++) {
+			assertEquals((Long)(i % 2), outputParameters.get((int)i).getValue());
+			
+		}
 	}
+
+	@Test
+	public void testDateListOutput_OneValue() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		builder = builder
+				.withInputParameter(1, null, new Date(0L), ParameterDatetime.class)
+				.withListOutputParameter(2, null, List.of(builder.datetimeField(1, null)), "ARRAY_1_DATE")
+				.withContent(TAKE_DATE_RETURN_LIST_OF_1);
+		
+		executeStatement(builder.getStatement());
+
+		List<ParameterDatetime> outputParameters = getMembersOfList(builder.getStatement(), 2)
+				.map(p -> ParameterDatetime.initialize(context, p))
+				.collect(Collectors.toList());
+		
+		assertEquals(1, outputParameters.size());
+		assertEquals(new Date(0L), outputParameters.get(0).getValue());
+	}
+
+
+	@Test
+	public void testDtringAndDecimalListsOutput() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		builder = builder
+				.withInputParameter(1, null, new BigDecimal("0.01"), ParameterDecimal.class)
+				.withListOutputParameter(2, null, List.of(builder.decimalField(1, null)), "ARRAY_6_NUMBERS")
+				.withListOutputParameter(3, null, List.of(builder.stringField(1, null)), "ARRAY_6_STRINGS")
+				.withContent(TAKE_DECIMAL_RETURN_LIST_OF_STRING_AND_LIST_OF_DECIMAL);
+		
+		executeStatement(builder.getStatement());
+
+		List<ParameterDecimal> decimalList = getMembersOfList(builder.getStatement(), 2)
+				.map(p -> ParameterDecimal.initialize(context, p))
+				.collect(Collectors.toList());
+		
+		assertEquals(2, decimalList.size());
+		for(ParameterDecimal value : decimalList) { assertEquals(new BigDecimal("0.01"), value.getValue()); }
+
+		List<ParameterString> stringList = getMembersOfList(builder.getStatement(), 3)
+				.map(p -> ParameterString.initialize(context, p))
+				.collect(Collectors.toList());
+
+		assertEquals(3, stringList.size());
+		for(ParameterString value : stringList) { assertEquals("test", value.getValue()); }
+}
 
 	@Test
 	public void inOutObject() throws Exception {
@@ -530,10 +582,18 @@ public class TestCallableStatement {
 		// TODO
 	}
 	
+	private Stream<IMendixObject> getMembersOfList(Statement statement, int position) {
+		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+				.stream()
+				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
+				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
+				.flatMap(p -> Core.retrieveByPath(context, p, Parameter.MemberNames.MemberOfList.toString(), true).stream());
+	}
+	
 	private List<Parameter> objectFields(String name, Long age, StatementBuilder builder) throws Exception {
 		List<Parameter> objectFields = new LinkedList<Parameter>();
-		objectFields.add(builder.initStringParameter(1, null, name, ParameterMode.INPUT));
-		objectFields.add(builder.initLongParameter(2, null, age, ParameterMode.INPUT));
+		objectFields.add(builder.stringField(1, name));
+		objectFields.add(builder.longField(2, age));
 		return objectFields;
 	}
 	
@@ -553,5 +613,9 @@ public class TestCallableStatement {
 	
 	private void executeStatement(Statement statement) throws SQLException, DatabaseConnectorException {
 		connector.executeCallableStatement("jdbc:oracle:thin:@//" + Constants.getOracleAddress(), Constants.getOracleUserName(), Constants.getOraclePassword(), statement);
+	}
+
+	private void executeStatement(String content) throws SQLException, DatabaseConnectorException {
+		executeStatement(new StatementBuilder(context).withContent(content).getStatement());
 	}
 }
