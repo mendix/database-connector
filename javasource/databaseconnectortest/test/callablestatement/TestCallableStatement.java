@@ -38,8 +38,10 @@ public class TestCallableStatement {
 	private final IContext context = Core.createSystemContext();
 	
 	private final static Long AU = 149597870700L;
+	private final static BigDecimal PI = new BigDecimal(3.14);
 	private final static String TEST_STRING = "Nibiru cataclysm";
-	
+	private final static Date TEST_DATE = new Date(0L);
+
 	private final static String TAKE_LONG_RETURN_LONG =
 			"declare\r\n" + 
 			"  l_long number(20,0) := :1;\r\n" + 
@@ -52,6 +54,19 @@ public class TestCallableStatement {
 			"  l_long number(20,0) := :1;\r\n" + 
 			"begin\r\n" + 
 			"  :2 := TO_CHAR(l_long);\r\n" + 
+			"end;";
+
+	private final static String TAKE_ALL_TYPES_RETURN_ALL_TYPES =
+			"declare\r\n" + 
+			"  l_long number(20,0) := :1;\r\n" + 
+			"  l_dec number(20,2) := :2;\r\n" + 
+			"  l_string VARCHAR2(100) := :3;\r\n" + 
+			"  l_date date := :4;\r\n" + 
+			"begin\r\n" + 
+			"  :5 := l_date;\r\n" + 
+			"  :6 := l_string;\r\n" + 
+			"  :7 := l_dec;\r\n" + 
+			"  :8 := l_long;\r\n" + 
 			"end;";
 
 	private final static String TAKE_OBJECT_RETURN_MEMBERS =
@@ -134,7 +149,7 @@ public class TestCallableStatement {
 	public void testCallableStatementPrimitives() throws Exception {
 		// Arrange
 		StatementBuilder builder = new StatementBuilder(context)
-				.withInputParameter(1, null, new Date(0L), ParameterDatetime.class)
+				.withInputParameter(1, null, TEST_DATE, ParameterDatetime.class)
 				.withInputParameter(2, null, BigDecimal.valueOf(AU), ParameterDecimal.class)
 				.withOutputParameter(3, null, ParameterLong.class)
 				.withOutputParameter(4, null, ParameterString.class)
@@ -518,7 +533,7 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		builder = builder
-				.withInputParameter(1, null, new Date(0L), ParameterDatetime.class)
+				.withInputParameter(1, null, TEST_DATE, ParameterDatetime.class)
 				.withListOutputParameter(2, null, List.of(builder.datetimeField(1, null)), "ARRAY_1_DATE")
 				.withContent(TAKE_DATE_RETURN_LIST_OF_1);
 		
@@ -529,16 +544,16 @@ public class TestCallableStatement {
 				.collect(Collectors.toList());
 		
 		assertEquals(1, outputParameters.size());
-		assertEquals(new Date(0L), outputParameters.get(0).getValue());
+		assertEquals(TEST_DATE, outputParameters.get(0).getValue());
 	}
 
 
 	@Test
-	public void testDtringAndDecimalListsOutput() throws Exception {
+	public void testStringAndDecimalListsOutput() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		builder = builder
-				.withInputParameter(1, null, new BigDecimal("0.01"), ParameterDecimal.class)
+				.withInputParameter(1, null, PI, ParameterDecimal.class)
 				.withListOutputParameter(2, null, List.of(builder.decimalField(1, null)), "ARRAY_6_NUMBERS")
 				.withListOutputParameter(3, null, List.of(builder.stringField(1, null)), "ARRAY_6_STRINGS")
 				.withContent(TAKE_DECIMAL_RETURN_LIST_OF_STRING_AND_LIST_OF_DECIMAL);
@@ -550,7 +565,7 @@ public class TestCallableStatement {
 				.collect(Collectors.toList());
 		
 		assertEquals(2, decimalList.size());
-		for(ParameterDecimal value : decimalList) { assertEquals(new BigDecimal("0.01"), value.getValue()); }
+		for(ParameterDecimal value : decimalList) { assertEquals(PI, value.getValue()); }
 
 		List<ParameterString> stringList = getMembersOfList(builder.getStatement(), 3)
 				.map(p -> ParameterString.initialize(context, p))
@@ -579,13 +594,28 @@ public class TestCallableStatement {
 
 	@Test
 	public void testAllArgumentTypes() throws Exception {
-		// TODO
+		StatementBuilder builder = new StatementBuilder(context)
+				.withInputParameter(1, null, AU, ParameterLong.class)
+				.withInputParameter(2, null, PI, ParameterDecimal.class)
+				.withInputParameter(3, null, TEST_STRING, ParameterString.class)
+				.withInputParameter(4, null, TEST_DATE, ParameterDatetime.class)
+				.withOutputParameter(5, null, ParameterDatetime.class)
+				.withOutputParameter(6, null, ParameterString.class)
+				.withOutputParameter(7, null, ParameterDecimal.class)
+				.withOutputParameter(8, null, ParameterLong.class)
+				.withContent(TAKE_ALL_TYPES_RETURN_ALL_TYPES);
+		
+		executeStatement(builder.getStatement());
+
+		assertEquals(TEST_DATE, ((ParameterDatetime)builder.getParameter(4)).getValue());
+		assertEquals(TEST_STRING, ((ParameterString)builder.getParameter(5)).getValue());
+		assertEquals(PI.doubleValue(), ((ParameterDecimal)builder.getParameter(6)).getValue().doubleValue(), 1e-10);
+		assertEquals(AU, ((ParameterLong)builder.getParameter(7)).getValue());
 	}
 	
 	private Stream<IMendixObject> getMembersOfList(Statement statement, int position) {
 		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
 				.stream()
-				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
 				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
 				.flatMap(p -> Core.retrieveByPath(context, p, Parameter.MemberNames.MemberOfList.toString(), true).stream());
 	}
