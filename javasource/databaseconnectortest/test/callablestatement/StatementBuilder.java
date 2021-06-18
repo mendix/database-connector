@@ -70,7 +70,7 @@ public class StatementBuilder {
 		return this;
 	}
 	
-	public <T> StatementBuilder withListInputParameter(Integer position, String name, List<Parameter> value, String sqlTypeName) throws Exception {
+	public <T extends Parameter> StatementBuilder withListInputParameter(Integer position, String name, List<T> value, String sqlTypeName) throws Exception {
 		
 		Parameter parameter = initListParameter(position, name, value, ParameterMode.INPUT, sqlTypeName);
 		parameters.add(parameter);
@@ -149,7 +149,7 @@ public class StatementBuilder {
 		return parameterInitialized;
 	}
 
-	public ParameterList initListParameter(Integer position, String name, List<Parameter> value, ParameterMode parameterMode, String sqlTypeName) throws Exception {
+	public <T extends Parameter> ParameterList initListParameter(Integer position, String name, List<T> value, ParameterMode parameterMode, String sqlTypeName) throws Exception {
 		ParameterList parameter = ParameterList.initialize(context, Core.instantiate(context, ParameterList.entityName));
 		ParameterList parameterInitialized = initParameter(position, name, parameterMode, parameter);
 		parameterInitialized.setSQLTypeName(sqlTypeName);

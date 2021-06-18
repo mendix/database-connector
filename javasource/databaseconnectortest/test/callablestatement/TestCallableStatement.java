@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -95,7 +96,7 @@ public class TestCallableStatement {
 			"  :5 := input2;\r\n" + 
 			"  :6 := input1;\r\n" + 
 			"end;";
-	
+
 	private final static String TAKE_TWO_LONGS_RETURN_LIST_OF_6 =
 			"declare\r\n" + 
 			"  l_val1 number(20,0) := :1;\r\n" +
@@ -117,6 +118,19 @@ public class TestCallableStatement {
 			"begin\r\n" +
 			"  :2 := array_6_numbers(l_val1, l_val1);\r\n" +
 			"  :3 := array_6_strings('test', 'test', 'test');\r\n" +
+			"end;";
+
+	private final static String TAKE_LIST_OF_LONG_RETURN_SUM =
+			"declare\r\n" + 
+			"  l_val1 array_6_numbers := :1;\r\n" +
+			"  sum number(20,0) := 0;\r\n" +
+			"  total integer;\r\n" +
+			"begin\r\n" +
+			"  total := l_val1.count;\r\n" +
+			"  FOR i in 1..total LOOP\r\n" +
+			"  	 sum := sum + i;\r\n" +
+			"  END LOOP;\r\n" +
+			"  :2 := sum;\r\n" +
 			"end;";
 
 	private final JdbcConnector connector = new JdbcConnector(logNode);
@@ -547,7 +561,6 @@ public class TestCallableStatement {
 		assertEquals(TEST_DATE, outputParameters.get(0).getValue());
 	}
 
-
 	@Test
 	public void testStringAndDecimalListsOutput() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
@@ -573,7 +586,25 @@ public class TestCallableStatement {
 
 		assertEquals(3, stringList.size());
 		for(ParameterString value : stringList) { assertEquals("test", value.getValue()); }
-}
+	}
+
+	@Ignore
+	@Test
+	public void testInputListOfLongsOutputLong() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<ParameterLong> inputList = List.of(builder.longField(1, 1L), builder.longField(2, 2L), builder.longField(3, 4L));
+		
+		builder = builder
+				.withListInputParameter(1, null, inputList, "ARRAY_6_NUMBERS")
+				.withOutputParameter(2, null, ParameterLong.class)
+				.withContent(TAKE_LIST_OF_LONG_RETURN_SUM);
+		
+		executeStatement(builder.getStatement());
+		
+		assertEquals((Long)7L, ((ParameterLong)builder.getParameter(1)).getValue());
+
+	}
 
 	@Test
 	public void inOutObject() throws Exception {
