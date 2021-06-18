@@ -30,6 +30,7 @@ import databaseconnector.proxies.ParameterDatetime;
 import databaseconnector.proxies.ParameterDecimal;
 import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterMode;
+import databaseconnector.proxies.ParameterObject;
 import databaseconnector.proxies.ParameterString;
 import databaseconnector.proxies.Statement;
 import databaseconnectortest.proxies.constants.Constants;
@@ -157,6 +158,7 @@ public class TestCallableStatement {
 		executeStatement("create or replace type array_6_numbers is VARRAY(6) OF number(20);");
 		executeStatement("create or replace type array_1_date is VARRAY(1) OF date;");
 		executeStatement("create or replace type array_6_strings is VARRAY(6) OF VARCHAR2(100);");
+		executeStatement("create or replace type ARRAY_2_OBJ is VARRAY(2) OF NAME_AND_AGE;");
 	}
 	
 	@Test
@@ -603,7 +605,31 @@ public class TestCallableStatement {
 		executeStatement(builder.getStatement());
 		
 		assertEquals((Long)7L, ((ParameterLong)builder.getParameter(1)).getValue());
+	}
 
+	@Ignore
+	@Test
+	public void testListObjectOutput() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+		
+		builder = builder
+				.withListOutputParameter(1, null, null, "ARRAY_2_OBJ")
+				.withContent(
+						"declare\r\n" + 
+						"begin\r\n" +
+						"  :1 := array_number(NAME_AND_AGE('a', 1), NAME_AND_AGE('b', 2);\r\n" +
+						"end;");
+		
+		executeStatement(builder.getStatement());
+
+		List<ParameterObject> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+				.stream()
+				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
+				.flatMap(p -> Core.retrieveByPath(context, p, Parameter.MemberNames.MemberOfList.toString(), true).stream())
+				.map(p -> ParameterObject.initialize(context, p))
+				.collect(Collectors.toList());
+		
+		assertEquals(2, outputParameters.size());
 	}
 
 	@Test
