@@ -142,6 +142,7 @@ public class TestCallableStatement {
 	@Before
 	public void prepare() throws Exception {
 		executeStatement("create or replace type NAME_AND_AGE is object (name VARCHAR2(100), age NUMBER)");
+		
 		executeStatement(
 					"CREATE OR REPLACE PROCEDURE long_to_long (lval IN OUT NUMBER) AS\r\n" + 
 					"   BEGIN\r\n" + 
@@ -158,7 +159,7 @@ public class TestCallableStatement {
 		executeStatement("create or replace type array_6_numbers is VARRAY(6) OF number(20);");
 		executeStatement("create or replace type array_1_date is VARRAY(1) OF date;");
 		executeStatement("create or replace type array_6_strings is VARRAY(6) OF VARCHAR2(100);");
-		executeStatement("create or replace type ARRAY_2_OBJ is VARRAY(2) OF NAME_AND_AGE;");
+		executeStatement("create or replace type ARRAY_2_OBJ is VARRAY(2) OF object(name varchar2(100), age number);");
 	}
 	
 	@Test
