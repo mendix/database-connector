@@ -70,16 +70,21 @@ public class SqlParameterList extends SqlParameter {
 
 	@Override
 	protected void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
-		Array objStruct = retrieveResultArray(cStatement);
-		Object[] values = (Object[]) objStruct.getArray();
-		IContext context = this.parameterObject.getContext();
-		
-		int index = 0;
-		for (Object value : values) {
-			SqlParameter valueSqlParameter = SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, value);
-			valueSqlParameter.parameterObject.setMemberOfList((ParameterList) this.parameterObject);
-			this.elements.add(valueSqlParameter);
-			index++;
+		Array objStruct = null;
+		try {
+			objStruct = retrieveResultArray(cStatement);
+			Object[] values = (Object[]) objStruct.getArray();
+			IContext context = this.parameterObject.getContext();
+
+			int index = 0;
+			for (Object value : values) {
+				SqlParameter valueSqlParameter = SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, value);
+				valueSqlParameter.parameterObject.setMemberOfList((ParameterList) this.parameterObject);
+				this.elements.add(valueSqlParameter);
+				index++;
+			}
+		} finally {
+			if (objStruct != null) objStruct.free();
 		}
 	}
 
