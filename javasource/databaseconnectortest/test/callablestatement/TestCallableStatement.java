@@ -529,19 +529,18 @@ public class TestCallableStatement {
 		builder = builder
 				.withInputParameter(1, null, 0L, ParameterLong.class)
 				.withInputParameter(2, null, 1L, ParameterLong.class)
-				.withListOutputParameter(3, null, List.of(builder.longField(1, null)), "ARRAY_6_NUMBERS")
+				.withListOutputParameter(3, null, null, "ARRAY_6_NUMBERS")
 				.withContent(TAKE_TWO_LONGS_RETURN_LIST_OF_6);
 		
 		executeStatement(builder.getStatement());
 
-		List<ParameterLong> outputParameters = getMembersOfList(builder.getStatement(), 3)
-				.map(p -> ParameterLong.initialize(context, p))
+		List<ParameterDecimal> outputParameters = getMembersOfList(builder.getStatement(), 3)
+				.map(p -> ParameterDecimal.initialize(context, p))
 				.collect(Collectors.toList());
 		
 		assertEquals(6, outputParameters.size());
 		for (long i = 0; i < outputParameters.size(); i ++) {
-			assertEquals((Long)(i % 2), outputParameters.get((int)i).getValue());
-			
+			assertEquals((Long)(i % 2), (Long) outputParameters.get((int)i).getValue().longValue());
 		}
 	}
 
@@ -551,7 +550,7 @@ public class TestCallableStatement {
 
 		builder = builder
 				.withInputParameter(1, null, TEST_DATE, ParameterDatetime.class)
-				.withListOutputParameter(2, null, List.of(builder.datetimeField(1, null)), "ARRAY_1_DATE")
+				.withListOutputParameter(2, null, null, "ARRAY_1_DATE")
 				.withContent(TAKE_DATE_RETURN_LIST_OF_1);
 		
 		executeStatement(builder.getStatement());
@@ -570,8 +569,8 @@ public class TestCallableStatement {
 
 		builder = builder
 				.withInputParameter(1, null, PI, ParameterDecimal.class)
-				.withListOutputParameter(2, null, List.of(builder.decimalField(1, null)), "ARRAY_6_NUMBERS")
-				.withListOutputParameter(3, null, List.of(builder.stringField(1, null)), "ARRAY_6_STRINGS")
+				.withListOutputParameter(2, null, null, "ARRAY_6_NUMBERS")
+				.withListOutputParameter(3, null, null, "ARRAY_6_STRINGS")
 				.withContent(TAKE_DECIMAL_RETURN_LIST_OF_STRING_AND_LIST_OF_DECIMAL);
 		
 		executeStatement(builder.getStatement());
@@ -581,7 +580,7 @@ public class TestCallableStatement {
 				.collect(Collectors.toList());
 		
 		assertEquals(2, decimalList.size());
-		for(ParameterDecimal value : decimalList) { assertEquals(PI, value.getValue()); }
+		for(ParameterDecimal value : decimalList) { assertEquals(PI.doubleValue(), value.getValue().doubleValue(), 0.15); }
 
 		List<ParameterString> stringList = getMembersOfList(builder.getStatement(), 3)
 				.map(p -> ParameterString.initialize(context, p))
