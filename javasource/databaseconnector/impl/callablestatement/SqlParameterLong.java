@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
+import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.ParameterLong;
 
 public class SqlParameterLong extends SqlParameterPrimitiveValue {
@@ -15,11 +16,11 @@ public class SqlParameterLong extends SqlParameterPrimitiveValue {
 	}
 
 	@Override
-	public void setMxObjectValue(Object value) {
+	public void setMxObjectValue(Object value) throws DatabaseConnectorException {
 		if (value instanceof BigDecimal) {
 			((ParameterLong) this.parameterObject).setValue(((BigDecimal) value).longValue());
 		} else {
-			((ParameterLong) this.parameterObject).setValue(((Long) value));
+			super.setMxObjectValue(value);
 		}
 	}
 

@@ -6,10 +6,11 @@ import java.sql.SQLException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
+import databaseconnector.impl.DatabaseConnectorException;
+
 public abstract class SqlParameterPrimitiveValue extends SqlParameter {
 	protected final int SQL_TYPE;
 
-	@SuppressWarnings("unchecked")
 	protected SqlParameterPrimitiveValue(final IContext context, IMendixObject mendixObject, int SQL_TYPE) {
 		super(context, mendixObject);
 		this.SQL_TYPE = SQL_TYPE;
@@ -47,12 +48,16 @@ public abstract class SqlParameterPrimitiveValue extends SqlParameter {
 	}
 	
 	@Override
-	public void setMxObjectValue(Object value) {
-		this.parameterObject.getMendixObject().setValue(this.parameterObject.getContext(), "Value", value);
+	public void setMxObjectValue(Object value) throws DatabaseConnectorException {
+		try {
+			this.parameterObject.getMendixObject().setValue(this.parameterObject.getContext(), "Value", value);
+		} catch (ClassCastException e) {
+			throw new DatabaseConnectorException(String.format("Unable to set value %s for parameter %s.", value.toString(), this.parameterObject.getMendixObject().getType()));
+		}
 	}
 
 	@Override
-	public void getValueOutput(CallableStatement cStatement) throws SQLException {
+	public void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		final Object value;
 		final String name = this.getName();
 		if (name == null || name.isBlank()) {

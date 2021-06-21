@@ -99,7 +99,7 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 	protected abstract void prepareInput(CallableStatement cStatement) throws SQLException;
 
 	abstract Object getMxObjectValue();
-	abstract void setMxObjectValue(Object value);
+	abstract void setMxObjectValue(Object value) throws DatabaseConnectorException;
 	
 	public Integer getPosition() {
 		return this.parameterObject.getPosition();

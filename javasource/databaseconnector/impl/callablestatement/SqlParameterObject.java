@@ -53,7 +53,7 @@ public class SqlParameterObject extends SqlParameter {
 				field.setMxObjectValue(values[index]);
 				index++;
 			}
-		} catch (IllegalArgumentException e) {
+		} catch (DatabaseConnectorException | IllegalArgumentException e) {
 			throw new DatabaseConnectorException("Unable to set field of ParameterObject", e);
 		}
 	}
