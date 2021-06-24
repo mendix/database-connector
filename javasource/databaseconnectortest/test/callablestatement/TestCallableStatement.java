@@ -1,7 +1,7 @@
 package databaseconnectortest.test.callablestatement;
 
 import static org.junit.Assert.assertEquals;
-
+import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.sql.SQLDataException;
@@ -151,6 +151,12 @@ public class TestCallableStatement {
 					" END;");
 		
 		executeStatement(
+				"CREATE OR REPLACE PROCEDURE long_to_different_long (lval IN NUMBER, result OUT NUMBER) AS\r\n" + 
+				"   BEGIN\r\n" + 
+				"   result := lval * 3;\r\n" + 
+				" END;");
+	
+		executeStatement(
 					"CREATE OR REPLACE PROCEDURE object_to_same_object (lval IN OUT NAME_AND_AGE) AS\r\n" + 
 					"   BEGIN\r\n" + 
 					"   lval.age := lval.age * 2;\r\n" + 
@@ -195,7 +201,7 @@ public class TestCallableStatement {
 	
 	@Test
 	public void testOneArgumentByName() throws Exception {
-		String content =
+		/*String content =
 				"declare\r\n" + 
 				"  l_long number(20,0) := :in_long;\r\n" + 
 				"  result out varchar2;\r\n" + 
@@ -203,14 +209,20 @@ public class TestCallableStatement {
 				"  :result := TO_CHAR(l_long);\r\n" + 
 				"end;";
 		
+		*/
+		
 		StatementBuilder builder = new StatementBuilder(context)
 				.withInputParameter(null, "in_long", BigDecimal.valueOf(AU), ParameterDecimal.class)
 				.withOutputParameter(null, "result", ParameterString.class)
-				.withContent(content);
+				.withContent("{ call long_to_different_long(:in_long, :result) }");
 		
-		executeStatement(builder.getStatement());
-
-		assertEquals(AU.toString(), ((ParameterString)builder.getParameter(1)).getValue());
+		try {
+			executeStatement(builder.getStatement());
+		} catch (Exception e) {
+			fail(e.getMessage());
+		}
+		
+		assertEquals(((Long)(AU * 3)).toString(), ((ParameterString)builder.getParameter(1)).getValue());
 	}
 	
 	@Test
@@ -230,7 +242,11 @@ public class TestCallableStatement {
 				.withInOutParameter(null, "param", AU, ParameterLong.class)
 				.withContent("{ call long_to_long(:param) }");
 		
-		executeStatement(builder.getStatement());
+		try {
+			executeStatement(builder.getStatement());
+		} catch(Exception e) {
+			fail(e.getMessage());
+		}
 
 		assertEquals((Long)(AU * 2), ((ParameterLong)builder.getParameter(0)).getValue());
 	}
