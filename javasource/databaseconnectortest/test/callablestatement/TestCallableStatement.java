@@ -201,26 +201,12 @@ public class TestCallableStatement {
 	
 	@Test
 	public void testOneArgumentByName() throws Exception {
-		/*String content =
-				"declare\r\n" + 
-				"  l_long number(20,0) := :in_long;\r\n" + 
-				"  result out varchar2;\r\n" + 
-				"begin\r\n" + 
-				"  :result := TO_CHAR(l_long);\r\n" + 
-				"end;";
-		
-		*/
-		
 		StatementBuilder builder = new StatementBuilder(context)
 				.withInputParameter(null, "in_long", BigDecimal.valueOf(AU), ParameterDecimal.class)
 				.withOutputParameter(null, "result", ParameterString.class)
 				.withContent("{ call long_to_different_long(:in_long, :result) }");
 		
-		try {
-			executeStatement(builder.getStatement());
-		} catch (Exception e) {
-			fail(e.getMessage());
-		}
+		executeStatement(builder.getStatement());
 		
 		assertEquals(((Long)(AU * 3)).toString(), ((ParameterString)builder.getParameter(1)).getValue());
 	}
@@ -242,11 +228,7 @@ public class TestCallableStatement {
 				.withInOutParameter(null, "param", AU, ParameterLong.class)
 				.withContent("{ call long_to_long(:param) }");
 		
-		try {
-			executeStatement(builder.getStatement());
-		} catch(Exception e) {
-			fail(e.getMessage());
-		}
+		executeStatement(builder.getStatement());
 
 		assertEquals((Long)(AU * 2), ((ParameterLong)builder.getParameter(0)).getValue());
 	}
