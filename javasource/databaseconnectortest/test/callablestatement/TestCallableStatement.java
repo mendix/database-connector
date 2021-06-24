@@ -212,6 +212,18 @@ public class TestCallableStatement {
 	}
 	
 	@Test
+	public void testOneArgumentByPositionInProcedure() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context)
+				.withInputParameter(1, null, BigDecimal.valueOf(AU), ParameterDecimal.class)
+				.withOutputParameter(2, null, ParameterString.class)
+				.withContent("{ call long_to_different_long(:1, :2) }");
+		
+		executeStatement(builder.getStatement());
+		
+		assertEquals(((Long)(AU * 3)).toString(), ((ParameterString)builder.getParameter(1)).getValue());
+	}
+	
+	@Test
 	public void testInOutArgumentByPosition() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context)
 				.withInOutParameter(1, null, AU, ParameterLong.class)
