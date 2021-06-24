@@ -28,6 +28,7 @@ import databaseconnector.impl.JdbcConnector;
 import databaseconnector.proxies.Parameter;
 import databaseconnector.proxies.ParameterDatetime;
 import databaseconnector.proxies.ParameterDecimal;
+import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
@@ -422,7 +423,7 @@ public class TestCallableStatement {
 		long numberOfOutputFields = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
-				.flatMap(p -> Core.retrieveByPath(context, p, Parameter.MemberNames.MemberOfObject.toString(), true).stream()).count();
+				.flatMap(p -> Core.retrieveByPath(context, p, ParameterObject.MemberNames.ParameterObject_Parameter.toString()).stream()).count();
 
 		assertEquals(outputObjectFields.size(), numberOfOutputFields);
 
@@ -625,7 +626,7 @@ public class TestCallableStatement {
 		List<ParameterObject> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
-				.flatMap(p -> Core.retrieveByPath(context, p, Parameter.MemberNames.MemberOfList.toString(), true).stream())
+				.flatMap(p -> Core.retrieveByPath(context, p, ParameterObject.MemberNames.ParameterObject_Parameter.toString()).stream())
 				.map(p -> ParameterObject.initialize(context, p))
 				.collect(Collectors.toList());
 		
@@ -674,7 +675,7 @@ public class TestCallableStatement {
 		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
-				.flatMap(p -> Core.retrieveByPath(context, p, Parameter.MemberNames.MemberOfList.toString(), true).stream());
+				.flatMap(p -> Core.retrieveByPath(context, p, ParameterList.MemberNames.ParameterList_Parameter.toString()).stream());
 	}
 	
 	private List<Parameter> objectFields(String name, Long age, StatementBuilder builder) throws Exception {

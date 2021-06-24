@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
@@ -78,11 +79,11 @@ public class SqlParameterList extends SqlParameter {
 
 			int index = 0;
 			for (Object value : values) {
-				SqlParameter valueSqlParameter = SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, value);
-				valueSqlParameter.parameterObject.setMemberOfList((ParameterList) this.parameterObject);
-				this.elements.add(valueSqlParameter);
+				this.elements.add(SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, value));
 				index++;
 			}
+
+			((ParameterList) this.parameterObject).setParameterList_Parameter(this.elements.stream().map(p -> p.parameterObject).collect(Collectors.toList()));
 		} finally {
 			if (objStruct != null) objStruct.free();
 		}

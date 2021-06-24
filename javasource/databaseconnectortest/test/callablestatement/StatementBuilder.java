@@ -143,9 +143,9 @@ public class StatementBuilder {
 		parameterInitialized.setSQLTypeName(sqlTypeName);
 
 		if (value != null) {
-			value.forEach(paramValue -> paramValue.setMemberOfObject(parameterInitialized));
+			parameterInitialized.setParameterObject_Parameter((List<Parameter>) value);
 		}
-		
+
 		return parameterInitialized;
 	}
 
@@ -155,9 +155,9 @@ public class StatementBuilder {
 		parameterInitialized.setSQLTypeName(sqlTypeName);
 
 		if (value != null) {
-			value.forEach(paramValue -> paramValue.setMemberOfList(parameterInitialized));
+			parameterInitialized.setParameterList_Parameter((List<Parameter>) value);
 		}
-		
+
 		return parameterInitialized;
 	}
 	

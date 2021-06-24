@@ -50,14 +50,14 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 			break;
 		case ParameterObject.entityName:
 			List<SqlParameterPrimitiveValue> fields = Core
-					.retrieveByPath(context, mendixObject, Parameter.MemberNames.MemberOfObject.toString(), true)
+					.retrieveByPath(context, mendixObject, ParameterObject.MemberNames.ParameterObject_Parameter.toString())
 					.stream().map(p -> (SqlParameterPrimitiveValue) initialize(context, p)).sorted()
 					.collect(Collectors.toList());
 			ret = new SqlParameterObject(context, mendixObject, fields);
 			break;
 		case ParameterList.entityName:
 			List<SqlParameter> elements = Core
-					.retrieveByPath(context, mendixObject, Parameter.MemberNames.MemberOfList.toString(), true)
+					.retrieveByPath(context, mendixObject, ParameterList.MemberNames.ParameterList_Parameter.toString())
 					.stream().map(p -> (SqlParameter) initialize(context, p)).sorted()
 					.collect(Collectors.toList());
 			ret = new SqlParameterList(context, mendixObject, elements);
