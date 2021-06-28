@@ -21,7 +21,7 @@ import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
 import databaseconnector.proxies.ParameterString;
 
-public abstract class SqlParameter implements Comparable<SqlParameter> {
+public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 	protected Parameter parameterObject;
 	
 	protected SqlParameter(final IContext context, final IMendixObject mendixParameterObject) {
@@ -32,8 +32,8 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 		}
 	}
 
-	public static SqlParameter initialize(final IContext context, IMendixObject mendixObject) {
-		SqlParameter ret = null;
+	public static SqlParameter<?> initialize(final IContext context, IMendixObject mendixObject) {
+		SqlParameter<?> ret = null;
 
 		switch (mendixObject.getType()) {
 		case ParameterDatetime.entityName:
@@ -49,16 +49,16 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 			ret = new SqlParameterDecimal(context, mendixObject);
 			break;
 		case ParameterObject.entityName:
-			List<SqlParameterPrimitiveValue> fields = Core
+			List<SqlParameter<?>> fields = Core
 					.retrieveByPath(context, mendixObject, ParameterObject.MemberNames.ParameterObject_Parameter.toString())
-					.stream().map(p -> (SqlParameterPrimitiveValue) initialize(context, p)).sorted()
+					.stream().map(p -> initialize(context, p)).sorted()
 					.collect(Collectors.toList());
 			ret = new SqlParameterObject(context, mendixObject, fields);
 			break;
 		case ParameterList.entityName:
-			List<SqlParameter> elements = Core
+			List<SqlParameter<?>> elements = Core
 					.retrieveByPath(context, mendixObject, ParameterList.MemberNames.ParameterList_Parameter.toString())
-					.stream().map(p -> (SqlParameter) initialize(context, p)).sorted()
+					.stream().map(p -> initialize(context, p)).sorted()
 					.collect(Collectors.toList());
 			ret = new SqlParameterList(context, mendixObject, elements);
 			break;
@@ -68,7 +68,6 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 		}
 		return ret;
 	}
-	
 
 	public void prepareCall(CallableStatement cStatement) throws SQLException {
 		switch (this.getParameterMode()) {
@@ -93,14 +92,14 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 			getValueOutput(cStatement);
 		}
 	}
-	
+
 	protected abstract void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
 	protected abstract void prepareOutput(CallableStatement cStatement) throws SQLException;
 	protected abstract void prepareInput(CallableStatement cStatement) throws SQLException;
 
-	abstract Object getMxObjectValue();
-	abstract void setMxObjectValue(Object value) throws DatabaseConnectorException;
-	
+	abstract T getValue();
+	abstract void setValue(Object value) throws DatabaseConnectorException;
+
 	public Integer getPosition() {
 		return this.parameterObject.getPosition();
 	}
@@ -114,11 +113,11 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 	}
 
 	@Override
-	public int compareTo(SqlParameter other) {
+	public int compareTo(SqlParameter<?> other) {
 		return this.getPosition() - other.getPosition();
 	}
 
-	public static SqlParameter createParameterFromValue(IContext context, ParameterMode mode, int index, Object value) throws DatabaseConnectorException {
+	public static SqlParameter<?> createParameterFromValue(IContext context, ParameterMode mode, int index, Object value) throws DatabaseConnectorException {
 		final String objectType;
 		if (value instanceof Long) {
 			objectType = ParameterLong.getType();
@@ -131,12 +130,12 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 		} else {
 			throw new DatabaseConnectorException(String.format("Unable to infer data type from value '%s'.", value.toString()));
 		}
-			
+
 		IMendixObject newObject = Core.instantiate(context, objectType);
 		newObject.setValue(context, Parameter.MemberNames.ParameterMode.toString(), mode.toString());
 		newObject.setValue(context, Parameter.MemberNames.Position.toString(), index);
-		SqlParameterPrimitiveValue newValue = (SqlParameterPrimitiveValue) SqlParameter.initialize(context, newObject);
-		newValue.setMxObjectValue(value);
+		SqlParameter<?> newValue = SqlParameter.initialize(context, newObject);
+		newValue.setValue(value);
 		return newValue;
 	}
 }

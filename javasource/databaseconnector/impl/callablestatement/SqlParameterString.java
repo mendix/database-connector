@@ -6,28 +6,28 @@ import java.sql.SQLException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
-public class SqlParameterString extends SqlParameterPrimitiveValue {
+public class SqlParameterString extends SqlParameterPrimitiveValue<String> {
 	public SqlParameterString(final IContext context, IMendixObject mendixObject) {
 		super(context, mendixObject, java.sql.Types.VARCHAR);
 	}
 
 	@Override
-	protected Object getStatementValue(CallableStatement cStatement, String name) throws SQLException {
+	protected String getStatementValue(CallableStatement cStatement, String name) throws SQLException {
 		return cStatement.getString(name);
 	}
 
 	@Override
-	protected Object getStatementValue(CallableStatement cStatement, int position) throws SQLException {
+	protected String getStatementValue(CallableStatement cStatement, int position) throws SQLException {
 		return cStatement.getString(position);
 	}
 
 	@Override
-	protected void setStatementValue(CallableStatement cStatement, String name, Object value) throws SQLException {
-		cStatement.setString(name, (String) value);
+	protected void setStatementValue(CallableStatement cStatement, String name, String value) throws SQLException {
+		cStatement.setString(name, value);
 	}
 
 	@Override
-	protected void setStatementValue(CallableStatement cStatement, int position, Object value) throws SQLException {
-		cStatement.setString(position, (String) value);
+	protected void setStatementValue(CallableStatement cStatement, int position, String value) throws SQLException {
+		cStatement.setString(position, value);
 	}
 }

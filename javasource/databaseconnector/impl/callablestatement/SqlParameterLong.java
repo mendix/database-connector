@@ -10,37 +10,37 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.ParameterLong;
 
-public class SqlParameterLong extends SqlParameterPrimitiveValue {
+public class SqlParameterLong extends SqlParameterPrimitiveValue<Long> {
 	public SqlParameterLong(final IContext context, IMendixObject mendixObject) {
 		super(context, mendixObject, java.sql.Types.NUMERIC);
 	}
 
 	@Override
-	public void setMxObjectValue(Object value) throws DatabaseConnectorException {
+	public void setValue(Object value) throws DatabaseConnectorException {
 		if (value instanceof BigDecimal) {
 			((ParameterLong) this.parameterObject).setValue(((BigDecimal) value).longValue());
 		} else {
-			super.setMxObjectValue(value);
+			super.setValue(value);
 		}
 	}
 
 	@Override
-	protected Object getStatementValue(CallableStatement cStatement, String name) throws SQLException {
+	protected Long getStatementValue(CallableStatement cStatement, String name) throws SQLException {
 		return cStatement.getLong(name);
 	}
 
 	@Override
-	protected Object getStatementValue(CallableStatement cStatement, int position) throws SQLException {
+	protected Long getStatementValue(CallableStatement cStatement, int position) throws SQLException {
 		return cStatement.getLong(position);
 	}
 
 	@Override
-	protected void setStatementValue(CallableStatement cStatement, String name, Object value) throws SQLException {
-		cStatement.setLong(name, (Long) value);
+	protected void setStatementValue(CallableStatement cStatement, String name, Long value) throws SQLException {
+		cStatement.setLong(name, value);
 	}
 
 	@Override
-	protected void setStatementValue(CallableStatement cStatement, int position, Object value) throws SQLException {
-		cStatement.setLong(position, (Long) value);
+	protected void setStatementValue(CallableStatement cStatement, int position, Long value) throws SQLException {
+		cStatement.setLong(position, value);
 	}
 }

@@ -8,9 +8,9 @@ import databaseconnector.impl.DatabaseConnectorException;
 
 public class StatementWrapper implements AutoCloseable {
 	final private CallableStatement cStatement;
-	final private List<SqlParameter> parameters;
+	final private List<SqlParameter<?>> parameters;
 
-	public StatementWrapper(final CallableStatement cStatement, final List<SqlParameter> parameters) {
+	public StatementWrapper(final CallableStatement cStatement, final List<SqlParameter<?>> parameters) {
 		this.cStatement = cStatement;
 		this.parameters = parameters;
 	}
@@ -18,7 +18,7 @@ public class StatementWrapper implements AutoCloseable {
 	public void execute() throws SQLException, DatabaseConnectorException {
 		this.cStatement.execute();
 
-		for (SqlParameter p : this.parameters) {
+		for (SqlParameter<?> p : this.parameters) {
 			p.retrieveResult(cStatement);
 		}
 	}

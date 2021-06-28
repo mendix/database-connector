@@ -8,7 +8,7 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 import databaseconnector.impl.DatabaseConnectorException;
 
-public abstract class SqlParameterPrimitiveValue extends SqlParameter {
+public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter<T> {
 	protected final int SQL_TYPE;
 
 	protected SqlParameterPrimitiveValue(final IContext context, IMendixObject mendixObject, int SQL_TYPE) {
@@ -18,7 +18,7 @@ public abstract class SqlParameterPrimitiveValue extends SqlParameter {
 
 	public void prepareInput(CallableStatement cStatement) throws SQLException {
 		String name = this.getName();
-		if (this.getMxObjectValue() == null) {
+		if (this.getValue() == null) {
 			if (name == null || name.isBlank()) {
 				cStatement.setNull(this.getPosition(), SQL_TYPE);
 			} else {
@@ -26,9 +26,9 @@ public abstract class SqlParameterPrimitiveValue extends SqlParameter {
 			}
 		} else {
 			if (name == null || name.isBlank()) {
-				setStatementValue(cStatement, this.getPosition(), getMxObjectValue());
+				setStatementValue(cStatement, this.getPosition(), getValue());
 			} else {
-				setStatementValue(cStatement, name, getMxObjectValue());
+				setStatementValue(cStatement, name, getValue());
 			}
 		}
 	}
@@ -43,12 +43,12 @@ public abstract class SqlParameterPrimitiveValue extends SqlParameter {
 	}
 
 	@Override
-	public Object getMxObjectValue() {
+	public T getValue() {
 		return this.parameterObject.getMendixObject().getValue(this.parameterObject.getContext(), "Value");
 	}
 	
 	@Override
-	public void setMxObjectValue(Object value) throws DatabaseConnectorException {
+	public void setValue(Object value) throws DatabaseConnectorException {
 		try {
 			this.parameterObject.getMendixObject().setValue(this.parameterObject.getContext(), "Value", value);
 		} catch (ClassCastException e) {
@@ -58,20 +58,20 @@ public abstract class SqlParameterPrimitiveValue extends SqlParameter {
 
 	@Override
 	public void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
-		final Object value;
+		final T value;
 		final String name = this.getName();
 		if (name == null || name.isBlank()) {
 			value = getStatementValue(cStatement, this.getPosition());
 		} else {
 			value = getStatementValue(cStatement, name);
 		}
-		setMxObjectValue(value);
+		setValue(value);
 	}
 	
 
-	protected abstract Object getStatementValue(CallableStatement cStatement, String name) throws SQLException;
-	protected abstract Object getStatementValue(CallableStatement cStatement, int position) throws SQLException;
+	protected abstract T getStatementValue(CallableStatement cStatement, String name) throws SQLException;
+	protected abstract T getStatementValue(CallableStatement cStatement, int position) throws SQLException;
 
-	protected abstract void setStatementValue(CallableStatement cStatement, String name, Object value) throws SQLException;
-	protected abstract void setStatementValue(CallableStatement cStatement, int position, Object value) throws SQLException;
+	protected abstract void setStatementValue(CallableStatement cStatement, String name, T value) throws SQLException;
+	protected abstract void setStatementValue(CallableStatement cStatement, int position, T value) throws SQLException;
 }

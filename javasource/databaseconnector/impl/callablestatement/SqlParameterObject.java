@@ -7,24 +7,26 @@ import java.sql.Struct;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 import databaseconnector.impl.DatabaseConnectorException;
+import databaseconnector.proxies.Parameter;
 import databaseconnector.proxies.ParameterObject;
 
-public class SqlParameterObject extends SqlParameter {
+public class SqlParameterObject extends SqlParameter<List<SqlParameter<?>>> {
 	private final static int SQL_TYPE = java.sql.Types.STRUCT;
 	
-	private List<SqlParameterPrimitiveValue> objectFields;
+	private List<SqlParameter<?>> objectFields;
 
-	public SqlParameterObject(final IContext context, IMendixObject mendixObject, List<SqlParameterPrimitiveValue> objectFields) {
+	public SqlParameterObject(final IContext context, IMendixObject mendixObject, List<SqlParameter<?>> objectFields) {
 		super(context, mendixObject);
 		this.objectFields = objectFields;
 
 		Set<Integer> positions = new HashSet<Integer>();
-		for (SqlParameterPrimitiveValue field : objectFields) {
+		for (SqlParameter<?> field : objectFields) {
 			if (field.getPosition() == null) {
 				String objectNameOrPosition = (this.parameterObject.getName() == null || this.parameterObject.getName().isBlank()) ? this.parameterObject.getPosition().toString() : this.parameterObject.getName();
 				throw new IllegalArgumentException(String.format("Missing position information for field of type %s of ParameterObject %s.", field.parameterObject.getMendixObject().getType(), objectNameOrPosition));
@@ -49,8 +51,8 @@ public class SqlParameterObject extends SqlParameter {
 
 		try {
 			int index = 0;
-			for (SqlParameterPrimitiveValue field : objectFields) {
-				field.setMxObjectValue(values[index]);
+			for (SqlParameter<?> field : objectFields) {
+				field.setValue(values[index]);
 				index++;
 			}
 		} catch (DatabaseConnectorException | IllegalArgumentException e) {
@@ -91,19 +93,19 @@ public class SqlParameterObject extends SqlParameter {
 	}
 
 	@Override
-	Object getMxObjectValue() {
 		// TODO Auto-generated method stub
 		return null;
+	List<SqlParameter<?>> getValue() {
 	}
 
 	@Override
-	void setMxObjectValue(Object value) {
 		// TODO Auto-generated method stub
 		
+	void setValue(Object value) throws DatabaseConnectorException {
 	}
 
 	private Struct createConnectionStruct(Connection connection) throws SQLException {
-		Object[] attrVals = this.objectFields.stream().map(SqlParameterPrimitiveValue::getMxObjectValue).toArray();
+		Object[] attrVals = this.objectFields.stream().map(SqlParameter::getValue).toArray();
 		String sqlTypeName = ((ParameterObject) this.parameterObject).getSQLTypeName();
 		return connection.createStruct(sqlTypeName, attrVals);
 	}

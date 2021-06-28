@@ -16,11 +16,11 @@ import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterMode;
 
-public class SqlParameterList extends SqlParameter {
+public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 	private final static int SQL_TYPE = java.sql.Types.ARRAY;
-	private List<SqlParameter> elements;
+	private List<SqlParameter<?>> elements;
 
-	public SqlParameterList(final IContext context, IMendixObject mendixObject, List<SqlParameter> elements) {
+	public SqlParameterList(final IContext context, IMendixObject mendixObject, List<SqlParameter<?>> elements) {
 		super(context, mendixObject);
 		this.elements = elements;
 
@@ -33,7 +33,7 @@ public class SqlParameterList extends SqlParameter {
 				throw new IllegalArgumentException("List parameter used as an input was initialized without a position.");
 			}
 			Set<Integer> positions = new HashSet<Integer>();
-			for (SqlParameter elem : elements) {
+			for (SqlParameter<?> elem : elements) {
 				if (elem.parameterObject.getPosition() == null) {
 					throw new IllegalArgumentException("Missing position information for element in list.");
 				}
@@ -59,7 +59,7 @@ public class SqlParameterList extends SqlParameter {
 
 	private Array createArray(Connection connection) throws SQLException {
 		String sqlTypeName = ((ParameterList) this.parameterObject).getSQLTypeName();
-		Object[] attrVals = this.elements.stream().map(SqlParameter::getMxObjectValue).toArray();
+		Object[] attrVals = this.elements.stream().map(SqlParameter::getValue).toArray();
 		return connection.createArrayOf(sqlTypeName, attrVals);
 	}
 
@@ -100,15 +100,14 @@ public class SqlParameterList extends SqlParameter {
 		}
 	}
 
-	
 	@Override
-	Object getMxObjectValue() {
+	List<SqlParameter<?>> getValue() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
-	void setMxObjectValue(Object value) {
+	void setValue(Object value) throws DatabaseConnectorException {
 		// TODO Auto-generated method stub
 		
 	}

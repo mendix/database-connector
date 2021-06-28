@@ -7,28 +7,28 @@ import java.sql.SQLException;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
-public class SqlParameterDecimal extends SqlParameterPrimitiveValue {
+public class SqlParameterDecimal extends SqlParameterPrimitiveValue<BigDecimal> {
 	public SqlParameterDecimal(final IContext context, IMendixObject mendixObject) {
 		super(context, mendixObject, java.sql.Types.DECIMAL);
 	}
 
 	@Override
-	protected Object getStatementValue(CallableStatement cStatement, String name) throws SQLException {
+	protected BigDecimal getStatementValue(CallableStatement cStatement, String name) throws SQLException {
 		return cStatement.getBigDecimal(name);
 	}
 
 	@Override
-	protected Object getStatementValue(CallableStatement cStatement, int position) throws SQLException {
+	protected BigDecimal getStatementValue(CallableStatement cStatement, int position) throws SQLException {
 		return cStatement.getBigDecimal(position);
 	}
 
 	@Override
-	protected void setStatementValue(CallableStatement cStatement, String name, Object value) throws SQLException {
-		cStatement.setBigDecimal(name, (BigDecimal) value);
+	protected void setStatementValue(CallableStatement cStatement, String name, BigDecimal value) throws SQLException {
+		cStatement.setBigDecimal(name, value);
 	}
 
 	@Override
-	protected void setStatementValue(CallableStatement cStatement, int position, Object value) throws SQLException {
-		cStatement.setBigDecimal(position, (BigDecimal) value);
+	protected void setStatementValue(CallableStatement cStatement, int position, BigDecimal value) throws SQLException {
+		cStatement.setBigDecimal(position, value);
 	}
 }
