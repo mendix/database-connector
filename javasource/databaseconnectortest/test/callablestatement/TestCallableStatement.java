@@ -1,7 +1,6 @@
 package databaseconnectortest.test.callablestatement;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
 
 import java.math.BigDecimal;
 import java.sql.SQLDataException;
@@ -12,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,157 +35,52 @@ import databaseconnector.proxies.ParameterString;
 import databaseconnector.proxies.Statement;
 import databaseconnectortest.proxies.constants.Constants;
 
+import static databaseconnectortest.test.callablestatement.Queries.*;
+
 public class TestCallableStatement {
-	private final ILogNode logNode = Core.getLogger("DatabaseConnectorTest");
 	private final IContext context = Core.createSystemContext();
 	
 	private final static Long AU = 149597870700L;
 	private final static BigDecimal PI = new BigDecimal(3.14);
 	private final static String TEST_STRING = "Nibiru cataclysm";
 	private final static Date TEST_DATE = new Date(0L);
-
-	private final static String TAKE_LONG_RETURN_LONG =
-			"declare\r\n" + 
-			"  l_long number(20,0) := :1;\r\n" + 
-			"begin\r\n" + 
-			"  :2 := l_long;\r\n" + 
-			"end;";
-
-	private final static String TAKE_LONG_RETURN_CHAR =
-			"declare\r\n" + 
-			"  l_long number(20,0) := :1;\r\n" + 
-			"begin\r\n" + 
-			"  :2 := TO_CHAR(l_long);\r\n" + 
-			"end;";
-
-	private final static String TAKE_ALL_TYPES_RETURN_ALL_TYPES =
-			"declare\r\n" + 
-			"  l_long number(20,0) := :1;\r\n" + 
-			"  l_dec number(20,2) := :2;\r\n" + 
-			"  l_string VARCHAR2(100) := :3;\r\n" + 
-			"  l_date date := :4;\r\n" + 
-			"begin\r\n" + 
-			"  :5 := l_date;\r\n" + 
-			"  :6 := l_string;\r\n" + 
-			"  :7 := l_dec;\r\n" + 
-			"  :8 := l_long;\r\n" + 
-			"end;";
-
-	private final static String TAKE_OBJECT_RETURN_MEMBERS =
-			"declare\r\n" +
-			"  l_rec NAME_AND_AGE := :1;\r\n" + 
-			"begin\r\n" + 
-			"  :2 := l_rec.name;\r\n" + 
-			"  :3 := l_rec.age;\r\n" + 
-			"end;";
-
-	private final static String TAKE_MEMBERS_RETURN_OBJECT =
-			"declare\r\n" +
-			"  name VARCHAR2(100) := :1;\r\n" + 
-			"  age NUMBER := :2;\r\n" + 
-			"begin\r\n" + 
-			"  :3 := NAME_AND_AGE(name, age);\r\n" + 
-			"end;";
-
-	private final static String TAKE_OBJECTS_RETURN_OBJECTS =
-			"declare\r\n" +
-			"  input1 NAME_AND_AGE := :1;\r\n" + 
-			"  input2 NAME_AND_AGE := :2;\r\n" + 
-			"  input3 NAME_AND_AGE := :3;\r\n" + 
-			"begin\r\n" + 
-			"  :4 := input3;\r\n" + 
-			"  :5 := input2;\r\n" + 
-			"  :6 := input1;\r\n" + 
-			"end;";
-
-	private final static String TAKE_TWO_LONGS_RETURN_LIST_OF_6 =
-			"declare\r\n" + 
-			"  l_val1 number(20,0) := :1;\r\n" +
-			"  l_val2 number(20,0) := :2;\r\n" +
-			"begin\r\n" +
-			"  :3 := array_6_numbers(l_val1, l_val2, l_val1, l_val2, l_val1, l_val2);\r\n" +
-			"end;";
-
-	private final static String TAKE_DATE_RETURN_LIST_OF_1 =
-			"declare\r\n" + 
-			"  l_val1 date := :1;\r\n" +
-			"begin\r\n" +
-			"  :2 := array_1_date(l_val1);\r\n" +
-			"end;";
-
-	private final static String TAKE_DECIMAL_RETURN_LIST_OF_STRING_AND_LIST_OF_DECIMAL =
-			"declare\r\n" + 
-			"  l_val1 number(20,2) := :1;\r\n" +
-			"begin\r\n" +
-			"  :2 := array_6_numbers(l_val1, l_val1);\r\n" +
-			"  :3 := array_6_strings('test', 'test', 'test');\r\n" +
-			"end;";
-
-	private final static String TAKE_LIST_OF_LONG_RETURN_SUM =
-			"declare\r\n" + 
-			"  l_val1 array_6_numbers := :1;\r\n" +
-			"  sum number(20,0) := 0;\r\n" +
-			"  total integer;\r\n" +
-			"begin\r\n" +
-			"  total := l_val1.count;\r\n" +
-			"  FOR i in 1..total LOOP\r\n" +
-			"  	 sum := sum + i;\r\n" +
-			"  END LOOP;\r\n" +
-			"  :2 := sum;\r\n" +
-			"end;";
-
-	private final JdbcConnector connector = new JdbcConnector(logNode);
 	
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
 	
-	@Before
-	public void prepare() throws Exception {
-		executeStatement("create or replace type NAME_AND_AGE is object (name VARCHAR2(100), age NUMBER)");
-		
-		executeStatement(
-					"CREATE OR REPLACE PROCEDURE long_to_long (lval IN OUT NUMBER) AS\r\n" + 
-					"   BEGIN\r\n" + 
-					"   lval := lval * 2;\r\n" + 
-					" END;");
-		
-		executeStatement(
-				"CREATE OR REPLACE PROCEDURE long_to_different_long (lval IN NUMBER, result OUT NUMBER) AS\r\n" + 
-				"   BEGIN\r\n" + 
-				"   result := lval * 3;\r\n" + 
-				" END;");
-	
-		executeStatement(
-					"CREATE OR REPLACE PROCEDURE object_to_same_object (lval IN OUT NAME_AND_AGE) AS\r\n" + 
-					"   BEGIN\r\n" + 
-					"   lval.age := lval.age * 2;\r\n" + 
-					"   lval.name := 'new value';\r\n" + 
-					" END;");
-		
-		executeStatement("create or replace type array_6_numbers is VARRAY(6) OF number(20);");
-		executeStatement("create or replace type array_1_date is VARRAY(1) OF date;");
-		executeStatement("create or replace type array_6_strings is VARRAY(6) OF VARCHAR2(100);");
-		executeStatement("create or replace type ARRAY_2_OBJ is VARRAY(2) OF object(name varchar2(100), age number);");
+	@BeforeClass
+	public static void prepare() throws Exception {
+		executeStatement(CREATE_TYPE_NAME_AND_AGE);
+		executeStatement(CREATE_TYPE_ARRAY_6_NUMBERS);
+		executeStatement(CREATE_TYPE_ARRAY_1_DATE);
+		executeStatement(CREATE_TYPE_ARRAY_6_STRINGS);
+		executeStatement(CREATE_TYPE_ARRAY_6_STRINGS);
+		executeStatement(CREATE_PROCEDURE_LONG_TO_LONG);
+		executeStatement(CREATE_PROCEDURE_LONG_TO_DIFFERENT_LONG);
+		executeStatement(CREATE_PROCEDURE_OBJECT_TO_OBJECT);
 	}
 	
 	@Test
-	public void testCallableStatementPrimitives() throws Exception {
-		// Arrange
+	public void testAllArgumentTypes() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context)
-				.withInputParameter(1, null, TEST_DATE, ParameterDatetime.class)
-				.withInputParameter(2, null, BigDecimal.valueOf(AU), ParameterDecimal.class)
-				.withOutputParameter(3, null, ParameterLong.class)
-				.withOutputParameter(4, null, ParameterString.class)
-				.withContentFromFile("tests\\callableStatementPrimitivesOracle.sql");
-					
-		// Act
-		executeStatement(builder.getStatement());
+				.withInputParameter(1, null, AU, ParameterLong.class)
+				.withInputParameter(2, null, PI, ParameterDecimal.class)
+				.withInputParameter(3, null, TEST_STRING, ParameterString.class)
+				.withInputParameter(4, null, TEST_DATE, ParameterDatetime.class)
+				.withOutputParameter(5, null, ParameterDatetime.class)
+				.withOutputParameter(6, null, ParameterString.class)
+				.withOutputParameter(7, null, ParameterDecimal.class)
+				.withOutputParameter(8, null, ParameterLong.class)
+				.withContent(TAKE_ALL_TYPES_RETURN_ALL_TYPES);
 		
-		// Assert
-		assertEquals(AU, ((ParameterLong)builder.getParameter(2)).getValue());
-		assertEquals("1970-01-01 01:01:00", ((ParameterString)builder.getParameter(3)).getValue());
+		executeStatement(builder.getStatement());
+
+		assertEquals(TEST_DATE, ((ParameterDatetime)builder.getParameter(4)).getValue());
+		assertEquals(TEST_STRING, ((ParameterString)builder.getParameter(5)).getValue());
+		assertEquals(PI.doubleValue(), ((ParameterDecimal)builder.getParameter(6)).getValue().doubleValue(), 1e-10);
+		assertEquals(AU, ((ParameterLong)builder.getParameter(7)).getValue());
 	}
-	
+
 	@Test
 	public void testOneArgumentByPosition() throws Exception {		
 		StatementBuilder builder = new StatementBuilder(context)
@@ -204,7 +98,7 @@ public class TestCallableStatement {
 		StatementBuilder builder = new StatementBuilder(context)
 				.withInputParameter(null, "in_long", BigDecimal.valueOf(AU), ParameterDecimal.class)
 				.withOutputParameter(null, "result", ParameterString.class)
-				.withContent("{ call long_to_different_long(:in_long, :result) }");
+				.withContent(INOUT_ARGUMENT_BY_NAME);
 		
 		executeStatement(builder.getStatement());
 		
@@ -261,17 +155,10 @@ public class TestCallableStatement {
 
 	@Test
 	public void possibleException() throws Exception {
-		String content =
-				"declare\r\n" + 
-				"  l_long number(20,0) := :1;\r\n" + 
-				"begin\r\n" + 
-				"  :2 := 1 / l_long;\r\n" + 
-				"end;";
-		
 		StatementBuilder builder = new StatementBuilder(context)
 				.withInputParameter(1, null, 1L, ParameterLong.class)
 				.withOutputParameter(2, null, ParameterString.class)
-				.withContent(content);
+				.withContent(DIVIDE_BY_INPUT);
 		
 		executeStatement(builder.getStatement());
 		
@@ -659,28 +546,6 @@ public class TestCallableStatement {
 		assertEquals((Long)(AU * 2), ((ParameterLong) fields.get(1)).getValue());
 	}
 
-
-	@Test
-	public void testAllArgumentTypes() throws Exception {
-		StatementBuilder builder = new StatementBuilder(context)
-				.withInputParameter(1, null, AU, ParameterLong.class)
-				.withInputParameter(2, null, PI, ParameterDecimal.class)
-				.withInputParameter(3, null, TEST_STRING, ParameterString.class)
-				.withInputParameter(4, null, TEST_DATE, ParameterDatetime.class)
-				.withOutputParameter(5, null, ParameterDatetime.class)
-				.withOutputParameter(6, null, ParameterString.class)
-				.withOutputParameter(7, null, ParameterDecimal.class)
-				.withOutputParameter(8, null, ParameterLong.class)
-				.withContent(TAKE_ALL_TYPES_RETURN_ALL_TYPES);
-		
-		executeStatement(builder.getStatement());
-
-		assertEquals(TEST_DATE, ((ParameterDatetime)builder.getParameter(4)).getValue());
-		assertEquals(TEST_STRING, ((ParameterString)builder.getParameter(5)).getValue());
-		assertEquals(PI.doubleValue(), ((ParameterDecimal)builder.getParameter(6)).getValue().doubleValue(), 1e-10);
-		assertEquals(AU, ((ParameterLong)builder.getParameter(7)).getValue());
-	}
-	
 	private Stream<IMendixObject> getMembersOfList(Statement statement, int position) {
 		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
 				.stream()
@@ -709,11 +574,12 @@ public class TestCallableStatement {
 				.withObjectOutputParameter(3, null, outputObjectFields, "NAME_AND_AGE");
 	}
 	
-	private void executeStatement(Statement statement) throws SQLException, DatabaseConnectorException {
-		connector.executeCallableStatement("jdbc:oracle:thin:@//" + Constants.getOracleAddress(), Constants.getOracleUserName(), Constants.getOraclePassword(), statement);
+	private static void executeStatement(Statement statement) throws SQLException, DatabaseConnectorException {
+		ILogNode logNode = Core.getLogger("DatabaseConnectorTest");
+		new JdbcConnector(logNode).executeCallableStatement("jdbc:oracle:thin:@//" + Constants.getOracleAddress(), Constants.getOracleUserName(), Constants.getOraclePassword(), statement);
 	}
 
-	private void executeStatement(String content) throws SQLException, DatabaseConnectorException {
-		executeStatement(new StatementBuilder(context).withContent(content).getStatement());
+	private static void executeStatement(String content) throws SQLException, DatabaseConnectorException {
+		executeStatement(new StatementBuilder(Core.createSystemContext()).withContent(content).getStatement());
 	}
 }

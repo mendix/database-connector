@@ -1,0 +1,132 @@
+package databaseconnectortest.test.callablestatement;
+
+public class Queries {
+
+	public final static String TAKE_LONG_RETURN_LONG =
+			"declare\r\n" + 
+			"  l_long number(20,0) := :1;\r\n" + 
+			"begin\r\n" + 
+			"  :2 := l_long;\r\n" + 
+			"end;";
+
+	public final static String TAKE_LONG_RETURN_CHAR =
+			"declare\r\n" + 
+			"  l_long number(20,0) := :1;\r\n" + 
+			"begin\r\n" + 
+			"  :2 := TO_CHAR(l_long);\r\n" + 
+			"end;";
+
+	public final static String TAKE_ALL_TYPES_RETURN_ALL_TYPES =
+			"declare\r\n" + 
+			"  l_long number(20,0) := :1;\r\n" + 
+			"  l_dec number(20,2) := :2;\r\n" + 
+			"  l_string VARCHAR2(100) := :3;\r\n" + 
+			"  l_date date := :4;\r\n" + 
+			"begin\r\n" + 
+			"  :5 := l_date;\r\n" + 
+			"  :6 := l_string;\r\n" + 
+			"  :7 := l_dec;\r\n" + 
+			"  :8 := l_long;\r\n" + 
+			"end;";
+
+	public final static String TAKE_OBJECT_RETURN_MEMBERS =
+			"declare\r\n" +
+			"  l_rec NAME_AND_AGE := :1;\r\n" + 
+			"begin\r\n" + 
+			"  :2 := l_rec.name;\r\n" + 
+			"  :3 := l_rec.age;\r\n" + 
+			"end;";
+
+	public final static String TAKE_MEMBERS_RETURN_OBJECT =
+			"declare\r\n" +
+			"  name VARCHAR2(100) := :1;\r\n" + 
+			"  age NUMBER := :2;\r\n" + 
+			"begin\r\n" + 
+			"  :3 := NAME_AND_AGE(name, age);\r\n" + 
+			"end;";
+
+	public final static String TAKE_OBJECTS_RETURN_OBJECTS =
+			"declare\r\n" +
+			"  input1 NAME_AND_AGE := :1;\r\n" + 
+			"  input2 NAME_AND_AGE := :2;\r\n" + 
+			"  input3 NAME_AND_AGE := :3;\r\n" + 
+			"begin\r\n" + 
+			"  :4 := input3;\r\n" + 
+			"  :5 := input2;\r\n" + 
+			"  :6 := input1;\r\n" + 
+			"end;";
+
+	public final static String TAKE_TWO_LONGS_RETURN_LIST_OF_6 =
+			"declare\r\n" + 
+			"  l_val1 number(20,0) := :1;\r\n" +
+			"  l_val2 number(20,0) := :2;\r\n" +
+			"begin\r\n" +
+			"  :3 := array_6_numbers(l_val1, l_val2, l_val1, l_val2, l_val1, l_val2);\r\n" +
+			"end;";
+
+	public final static String TAKE_DATE_RETURN_LIST_OF_1 =
+			"declare\r\n" + 
+			"  l_val1 date := :1;\r\n" +
+			"begin\r\n" +
+			"  :2 := array_1_date(l_val1);\r\n" +
+			"end;";
+
+	public final static String TAKE_DECIMAL_RETURN_LIST_OF_STRING_AND_LIST_OF_DECIMAL =
+			"declare\r\n" + 
+			"  l_val1 number(20,2) := :1;\r\n" +
+			"begin\r\n" +
+			"  :2 := array_6_numbers(l_val1, l_val1);\r\n" +
+			"  :3 := array_6_strings('test', 'test', 'test');\r\n" +
+			"end;";
+
+	public final static String TAKE_LIST_OF_LONG_RETURN_SUM =
+			"declare\r\n" + 
+			"  l_val1 array_6_numbers := :1;\r\n" +
+			"  sum number(20,0) := 0;\r\n" +
+			"  total integer;\r\n" +
+			"begin\r\n" +
+			"  total := l_val1.count;\r\n" +
+			"  FOR i in 1..total LOOP\r\n" +
+			"  	 sum := sum + i;\r\n" +
+			"  END LOOP;\r\n" +
+			"  :2 := sum;\r\n" +
+			"end;";
+	
+	public final static String DIVIDE_BY_INPUT =
+			"declare\r\n" +
+			"  l_long number(20,0) := :1;\r\n" + 
+			"begin\r\n" +
+			"  :2 := 1 / l_long;\r\n" +
+			"end;";
+	
+	public final static String INOUT_ARGUMENT_BY_NAME =
+			"BEGIN :result := :in_long * 3; END;";
+	
+	public final static String CREATE_TYPE_NAME_AND_AGE =
+			"create or replace type NAME_AND_AGE is object (name VARCHAR2(100), age NUMBER)";
+	public final static String CREATE_TYPE_ARRAY_6_NUMBERS =
+			"create or replace type array_6_numbers is VARRAY(6) OF number(20);";
+	public final static String CREATE_TYPE_ARRAY_1_DATE =
+			"create or replace type array_1_date is VARRAY(1) OF date;";
+	public final static String CREATE_TYPE_ARRAY_6_STRINGS =
+			"create or replace type array_6_strings is VARRAY(6) OF VARCHAR2(100);";
+	public final static String CREATE_TYPE_ARRAY_2_OBJ =
+			"create or replace type ARRAY_2_OBJ is VARRAY(2) OF object(name varchar2(100), age number);";
+
+	public final static String CREATE_PROCEDURE_LONG_TO_LONG =
+			"CREATE OR REPLACE PROCEDURE long_to_long (lval IN OUT NUMBER) AS\r\n" + 
+			"   BEGIN\r\n" + 
+			"   lval := lval * 2;\r\n" + 
+			" END;";
+	public final static String CREATE_PROCEDURE_LONG_TO_DIFFERENT_LONG =
+			"CREATE OR REPLACE PROCEDURE long_to_different_long (lval IN NUMBER, result OUT NUMBER) AS\r\n" + 
+			"   BEGIN\r\n" + 
+			"   result := lval * 3;\r\n" + 
+			" END;";
+	public final static String CREATE_PROCEDURE_OBJECT_TO_OBJECT =
+			"CREATE OR REPLACE PROCEDURE object_to_same_object (lval IN OUT NAME_AND_AGE) AS\r\n" + 
+			"   BEGIN\r\n" + 
+			"   lval.age := lval.age * 2;\r\n" + 
+			"   lval.name := 'new value';\r\n" + 
+			" END;";
+}
