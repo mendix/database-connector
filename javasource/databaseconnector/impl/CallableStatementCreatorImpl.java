@@ -18,7 +18,7 @@ import databaseconnector.proxies.Statement;
 public class CallableStatementCreatorImpl implements CallableStatementCreator {
 
 	@Override
-	public StatementWrapper create(final Statement statement, final Connection connection) throws SQLException {
+	public StatementWrapper create(final Statement statement, final Connection connection) throws SQLException, DatabaseConnectorException {
 		final IContext context = statement.getContext();
 		final CallableStatement cStatement = connection.prepareCall(statement.getContent());
 

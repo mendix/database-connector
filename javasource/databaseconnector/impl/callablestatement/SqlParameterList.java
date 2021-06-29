@@ -1,5 +1,6 @@
 package databaseconnector.impl.callablestatement;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Array;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -43,7 +44,7 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 	}
 
 	@Override
-	protected void prepareInput(CallableStatement cStatement) throws SQLException {
+	protected void prepareInput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		Array inputArray = createArray(cStatement.getConnection());
 		
 		if (inputArray == null) {
@@ -53,9 +54,20 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 		}
 	}
 
-	private Array createArray(Connection connection) throws SQLException {
+	private Array createArray(Connection connection) throws SQLException, DatabaseConnectorException {
 		String sqlTypeName = ((ParameterList) this.parameterObject).getSQLTypeName();
 		Object[] attrVals = this.elements.stream().map(SqlParameter::getValue).toArray();
+		
+		// Oracle uses a different, but almost compatible call type; We use reflection to make it possible to compile this module without having Oracle's drivers present
+		try {
+			Class<?> oracleClass = Class.forName("oracle.jdbc.OracleConnection");
+			if (connection.isWrapperFor(oracleClass)) {
+				return (Array) oracleClass.getMethod("createOracleArray",  String.class, Object.class).invoke(connection.unwrap(oracleClass), sqlTypeName, attrVals);
+			}
+		} catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
+				| NoSuchMethodException | SecurityException | SQLException e) {
+			// Fallback as usual
+		}
 		return connection.createArrayOf(sqlTypeName, attrVals);
 	}
 

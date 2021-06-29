@@ -69,7 +69,7 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 		return ret;
 	}
 
-	public void prepareCall(CallableStatement cStatement) throws SQLException {
+	public void prepareCall(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		switch (this.getParameterMode()) {
 		case INPUT:
 			prepareInput(cStatement);
@@ -94,8 +94,8 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 	}
 
 	protected abstract void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
-	protected abstract void prepareOutput(CallableStatement cStatement) throws SQLException;
-	protected abstract void prepareInput(CallableStatement cStatement) throws SQLException;
+	protected abstract void prepareOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
+	protected abstract void prepareInput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
 
 	abstract T getValue();
 	abstract void setValue(Object value) throws DatabaseConnectorException;

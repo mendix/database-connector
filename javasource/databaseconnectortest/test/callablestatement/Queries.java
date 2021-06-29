@@ -82,14 +82,14 @@ public class Queries {
 	public final static String TAKE_LIST_OF_LONG_RETURN_SUM =
 			"declare\r\n" + 
 			"  l_val1 array_6_numbers := :1;\r\n" +
-			"  sum number(20,0) := 0;\r\n" +
+			"  sum1 number(20,0) := 0;\r\n" +
 			"  total integer;\r\n" +
 			"begin\r\n" +
 			"  total := l_val1.count;\r\n" +
 			"  FOR i in 1..total LOOP\r\n" +
-			"  	 sum := sum + i;\r\n" +
+			"  	 sum1 := sum1 + l_val1(i);\r\n" +
 			"  END LOOP;\r\n" +
-			"  :2 := sum;\r\n" +
+			"  :2 := sum1;\r\n" +
 			"end;";
 	
 	public final static String DIVIDE_BY_INPUT =
