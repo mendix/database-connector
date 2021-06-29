@@ -111,22 +111,22 @@ public class Queries {
 	public final static String CREATE_TYPE_ARRAY_6_STRINGS =
 			"create or replace type array_6_strings is VARRAY(6) OF VARCHAR2(100);";
 	public final static String CREATE_TYPE_ARRAY_2_OBJ =
-			"create or replace type ARRAY_2_OBJ is VARRAY(2) OF object(name varchar2(100), age number);";
+			"create or replace type ARRAY_2_OBJ is VARRAY(2) OF NAME_AND_AGE;";
 
 	public final static String CREATE_PROCEDURE_LONG_TO_LONG =
 			"CREATE OR REPLACE PROCEDURE long_to_long (lval IN OUT NUMBER) AS\r\n" + 
 			"   BEGIN\r\n" + 
 			"   lval := lval * 2;\r\n" + 
-			" END;";
+			"END;";
 	public final static String CREATE_PROCEDURE_LONG_TO_DIFFERENT_LONG =
 			"CREATE OR REPLACE PROCEDURE long_to_different_long (lval IN NUMBER, result OUT NUMBER) AS\r\n" + 
 			"   BEGIN\r\n" + 
 			"   result := lval * 3;\r\n" + 
-			" END;";
+			"END;";
 	public final static String CREATE_PROCEDURE_OBJECT_TO_OBJECT =
 			"CREATE OR REPLACE PROCEDURE object_to_same_object (lval IN OUT NAME_AND_AGE) AS\r\n" + 
 			"   BEGIN\r\n" + 
 			"   lval.age := lval.age * 2;\r\n" + 
 			"   lval.name := 'new value';\r\n" + 
-			" END;";
+			"END;";
 }

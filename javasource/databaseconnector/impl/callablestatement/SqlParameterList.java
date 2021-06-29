@@ -106,5 +106,6 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 	void setValue(Object value) throws DatabaseConnectorException {
 		// TODO Auto-generated method stub
 		
+			throw new DatabaseConnectorException("Unable to set values of array.", e);
 	}
 }
