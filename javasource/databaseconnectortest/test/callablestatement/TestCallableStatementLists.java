@@ -3,6 +3,7 @@ package databaseconnectortest.test.callablestatement;
 import static databaseconnectortest.test.callablestatement.Queries.TAKE_DATE_RETURN_LIST_OF_1;
 import static databaseconnectortest.test.callablestatement.Queries.TAKE_DECIMAL_RETURN_LIST_OF_STRING_AND_LIST_OF_DECIMAL;
 import static databaseconnectortest.test.callablestatement.Queries.TAKE_LIST_OF_LONG_RETURN_SUM;
+import static databaseconnectortest.test.callablestatement.Queries.TAKE_NOTHING_RETURN_EMPTY_LIST;
 import static databaseconnectortest.test.callablestatement.Queries.TAKE_TWO_LONGS_RETURN_LIST_OF_6;
 import static org.junit.Assert.assertEquals;
 
@@ -94,6 +95,21 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 
 		assertEquals(3, stringList.size());
 		for(ParameterString value : stringList) { assertEquals("test", value.getValue()); }
+	}
+
+	@Test
+	public void testListOutput_Empty() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		builder = builder
+				.withListOutputParameter(1, null, null, "ARRAY_6_NUMBERS")
+				.withContent(TAKE_NOTHING_RETURN_EMPTY_LIST);
+		
+		executeStatement(builder.getStatement());
+
+		Long outputLength = getMembersOfList(builder.getStatement(), 1).count();
+		
+		assertEquals((Long)0L, outputLength);
 	}
 
 	@Ignore

@@ -78,6 +78,11 @@ public class Queries {
 			"  :2 := array_6_numbers(l_val1, l_val1);\r\n" +
 			"  :3 := array_6_strings('test', 'test', 'test');\r\n" +
 			"end;";
+	
+	public final static String TAKE_NOTHING_RETURN_EMPTY_LIST =
+			"begin\r\n" +
+			"  :1 := array_6_numbers();\r\n" +
+			"end;";
 
 	public final static String TAKE_LIST_OF_LONG_RETURN_SUM =
 			"declare\r\n" + 
