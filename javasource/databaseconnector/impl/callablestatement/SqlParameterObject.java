@@ -93,14 +93,11 @@ public class SqlParameterObject extends SqlParameter<List<SqlParameter<?>>> {
 	}
 
 	@Override
-		// TODO Auto-generated method stub
-		return null;
 	List<SqlParameter<?>> getValue() {
+		return this.objectFields;
 	}
 
 	@Override
-		// TODO Auto-generated method stub
-		
 	void setValue(Object value) throws DatabaseConnectorException {
 	}
 
