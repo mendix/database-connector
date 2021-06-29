@@ -24,14 +24,10 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 		super(context, mendixObject);
 		this.elements = elements;
 
-		if (this.getParameterMode().equals(ParameterMode.OUTPUT)) {
-			if (!this.elements.isEmpty()) {
-				throw new IllegalArgumentException("List parameters should have no elements when in OUTPUT mode.");
-			}
-		} else {
-			if (this.getPosition() == null) {
-				throw new IllegalArgumentException("List parameter used as an input was initialized without a position.");
-			}
+		if (this.getPosition() == null) {
+			throw new IllegalArgumentException("List parameter used as an input was initialized without a position.");
+		}
+		if (!this.getParameterMode().equals(ParameterMode.OUTPUT)) {
 			Set<Integer> positions = new HashSet<Integer>();
 			for (SqlParameter<?> elem : elements) {
 				if (elem.parameterObject.getPosition() == null) {
