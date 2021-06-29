@@ -44,6 +44,7 @@ public class TestCallableStatementBase {
 		executeStatement(CREATE_TYPE_ARRAY_6_NUMBERS);
 		executeStatement(CREATE_TYPE_ARRAY_1_DATE);
 		executeStatement(CREATE_TYPE_ARRAY_6_STRINGS);
+		executeStatement(CREATE_TYPE_ARRAY_6_STRINGS);
 		executeStatement(CREATE_TYPE_ARRAY_2_OBJ);
 		executeStatement(CREATE_PROCEDURE_LONG_TO_LONG);
 		executeStatement(CREATE_PROCEDURE_LONG_TO_DIFFERENT_LONG);
