@@ -3,6 +3,7 @@ package databaseconnector.impl.callablestatement;
 import java.math.BigDecimal;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
+import java.sql.Struct;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -127,6 +128,8 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 			objectType = ParameterString.getType();
 		} else if (value instanceof Date) {
 			objectType = ParameterDatetime.getType();
+		} else if (value instanceof Struct) {
+			objectType = ParameterObject.getType();
 		} else {
 			throw new DatabaseConnectorException(String.format("Unable to infer data type from value '%s'.", value.toString()));
 		}

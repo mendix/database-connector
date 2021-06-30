@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.mendix.core.Core;
@@ -218,7 +217,6 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		executeStatement(builder.getStatement());
 	}
 
-	@Ignore
 	@Test
 	public void testListObjectOutput() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
@@ -232,7 +230,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		List<ParameterObject> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
-				.flatMap(p -> Core.retrieveByPath(context, p, ParameterObject.MemberNames.ParameterObject_Parameter.toString()).stream())
+				.flatMap(p -> Core.retrieveByPath(context, p, ParameterList.MemberNames.ParameterList_Parameter.toString()).stream())
 				.map(p -> ParameterObject.initialize(context, p))
 				.collect(Collectors.toList());
 		
