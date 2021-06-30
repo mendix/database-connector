@@ -40,10 +40,11 @@ public class TestCallableStatementBase {
 	
 	@BeforeClass
 	public static void prepare() throws Exception {
+		cleanUp();
+		
 		executeStatement(CREATE_TYPE_NAME_AND_AGE);
 		executeStatement(CREATE_TYPE_ARRAY_6_NUMBERS);
 		executeStatement(CREATE_TYPE_ARRAY_1_DATE);
-		executeStatement(CREATE_TYPE_ARRAY_6_STRINGS);
 		executeStatement(CREATE_TYPE_ARRAY_6_STRINGS);
 		executeStatement(CREATE_TYPE_ARRAY_2_OBJ);
 		executeStatement(CREATE_PROCEDURE_LONG_TO_LONG);
@@ -51,16 +52,15 @@ public class TestCallableStatementBase {
 		executeStatement(CREATE_PROCEDURE_OBJECT_TO_OBJECT);
 	}
 
-	@AfterClass
-	public static void cleanUp() throws Exception {
-		dropProcedure("object_to_same_object");
-		dropProcedure("long_to_different_long");
-		dropProcedure("long_to_long");
+	private static void cleanUp() throws Exception {
+		//dropProcedure("object_to_same_object");
+		//dropProcedure("long_to_different_long");
+		//dropProcedure("long_to_long");
 		dropType("array_2_obj");
-		dropType("array_6_strings");
-		dropType("array_1_date");
-		dropType("array_6_numbers");
-		dropType("name_and_age");
+		//dropType("array_6_strings");
+		//dropType("array_1_date");
+		//dropType("array_6_numbers");
+		//dropType("name_and_age");
 	}
 
 	protected static void executeStatement(Statement statement) throws SQLException, DatabaseConnectorException {
@@ -73,10 +73,21 @@ public class TestCallableStatementBase {
 	}
 	
 	protected static void dropProcedure(String procedureName) throws SQLException, DatabaseConnectorException {
-		executeStatement("DROP PROCEDURE " + procedureName);
+		executeStatement(dropIfExists("DROP PROCEDURE " + procedureName));
 	}
 
 	protected static void dropType(String typeName) throws SQLException, DatabaseConnectorException {
-		executeStatement("DROP TYPE " + typeName);
+		
+		executeStatement(dropIfExists("DROP TYPE " + typeName));
+	}
+	
+	private static String dropIfExists(String statement) {
+		return "begin\r\n" + 
+				"   execute immediate '" + statement + "';\r\n" + 
+				"exception when others then\r\n" + 
+				"   if sqlcode != -4043 then\r\n" + 
+				"      raise;\r\n" + 
+				"   end if;\r\n" + 
+				"end;";
 	}
 }
