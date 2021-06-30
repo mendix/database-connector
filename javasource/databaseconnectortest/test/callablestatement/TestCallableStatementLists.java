@@ -7,6 +7,7 @@ import static databaseconnectortest.test.callablestatement.Queries.TAKE_NOTHING_
 import static databaseconnectortest.test.callablestatement.Queries.TAKE_TWO_LONGS_RETURN_LIST_OF_6;
 import static org.junit.Assert.assertEquals;
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,6 +40,31 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 				.withListOutputParameter(3, null, null, "ARRAY_6_NUMBERS")
 				.withContent(TAKE_TWO_LONGS_RETURN_LIST_OF_6);
 		
+		executeStatement(builder.getStatement());
+
+		List<ParameterDecimal> outputParameters = getMembersOfList(builder.getStatement(), 3)
+				.map(p -> ParameterDecimal.initialize(context, p))
+				.collect(Collectors.toList());
+		
+		assertEquals(6, outputParameters.size());
+		for (long i = 0; i < outputParameters.size(); i ++) {
+			assertEquals((Long)(i % 2), (Long) outputParameters.get((int)i).getValue().longValue());
+		}
+	}
+
+	@Test
+	public void testLongListOutput_Invoke_Twice() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		builder = builder
+				.withInputParameter(1, null, 0L, ParameterLong.class)
+				.withInputParameter(2, null, 100500L, ParameterLong.class)
+				.withListOutputParameter(3, null, null, "ARRAY_6_NUMBERS")
+				.withContent(TAKE_TWO_LONGS_RETURN_LIST_OF_6);
+		
+		executeStatement(builder.getStatement());
+
+		((ParameterLong)(builder.getParameter(1))).setValue(1L);
 		executeStatement(builder.getStatement());
 
 		List<ParameterDecimal> outputParameters = getMembersOfList(builder.getStatement(), 3)
@@ -107,14 +133,13 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 
-		Long outputLength = getMembersOfList(builder.getStatement(), 1).count();
+		Long outputLength = getMembersOfList(builder.getStatement(), 0).count();
 		
 		assertEquals((Long)0L, outputLength);
 	}
 
-	@Ignore
 	@Test
-	public void testInputListOfLongsOutputLong() throws Exception {
+	public void testInputListOutputLong() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
 		List<ParameterLong> inputList = List.of(builder.longField(1, 1L), builder.longField(2, 2L), builder.longField(3, 4L));
@@ -127,6 +152,73 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		executeStatement(builder.getStatement());
 		
 		assertEquals((Long)7L, ((ParameterLong)builder.getParameter(1)).getValue());
+	}
+
+	@Test
+	public void testInputEmptyList() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<ParameterLong> inputList = new LinkedList<ParameterLong>();
+		
+		builder = builder
+				.withListInputParameter(1, null, inputList, "ARRAY_6_NUMBERS")
+				.withOutputParameter(2, null, ParameterLong.class)
+				.withContent(TAKE_LIST_OF_LONG_RETURN_SUM);
+		
+		executeStatement(builder.getStatement());
+		
+		assertEquals((Long)0L, ((ParameterLong)builder.getParameter(1)).getValue());
+	}
+
+	@Test
+	public void testInputListSamePosition() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<ParameterLong> inputList = List.of(builder.longField(1, 1L), builder.longField(1, 2L), builder.longField(3, 4L));
+		
+		builder = builder
+				.withListInputParameter(1, null, inputList, "ARRAY_6_NUMBERS")
+				.withOutputParameter(2, null, ParameterLong.class)
+				.withContent(TAKE_LIST_OF_LONG_RETURN_SUM);
+		
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage("Duplicate element at position 1 for list parameter.");
+		
+		executeStatement(builder.getStatement());
+	}
+
+	@Test
+	public void testInputListNoPosition() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<ParameterLong> inputList = List.of(builder.longField(1, 1L), builder.longField(2, 2L), builder.longField(3, 4L));
+		
+		builder = builder
+				.withListInputParameter(null, "test", inputList, "ARRAY_6_NUMBERS")
+				.withOutputParameter(2, null, ParameterLong.class)
+				.withContent(TAKE_LIST_OF_LONG_RETURN_SUM);
+		
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage("List parameter used as an input was initialized without a position.");
+		
+		executeStatement(builder.getStatement());
+	}
+
+	@Test
+	public void testInputListNoPositionOfElement() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		List<ParameterLong> inputList = List.of(builder.longField(1, 1L), builder.longField(null, 2L), builder.longField(3, 4L));
+		
+		builder = builder
+				.withListInputParameter(1, null, inputList, "ARRAY_6_NUMBERS")
+				.withOutputParameter(2, null, ParameterLong.class)
+				.withContent(TAKE_LIST_OF_LONG_RETURN_SUM);
+		
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage("Missing position information for element in list.");
+		
+		executeStatement(builder.getStatement());
 	}
 
 	@Ignore
