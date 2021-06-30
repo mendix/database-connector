@@ -20,6 +20,7 @@ import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
+import databaseconnector.proxies.ParameterRefCursor;
 import databaseconnector.proxies.ParameterString;
 
 public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
@@ -62,6 +63,9 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 					.stream().map(p -> initialize(context, p)).sorted()
 					.collect(Collectors.toList());
 			ret = new SqlParameterList(context, mendixObject, elements);
+			break;
+		case ParameterRefCursor.entityName:
+			ret = new SqlParameterRefCursor(context, mendixObject);
 			break;
 		default:
 			throw new IllegalArgumentException(
