@@ -107,6 +107,18 @@ public class Queries {
 	public final static String INOUT_ARGUMENT_BY_NAME =
 			"BEGIN :result := :in_long * 3; END;";
 	
+	public final static String LONG_TO_REFCURSOR =
+			"declare\r\n" + 
+			"  l_total number(20,0) := 0;\r\n" +
+			"  c_result SYS_REFCURSOR;\r\n" +
+			"begin\r\n" +
+			"	OPEN c_result FOR \r\n" + 
+			"		SELECT LEVEL\r\n" + 
+			"		FROM DUAL\r\n" + 
+			"		CONNECT BY LEVEL <= l_total;" +
+			"  :2 := c_result;\r\n" +
+			"end;";
+
 	public final static String CREATE_TYPE_NAME_AND_AGE =
 			"create or replace type NAME_AND_AGE is object (name VARCHAR2(100), age NUMBER)";
 	public final static String CREATE_TYPE_ARRAY_6_NUMBERS =

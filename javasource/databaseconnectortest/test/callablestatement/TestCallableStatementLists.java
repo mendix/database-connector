@@ -1,10 +1,6 @@
 package databaseconnectortest.test.callablestatement;
 
-import static databaseconnectortest.test.callablestatement.Queries.TAKE_DATE_RETURN_LIST_OF_1;
-import static databaseconnectortest.test.callablestatement.Queries.TAKE_DECIMAL_RETURN_LIST_OF_STRING_AND_LIST_OF_DECIMAL;
-import static databaseconnectortest.test.callablestatement.Queries.TAKE_LIST_OF_LONG_RETURN_SUM;
-import static databaseconnectortest.test.callablestatement.Queries.TAKE_NOTHING_RETURN_EMPTY_LIST;
-import static databaseconnectortest.test.callablestatement.Queries.TAKE_TWO_LONGS_RETURN_LIST_OF_6;
+import static databaseconnectortest.test.callablestatement.Queries.*;
 import static org.junit.Assert.assertEquals;
 
 import java.util.LinkedList;
@@ -25,6 +21,7 @@ import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
+import databaseconnector.proxies.ParameterRefCursor;
 import databaseconnector.proxies.ParameterString;
 import databaseconnector.proxies.Statement;
 
@@ -242,10 +239,38 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		assertEquals(2, outputParameters.size());
 	}
 
+	@Test
+	public void testRefCursorOutput() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		builder = builder
+				.withInputParameter(1, null, 15L, ParameterLong.class)
+				.withRefCursorParameter(2, null, ParameterMode.OUTPUT)
+				.withContent(LONG_TO_REFCURSOR);
+		
+		executeStatement(builder.getStatement());
+
+		List<ParameterDecimal> outputParameters = getMembersOfCursor(builder.getStatement(), 2)
+				.map(p -> ParameterDecimal.initialize(context, p))
+				.collect(Collectors.toList());
+		
+		assertEquals(15, outputParameters.size());
+		for (long i = 0; i < outputParameters.size(); i ++) {
+			assertEquals((Long)(i), (Long) outputParameters.get((int)i).getValue().longValue());
+		}
+	}
+
 	private Stream<IMendixObject> getMembersOfList(Statement statement, int position) {
 		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
 				.flatMap(p -> Core.retrieveByPath(context, p, ParameterList.MemberNames.ParameterList_Parameter.toString()).stream());
+	}
+
+	private Stream<IMendixObject> getMembersOfCursor(Statement statement, int position) {
+		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+				.stream()
+				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
+				.flatMap(p -> Core.retrieveByPath(context, p, ParameterRefCursor.MemberNames.ParameterRefCursor_Parameter.toString()).stream());
 	}
 }

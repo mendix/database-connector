@@ -18,6 +18,7 @@ import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
+import databaseconnector.proxies.ParameterRefCursor;
 import databaseconnector.proxies.ParameterString;
 import databaseconnector.proxies.Statement;
 
@@ -100,6 +101,15 @@ public class StatementBuilder {
 	
 		return this;
 	}
+
+	public <T> StatementBuilder withRefCursorParameter(Integer position, String name, ParameterMode mode) throws Exception {
+		
+		Parameter parameter = initRefCursorParameter(position, name, mode);
+		parameters.add(parameter);
+		parameter.setParameter_Statement(statement);
+	
+		return this;
+	}
 	
 	public <T> StatementBuilder withInOutParameter(Integer position, String name, T value, Class<?> parameterClass) throws Exception {
 		return this.withParameter(position, name, value, ParameterMode.INOUT, parameterClass);
@@ -157,6 +167,13 @@ public class StatementBuilder {
 		if (value != null) {
 			parameterInitialized.setParameterList_Parameter((List<Parameter>) value);
 		}
+
+		return parameterInitialized;
+	}
+	
+	public ParameterRefCursor initRefCursorParameter(Integer position, String name, ParameterMode parameterMode) throws Exception {
+		ParameterRefCursor parameter = ParameterRefCursor.initialize(context, Core.instantiate(context, ParameterRefCursor.entityName));
+		ParameterRefCursor parameterInitialized = initParameter(position, name, parameterMode, parameter);
 
 		return parameterInitialized;
 	}
