@@ -25,20 +25,21 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 		super(context, mendixObject);
 		this.elements = elements;
 
-		if (this.getPosition() == null) {
+		if (this.getPosition() == null || this.getPosition() == 0) {
 			throw new IllegalArgumentException("List parameter used as an input was initialized without a position.");
 		}
 		if (!this.getParameterMode().equals(ParameterMode.OUTPUT)) {
 			Set<Integer> positions = new HashSet<Integer>();
 			for (SqlParameter<?> elem : elements) {
-				if (elem.parameterObject.getPosition() == null) {
+				Integer elementPosition = elem.parameterObject.getPosition();
+				if (elementPosition == null || elementPosition == 0) {
 					throw new IllegalArgumentException("Missing position information for element in list.");
 				}
 				
-				if (positions.contains(elem.parameterObject.getPosition())) {
+				if (positions.contains(elementPosition)) {
 					throw new IllegalArgumentException(String.format("Duplicate element at position %d for list parameter.", elem.parameterObject.getPosition()));
 				}
-				positions.add(elem.parameterObject.getPosition());
+				positions.add(elementPosition);
 			}
 		}
 	}
@@ -83,20 +84,11 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 		try {
 			objStruct = retrieveResultArray(cStatement);
 			Object[] values = (Object[]) objStruct.getArray();
-			IContext context = this.parameterObject.getContext();
-
-			int index = 0;
-			for (Object value : values) {
-				this.elements.add(SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, value));
-				index++;
-			}
-
-			((ParameterList) this.parameterObject).setParameterList_Parameter(this.elements.stream().map(p -> p.parameterObject).collect(Collectors.toList()));
+			this.setValue(values);
 		} finally {
 			if (objStruct != null) objStruct.free();
 		}
 	}
-
 
 	private Array retrieveResultArray(CallableStatement cStatement) throws SQLException {
 		String name = this.getName();
@@ -110,14 +102,27 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 
 	@Override
 	List<SqlParameter<?>> getValue() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.elements;
 	}
 
 	@Override
 	void setValue(Object value) throws DatabaseConnectorException {
-		// TODO Auto-generated method stub
-		
+		try {
+			Object[] valueArray = (Object[]) value;
+			
+			IContext context = this.parameterObject.getContext();
+			this.elements.clear();
+
+			int index = 0;
+			for (Object val : valueArray) {
+				this.elements.add(SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, val));
+				index++;
+			}
+
+			((ParameterList) this.parameterObject).setParameterList_Parameter(this.elements.stream().map(p -> p.parameterObject).collect(Collectors.toList()));
+
+		} catch (Exception e) {
 			throw new DatabaseConnectorException("Unable to set values of array.", e);
+		}
 	}
 }
