@@ -109,7 +109,7 @@ public class Queries {
 	
 	public final static String LONG_TO_REFCURSOR =
 			"declare\r\n" + 
-			"  l_total number(20,0) := 0;\r\n" +
+			"  l_total number(20,0) := :1;\r\n" +
 			"  c_result SYS_REFCURSOR;\r\n" +
 			"begin\r\n" +
 			"	OPEN c_result FOR \r\n" + 

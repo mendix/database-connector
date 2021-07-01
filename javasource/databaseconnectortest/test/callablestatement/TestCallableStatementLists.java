@@ -240,6 +240,26 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 	}
 
 	@Test
+	public void testListOfListsOutput() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+		
+		builder = builder
+				.withListOutputParameter(1, null, null, "ARRAY_6_ARRAYS")
+				.withContent(ARRAY_6_ARRAYS);
+		
+		executeStatement(builder.getStatement());
+
+		List<ParameterList> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+				.stream()
+				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
+				.flatMap(p -> Core.retrieveByPath(context, p, ParameterList.MemberNames.ParameterList_Parameter.toString()).stream())
+				.map(p -> ParameterList.initialize(context, p))
+				.collect(Collectors.toList());
+		
+		assertEquals(6, outputParameters.size());
+	}
+
+	@Test
 	public void testRefCursorOutput() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
@@ -250,13 +270,15 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 
-		List<ParameterDecimal> outputParameters = getMembersOfCursor(builder.getStatement(), 2)
-				.map(p -> ParameterDecimal.initialize(context, p))
+		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement(), 2)
+				.map(p -> ParameterObject.initialize(context, p))
 				.collect(Collectors.toList());
 		
 		assertEquals(15, outputParameters.size());
 		for (long i = 0; i < outputParameters.size(); i ++) {
-			assertEquals((Long)(i), (Long) outputParameters.get((int)i).getValue().longValue());
+			ParameterObject currentObject = outputParameters.get((int) i);
+			ParameterDecimal currentNumber = (ParameterDecimal) currentObject.getParameterObject_Parameter().get(0);
+			assertEquals((Long)(i), (Long) currentNumber.getValue().longValue());
 		}
 	}
 
