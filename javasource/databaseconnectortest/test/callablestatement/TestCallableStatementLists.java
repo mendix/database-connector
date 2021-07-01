@@ -223,7 +223,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		
 		builder = builder
 				.withListOutputParameter(1, null, null, "ARRAY_2_OBJ")
-				.withContent("BEGIN :1 := ARRAY_2_OBJ(NAME_AND_AGE('a', 1), NAME_AND_AGE('b', 2)); END;");
+				.withContent(ARRAY_2_OBJECTS);
 		
 		executeStatement(builder.getStatement());
 

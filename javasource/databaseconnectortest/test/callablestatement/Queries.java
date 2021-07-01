@@ -119,17 +119,32 @@ public class Queries {
 			"  :2 := c_result;\r\n" +
 			"end;";
 
+	public final static String ARRAY_2_OBJECTS =
+			"BEGIN :1 := ARRAY_2_OBJ(NAME_AND_AGE('a', 1), NAME_AND_AGE('b', 2)); END;";
+	
+	public final static String ARRAY_6_ARRAYS =
+			"BEGIN" +
+			"	:1 := ARRAY_6_ARRAYS(" +
+			"			ARRAY_6_NUMBERS(1)," +
+			"			ARRAY_6_NUMBERS(2, 2)," +
+			"			ARRAY_6_NUMBERS(3, 3, 3)," +
+			"			ARRAY_6_NUMBERS(4, 4, 4, 4)," +
+			"			ARRAY_6_NUMBERS(5, 5, 5, 5, 5)," +
+			"			ARRAY_6_NUMBERS(6, 6, 6, 6, 6, 6));" +
+			"END;";
+	
 	public final static String CREATE_TYPE_NAME_AND_AGE =
 			"create or replace type NAME_AND_AGE is object (name VARCHAR2(100), age NUMBER)";
 	public final static String CREATE_TYPE_ARRAY_6_NUMBERS =
-			"create or replace type array_6_numbers is VARRAY(6) OF number(20);";
+			"create or replace type ARRAY_6_NUMBERS is VARRAY(6) OF number(20);";
 	public final static String CREATE_TYPE_ARRAY_1_DATE =
 			"create or replace type array_1_date is VARRAY(1) OF date;";
 	public final static String CREATE_TYPE_ARRAY_6_STRINGS =
 			"create or replace type array_6_strings is VARRAY(6) OF VARCHAR2(100);";
 	public final static String CREATE_TYPE_ARRAY_2_OBJ =
 			"create or replace type ARRAY_2_OBJ is VARRAY(2) OF NAME_AND_AGE;";
-
+	public final static String CREATE_TYPE_ARRAY_6_ARRAYS =
+			"create or replace type ARRAY_6_ARRAYS is VARRAY(6) OF ARRAY_6_NUMBERS;";
 	public final static String CREATE_PROCEDURE_LONG_TO_LONG =
 			"CREATE OR REPLACE PROCEDURE long_to_long (lval IN OUT NUMBER) AS\r\n" + 
 			"   BEGIN\r\n" + 
