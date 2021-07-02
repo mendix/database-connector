@@ -1,6 +1,7 @@
 package databaseconnector.impl.callablestatement;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Array;
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -20,6 +21,23 @@ import databaseconnector.proxies.ParameterMode;
 public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 	private final static int SQL_TYPE = java.sql.Types.ARRAY;
 	private List<SqlParameter<?>> elements;
+	
+	private final static Class<?> oracleClass;
+	private final static Method createOracleArray;
+
+	static {
+		Class<?> clazz;
+		Method method;
+		try {
+			clazz = Class.forName("oracle.jdbc.OracleConnection");
+			method = clazz.getMethod("createOracleArray", String.class, Object.class);
+		} catch (ClassNotFoundException | NoSuchMethodException | SecurityException e) {
+			clazz = null;
+			method = null;
+		}
+		oracleClass = clazz;
+		createOracleArray = method;
+	}
 
 	public SqlParameterList(final IContext context, IMendixObject mendixObject, List<SqlParameter<?>> elements) {
 		super(context, mendixObject);
@@ -60,14 +78,12 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 		Object[] attrVals = this.elements.stream().map(SqlParameter::getValue).toArray();
 		
 		// Oracle uses a different, but almost compatible call type; We use reflection to make it possible to compile this module without having Oracle's drivers present
-		try {
-			Class<?> oracleClass = Class.forName("oracle.jdbc.OracleConnection");
-			if (connection.isWrapperFor(oracleClass)) {
-				return (Array) oracleClass.getMethod("createOracleArray",  String.class, Object.class).invoke(connection.unwrap(oracleClass), sqlTypeName, attrVals);
+		if (oracleClass != null && connection.isWrapperFor(oracleClass)) {
+			try {
+				return (Array) createOracleArray.invoke(connection.unwrap(oracleClass), sqlTypeName, attrVals);
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SQLException e) {
+				throw new DatabaseConnectorException("Unable to create array structure for input parameter with this Oracle Connection.", e);
 			}
-		} catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-				| NoSuchMethodException | SecurityException | SQLException e) {
-			// Fallback as usual
 		}
 		return connection.createArrayOf(sqlTypeName, attrVals);
 	}
