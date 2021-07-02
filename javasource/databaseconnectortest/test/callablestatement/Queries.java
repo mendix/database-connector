@@ -115,6 +115,7 @@ public class Queries {
 			"	OPEN c_result FOR \r\n" + 
 			"		SELECT LEVEL\r\n" + 
 			"		FROM DUAL\r\n" + 
+			"		WHERE l_total > 0\r\n" + 
 			"		CONNECT BY LEVEL <= l_total;" +
 			"  :2 := c_result;\r\n" +
 			"end;";

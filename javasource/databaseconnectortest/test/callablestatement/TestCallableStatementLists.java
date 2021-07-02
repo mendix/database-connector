@@ -20,7 +20,6 @@ import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
-import databaseconnector.proxies.ParameterRefCursor;
 import databaseconnector.proxies.ParameterString;
 import databaseconnector.proxies.Statement;
 
@@ -257,40 +256,11 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		assertEquals(6, outputParameters.size());
 	}
 
-	@Test
-	public void testRefCursorOutput() throws Exception {
-		StatementBuilder builder = new StatementBuilder(context);
-
-		builder = builder
-				.withInputParameter(1, null, 15L, ParameterLong.class)
-				.withRefCursorParameter(2, null, ParameterMode.OUTPUT)
-				.withContent(LONG_TO_REFCURSOR);
-		
-		executeStatement(builder.getStatement());
-
-		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement(), 2)
-				.map(p -> ParameterObject.initialize(context, p))
-				.collect(Collectors.toList());
-		
-		assertEquals(15, outputParameters.size());
-		for (long i = 0; i < outputParameters.size(); i ++) {
-			ParameterObject currentObject = outputParameters.get((int) i);
-			ParameterDecimal currentNumber = (ParameterDecimal) currentObject.getParameterObject_Parameter().get(0);
-			assertEquals((Long)(i+1), (Long) currentNumber.getValue().longValue());
-		}
-	}
 
 	private Stream<IMendixObject> getMembersOfList(Statement statement, int position) {
 		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
 				.flatMap(p -> Core.retrieveByPath(context, p, ParameterList.MemberNames.ParameterList_Parameter.toString()).stream());
-	}
-
-	private Stream<IMendixObject> getMembersOfCursor(Statement statement, int position) {
-		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
-				.stream()
-				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
-				.flatMap(p -> Core.retrieveByPath(context, p, ParameterRefCursor.MemberNames.ParameterRefCursor_Parameter.toString()).stream());
 	}
 }
