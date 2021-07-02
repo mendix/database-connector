@@ -14,24 +14,33 @@ import com.mendix.core.Core;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 
+import databaseconnector.impl.CallableStatementCreatorImpl;
 import databaseconnector.impl.DatabaseConnectorException;
+import databaseconnector.impl.JdbcConnectionManager;
 import databaseconnector.impl.JdbcConnector;
+import databaseconnector.impl.PreparedStatementCreatorImpl;
 import databaseconnector.proxies.Statement;
 import databaseconnectortest.proxies.constants.Constants;
 
 public class TestCallableStatementBase {
 	protected final IContext context = Core.createSystemContext();
+	protected final static ILogNode logNode = Core.getLogger("DatabaseConnectorTest");
 	
 	protected final static Long AU = 149597870700L;
 	protected final static BigDecimal PI = new BigDecimal(3.14);
 	protected final static String TEST_STRING = "Nibiru cataclysm";
 	protected final static Date TEST_DATE = new Date(0L);
 	
+	protected static JdbcConnector connector;
+	
 	@Rule
 	public ExpectedException exceptionRule = ExpectedException.none();
 	
 	@BeforeClass
 	public static void prepare() throws Exception {
+		connector = new JdbcConnector(logNode, (context, entityName) -> Core.instantiate(context, entityName), new JdbcConnectionManager(),
+				new PreparedStatementCreatorImpl(), new CallableStatementCreatorImpl());
+
 		dropType("ARRAY_2_OBJ");
 		dropType("ARRAY_6_ARRAYS");
 
@@ -47,8 +56,7 @@ public class TestCallableStatementBase {
 	}
 
 	protected static void executeStatement(Statement statement) throws SQLException, DatabaseConnectorException {
-		ILogNode logNode = Core.getLogger("DatabaseConnectorTest");
-		new JdbcConnector(logNode).executeCallableStatement("jdbc:oracle:thin:@//" + Constants.getOracleAddress(), Constants.getOracleUserName(), Constants.getOraclePassword(), statement);
+		connector.executeCallableStatement("jdbc:oracle:thin:@//" + Constants.getOracleAddress(), Constants.getOracleUserName(), Constants.getOraclePassword(), statement);
 	}
 
 	protected static void executeStatement(String content) throws SQLException, DatabaseConnectorException {
