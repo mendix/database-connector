@@ -120,6 +120,28 @@ public class Queries {
 			"  :2 := c_result;\r\n" +
 			"end;";
 
+	public final static String REFCURSOR_MULTIPLE_COLUMNS =
+			"declare\r\n" + 
+			"  c_result SYS_REFCURSOR;\r\n" +
+			"begin\r\n" +
+			"	OPEN c_result FOR\r\n" + 
+			"		SELECT NULL, LEVEL, CONCAT('NAME ', TO_CHAR(LEVEL))\r\n" + 
+			"		FROM DUAL\r\n" + 
+			"		CONNECT BY LEVEL <= 3;" +
+			"  :1 := c_result;\r\n" +
+			"end;";
+
+	public final static String REFCURSOR_NULL_FIRST =
+			"declare\r\n" + 
+			"  c_result SYS_REFCURSOR;\r\n" +
+			"begin\r\n" +
+			"	OPEN c_result FOR\r\n" + 
+			"		SELECT (CASE WHEN (LEVEL < 3) THEN NULL ELSE LEVEL END)\r\n" + 
+			"		FROM DUAL\r\n" + 
+			"		CONNECT BY LEVEL <= 3;" +
+			"  :1 := c_result;\r\n" +
+			"end;";
+
 	public final static String ARRAY_2_OBJECTS =
 			"BEGIN :1 := ARRAY_2_OBJ(NAME_AND_AGE('a', 1), NAME_AND_AGE('b', 2)); END;";
 	
