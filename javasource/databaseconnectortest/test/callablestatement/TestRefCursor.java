@@ -54,16 +54,16 @@ public class TestRefCursor extends TestCallableStatementBase {
 		executeStatement(builder.getStatement());
 
 		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement(), 1);
-		assertEquals(4, outputParameters.size());
+		assertEquals(3, outputParameters.size());
 		
 		for (long i = 1; i <= outputParameters.size(); i ++) {
 			ParameterObject currentObject = outputParameters.get((int) i - 1);
 			// ParameterString nullValue = (ParameterString) currentObject.getParameterObject_Parameter().get(0);
-			ParameterLong longValue = (ParameterLong) currentObject.getParameterObject_Parameter().get(1);
+			ParameterDecimal longValue = (ParameterDecimal) currentObject.getParameterObject_Parameter().get(1);
 			ParameterString stringValue = (ParameterString) currentObject.getParameterObject_Parameter().get(2);
 			
-			assertEquals((Long)i, (Long) longValue.getValue());
-			assertEquals(String.valueOf(i), (String) stringValue.getValue());
+			assertEquals((Long)i, (Long) longValue.getValue().longValue());
+			assertEquals("NAME " + String.valueOf(i), (String) stringValue.getValue());
 		}
 	}
 
@@ -80,9 +80,9 @@ public class TestRefCursor extends TestCallableStatementBase {
 		
 		for (long i = 1; i <= outputParameters.size(); i ++) {
 			ParameterObject currentObject = outputParameters.get((int) i - 1);
-			ParameterLong longValue = (ParameterLong) currentObject.getParameterObject_Parameter().get(0);
+			ParameterDecimal longValue = (ParameterDecimal) currentObject.getParameterObject_Parameter().get(0);
 			if (i < 3L) assertNull(longValue.getValue());
-			else assertEquals((Long)i, (Long) longValue.getValue());
+			else assertEquals((Long)i, (Long) longValue.getValue().longValue());
 		}
 	}
 
