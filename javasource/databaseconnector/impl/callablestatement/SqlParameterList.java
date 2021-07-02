@@ -81,7 +81,7 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 		if (oracleClass != null && connection.isWrapperFor(oracleClass)) {
 			try {
 				return (Array) createOracleArray.invoke(connection.unwrap(oracleClass), sqlTypeName, attrVals);
-			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | SQLException e) {
+			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 				throw new DatabaseConnectorException("Unable to create array structure for input parameter with this Oracle Connection.", e);
 			}
 		}
