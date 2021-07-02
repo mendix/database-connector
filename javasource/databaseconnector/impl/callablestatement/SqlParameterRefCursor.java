@@ -50,7 +50,8 @@ public class SqlParameterRefCursor extends SqlParameter<List<SqlParameterObject>
 				List<SqlParameter<?>> fields = new ArrayList<SqlParameter<?>>(numColumns);
 				for (int column = 1; column <= numColumns; column++) {
 					String columnName = rs.getMetaData().getColumnLabel(column);
-					SqlParameter<?> newParameter = SqlParameter.createParameterFromValue(context, this.getParameterMode(), column, rs.getObject(column));
+					int typeHint = rs.getMetaData().getColumnType(column);
+					SqlParameter<?> newParameter = SqlParameter.createParameterFromValue(context, this.getParameterMode(), column, rs.getObject(column), typeHint);
 					newParameter.parameterObject.setName(columnName);
 					fields.add(newParameter);
 				}

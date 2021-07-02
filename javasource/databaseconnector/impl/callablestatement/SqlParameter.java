@@ -138,9 +138,43 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 		} else if (value instanceof Array) {
 			objectType = ParameterList.getType();
 		} else {
-			throw new DatabaseConnectorException(String.format("Unable to infer data type from value '%s'.", value.toString()));
+			throw new DatabaseConnectorException(String.format("Unable to infer data type from value '%s'.", value == null ? "NULL" : value.toString()));
+		}
+		
+		return createParameterFromValue(context, mode, index, value, objectType);
+	}
+
+	public static SqlParameter<?> createParameterFromValue(IContext context, ParameterMode mode, int index, Object value, int typeHint) throws DatabaseConnectorException {
+		final String objectType;
+		switch (typeHint) {
+		case java.sql.Types.INTEGER:
+			objectType = ParameterLong.getType();
+			break;
+		case java.sql.Types.DECIMAL:
+		case java.sql.Types.NUMERIC:
+			objectType = ParameterDecimal.getType();
+			break;
+		case java.sql.Types.VARCHAR:
+			objectType = ParameterString.getType();
+			break;
+		case java.sql.Types.DATE:
+			objectType = ParameterDatetime.getType();
+			break;
+		case java.sql.Types.ARRAY:
+			objectType = ParameterList.getType();
+			break;
+		case java.sql.Types.STRUCT:
+			objectType = ParameterObject.getType();
+			break;
+		default:
+			// Let's try to guess, then?
+			return createParameterFromValue(context, mode, index, value);
 		}
 
+		return createParameterFromValue(context, mode, index, value, objectType);
+	}
+
+	public static SqlParameter<?> createParameterFromValue(IContext context, ParameterMode mode, int index, Object value, String objectType) throws DatabaseConnectorException {
 		IMendixObject newObject = Core.instantiate(context, objectType);
 		newObject.setValue(context, Parameter.MemberNames.ParameterMode.toString(), mode.toString());
 		newObject.setValue(context, Parameter.MemberNames.Position.toString(), index);
@@ -148,4 +182,5 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 		newValue.setValue(value);
 		return newValue;
 	}
+
 }
