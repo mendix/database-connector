@@ -44,7 +44,7 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 		this.elements = elements;
 
 		if (this.getPosition() == null || this.getPosition() == 0) {
-			throw new IllegalArgumentException("List parameter used as an input was initialized without a position.");
+			throw new IllegalArgumentException("List parameter was initialized without a position.");
 		}
 		if (!this.getParameterMode().equals(ParameterMode.OUTPUT)) {
 			Set<Integer> positions = new HashSet<Integer>();

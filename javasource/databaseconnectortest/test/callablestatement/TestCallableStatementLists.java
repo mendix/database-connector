@@ -194,7 +194,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 				.withContent(TAKE_LIST_OF_LONG_RETURN_SUM);
 		
 		exceptionRule.expect(IllegalArgumentException.class);
-		exceptionRule.expectMessage("List parameter used as an input was initialized without a position.");
+		exceptionRule.expectMessage("List parameter was initialized without a position.");
 		
 		executeStatement(builder.getStatement());
 	}
