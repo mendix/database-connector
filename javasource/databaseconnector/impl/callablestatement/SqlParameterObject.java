@@ -108,7 +108,7 @@ public class SqlParameterObject extends SqlParameter<List<SqlParameter<?>>> {
 					index++;
 				}
 			}
-		} catch (Exception e) {
+		} catch (SQLException e) {
 			throw new DatabaseConnectorException("Unable to set values for object", e);
 		}
 	}

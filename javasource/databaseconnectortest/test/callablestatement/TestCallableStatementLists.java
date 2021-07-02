@@ -276,7 +276,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		for (long i = 0; i < outputParameters.size(); i ++) {
 			ParameterObject currentObject = outputParameters.get((int) i);
 			ParameterDecimal currentNumber = (ParameterDecimal) currentObject.getParameterObject_Parameter().get(0);
-			assertEquals((Long)(i), (Long) currentNumber.getValue().longValue());
+			assertEquals((Long)(i+1), (Long) currentNumber.getValue().longValue());
 		}
 	}
 

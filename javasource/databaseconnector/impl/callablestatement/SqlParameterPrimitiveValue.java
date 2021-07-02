@@ -51,7 +51,7 @@ public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter<T> {
 	public void setValue(Object value) throws DatabaseConnectorException {
 		try {
 			this.parameterObject.getMendixObject().setValue(this.parameterObject.getContext(), "Value", value);
-		} catch (ClassCastException e) {
+		} catch (Exception e) {
 			throw new DatabaseConnectorException(String.format("Unable to set value %s for parameter %s.", value.toString(), this.parameterObject.getMendixObject().getType()));
 		}
 	}

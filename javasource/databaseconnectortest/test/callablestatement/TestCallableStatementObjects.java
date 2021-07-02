@@ -185,7 +185,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 				.withContent(TAKE_MEMBERS_RETURN_OBJECT);
 
 		exceptionRule.expect(DatabaseConnectorException.class);
-		exceptionRule.expectMessage("Unable to set field of ParameterObject");
+		exceptionRule.expectMessage("Unable to set value Nibiru cataclysm for parameter DatabaseConnector.ParameterLong.");
 		executeStatement(builder.getStatement());
 	}
 
