@@ -76,7 +76,7 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 	private Array createArray(Connection connection) throws SQLException, DatabaseConnectorException {
 		String sqlTypeName = ((ParameterList) this.parameterObject).getSQLTypeName();
 		Object[] attrVals = this.elements.stream().map(SqlParameter::getValue).toArray();
-		
+
 		// Oracle uses a different, but almost compatible call type; We use reflection to make it possible to compile this module without having Oracle's drivers present
 		if (oracleClass != null && connection.isWrapperFor(oracleClass)) {
 			try {
@@ -97,22 +97,17 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 	@Override
 	protected void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		Array objStruct = null;
-		try {
-			objStruct = retrieveResultArray(cStatement);
-			Object[] values = (Object[]) objStruct.getArray();
-			this.setValue(values);
-		} finally {
-			if (objStruct != null) objStruct.free();
-		}
-	}
-
-	private Array retrieveResultArray(CallableStatement cStatement) throws SQLException {
 		String name = this.getName();
 
-		if (name == null || name.isBlank()) {
-			return cStatement.getArray(this.getPosition());
-		} else {
-			return cStatement.getArray(name);
+		try {
+			if (name == null || name.isBlank()) {
+				objStruct = cStatement.getArray(this.getPosition());
+			} else {
+				objStruct = cStatement.getArray(name);
+			}
+			this.setValue(objStruct);
+		} finally {
+			if (objStruct != null) objStruct.free();
 		}
 	}
 
@@ -124,12 +119,12 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 	@Override
 	void setValue(Object value) throws DatabaseConnectorException {
 		try {
-			Object[] valueArray = (Object[]) value;
-			
+			Object[] valueArray = (Object[]) ((Array) value).getArray();
+
 			IContext context = this.parameterObject.getContext();
 			this.elements.clear();
 
-			int index = 0;
+			int index = 1;
 			for (Object val : valueArray) {
 				this.elements.add(SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, val));
 				index++;

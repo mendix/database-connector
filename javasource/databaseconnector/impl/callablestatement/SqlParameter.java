@@ -1,6 +1,7 @@
 package databaseconnector.impl.callablestatement;
 
 import java.math.BigDecimal;
+import java.sql.Array;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -134,6 +135,8 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 			objectType = ParameterDatetime.getType();
 		} else if (value instanceof Struct) {
 			objectType = ParameterObject.getType();
+		} else if (value instanceof Array) {
+			objectType = ParameterList.getType();
 		} else {
 			throw new DatabaseConnectorException(String.format("Unable to infer data type from value '%s'.", value.toString()));
 		}
