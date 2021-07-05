@@ -13,9 +13,7 @@ import com.mendix.core.Core;
 import com.mendix.logging.ILogNode;
 import com.mendix.systemwideinterfaces.core.IContext;
 import com.mendix.webui.CustomJavaAction;
-
 import databaseconnector.impl.JdbcConnector;
-
 import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 public class ExecuteCallableStatement extends CustomJavaAction<java.lang.Void>
