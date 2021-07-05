@@ -22,12 +22,12 @@ public class CallableStatementCreatorImpl implements CallableStatementCreator {
 		final IContext context = statement.getContext();
 		final CallableStatement cStatement = connection.prepareCall(statement.getContent());
 
-		List<SqlParameter<?>> parameters = Core
+		List<SqlParameter> parameters = Core
 				.retrieveByPath(context, statement.getMendixObject(),
 						Parameter.MemberNames.Parameter_Statement.toString())
 				.stream().map(p -> SqlParameter.initialize(context, p)).collect(Collectors.toList());
 
-		for (SqlParameter<?> p : parameters) {
+		for (SqlParameter p : parameters) {
 			p.prepareCall(cStatement);
 		}
 

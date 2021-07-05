@@ -17,7 +17,7 @@ import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
 import databaseconnector.proxies.ParameterRefCursor;
 
-public class SqlParameterRefCursor extends SqlParameter<List<SqlParameterObject>> {
+public class SqlParameterRefCursor extends SqlParameter {
 	private final static int SQL_TYPE = java.sql.Types.REF_CURSOR;
 	private List<SqlParameterObject> result = new ArrayList<SqlParameterObject>();
 
@@ -47,11 +47,11 @@ public class SqlParameterRefCursor extends SqlParameter<List<SqlParameterObject>
 
 			int index = 0;
 			while (rs.next()) {
-				List<SqlParameter<?>> fields = new ArrayList<SqlParameter<?>>(numColumns);
+				List<SqlParameter> fields = new ArrayList<SqlParameter>(numColumns);
 				for (int column = 1; column <= numColumns; column++) {
 					String columnName = rs.getMetaData().getColumnLabel(column);
 					int typeHint = rs.getMetaData().getColumnType(column);
-					SqlParameter<?> newParameter = SqlParameter.createParameterFromValue(context, this.getParameterMode(), column, rs.getObject(column), typeHint);
+					SqlParameter newParameter = SqlParameter.createParameterFromValue(context, this.getParameterMode(), column, rs.getObject(column), typeHint);
 					newParameter.parameterObject.setName(columnName);
 					fields.add(newParameter);
 				}

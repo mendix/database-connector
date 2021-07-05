@@ -24,7 +24,7 @@ import databaseconnector.proxies.ParameterObject;
 import databaseconnector.proxies.ParameterRefCursor;
 import databaseconnector.proxies.ParameterString;
 
-public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
+public abstract class SqlParameter implements Comparable<SqlParameter> {
 	protected Parameter parameterObject;
 	
 	protected SqlParameter(final IContext context, final IMendixObject mendixParameterObject) {
@@ -35,8 +35,8 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 		}
 	}
 
-	public static SqlParameter<?> initialize(final IContext context, IMendixObject mendixObject) {
-		SqlParameter<?> ret = null;
+	public static SqlParameter initialize(final IContext context, IMendixObject mendixObject) {
+		SqlParameter ret = null;
 
 		switch (mendixObject.getType()) {
 		case ParameterDatetime.entityName:
@@ -52,14 +52,14 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 			ret = new SqlParameterDecimal(context, mendixObject);
 			break;
 		case ParameterObject.entityName:
-			List<SqlParameter<?>> fields = Core
+			List<SqlParameter> fields = Core
 					.retrieveByPath(context, mendixObject, ParameterObject.MemberNames.ParameterObject_Parameter.toString())
 					.stream().map(p -> initialize(context, p)).sorted()
 					.collect(Collectors.toList());
 			ret = new SqlParameterObject(context, mendixObject, fields);
 			break;
 		case ParameterList.entityName:
-			List<SqlParameter<?>> elements = Core
+			List<SqlParameter> elements = Core
 					.retrieveByPath(context, mendixObject, ParameterList.MemberNames.ParameterList_Parameter.toString())
 					.stream().map(p -> initialize(context, p)).sorted()
 					.collect(Collectors.toList());
@@ -103,7 +103,7 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 	protected abstract void prepareOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
 	protected abstract void prepareInput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
 
-	abstract T getValue();
+	abstract Object getValue();
 	abstract void setValue(Object value) throws DatabaseConnectorException;
 
 	public Integer getPosition() {
@@ -119,11 +119,11 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 	}
 
 	@Override
-	public int compareTo(SqlParameter<?> other) {
+	public int compareTo(SqlParameter other) {
 		return this.getPosition() - other.getPosition();
 	}
 
-	public static SqlParameter<?> createParameterFromValue(IContext context, ParameterMode mode, int index, Object value) throws DatabaseConnectorException {
+	public static SqlParameter createParameterFromValue(IContext context, ParameterMode mode, int index, Object value) throws DatabaseConnectorException {
 		final String objectType;
 		if (value instanceof Long) {
 			objectType = ParameterLong.getType();
@@ -144,7 +144,7 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 		return createParameterFromValue(context, mode, index, value, objectType);
 	}
 
-	public static SqlParameter<?> createParameterFromValue(IContext context, ParameterMode mode, int index, Object value, int typeHint) throws DatabaseConnectorException {
+	public static SqlParameter createParameterFromValue(IContext context, ParameterMode mode, int index, Object value, int typeHint) throws DatabaseConnectorException {
 		final String objectType;
 		switch (typeHint) {
 		case java.sql.Types.INTEGER:
@@ -174,11 +174,11 @@ public abstract class SqlParameter<T> implements Comparable<SqlParameter<?>> {
 		return createParameterFromValue(context, mode, index, value, objectType);
 	}
 
-	public static SqlParameter<?> createParameterFromValue(IContext context, ParameterMode mode, int index, Object value, String objectType) throws DatabaseConnectorException {
+	public static SqlParameter createParameterFromValue(IContext context, ParameterMode mode, int index, Object value, String objectType) throws DatabaseConnectorException {
 		IMendixObject newObject = Core.instantiate(context, objectType);
 		newObject.setValue(context, Parameter.MemberNames.ParameterMode.toString(), mode.toString());
 		newObject.setValue(context, Parameter.MemberNames.Position.toString(), index);
-		SqlParameter<?> newValue = SqlParameter.initialize(context, newObject);
+		SqlParameter newValue = SqlParameter.initialize(context, newObject);
 		newValue.setValue(value);
 		return newValue;
 	}

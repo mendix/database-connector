@@ -18,9 +18,9 @@ import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterMode;
 
-public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
+public class SqlParameterList extends SqlParameter {
 	private final static int SQL_TYPE = java.sql.Types.ARRAY;
-	private List<SqlParameter<?>> elements;
+	private List<SqlParameter> elements;
 	
 	private final static Class<?> oracleClass;
 	private final static Method createOracleArray;
@@ -39,7 +39,7 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 		createOracleArray = method;
 	}
 
-	public SqlParameterList(final IContext context, IMendixObject mendixObject, List<SqlParameter<?>> elements) {
+	public SqlParameterList(final IContext context, IMendixObject mendixObject, List<SqlParameter> elements) {
 		super(context, mendixObject);
 		this.elements = elements;
 
@@ -48,7 +48,7 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 		}
 		if (!this.getParameterMode().equals(ParameterMode.OUTPUT)) {
 			Set<Integer> positions = new HashSet<Integer>();
-			for (SqlParameter<?> elem : elements) {
+			for (SqlParameter elem : elements) {
 				Integer elementPosition = elem.parameterObject.getPosition();
 				if (elementPosition == null || elementPosition == 0) {
 					throw new IllegalArgumentException("Missing position information for element in list.");
@@ -112,7 +112,7 @@ public class SqlParameterList extends SqlParameter<List<SqlParameter<?>>> {
 	}
 
 	@Override
-	List<SqlParameter<?>> getValue() {
+	List<SqlParameter> getValue() {
 		return this.elements;
 	}
 

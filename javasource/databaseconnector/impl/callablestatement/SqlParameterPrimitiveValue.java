@@ -8,7 +8,7 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 import databaseconnector.impl.DatabaseConnectorException;
 
-public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter<T> {
+public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter {
 	protected final int SQL_TYPE;
 
 	protected SqlParameterPrimitiveValue(final IContext context, IMendixObject mendixObject, int SQL_TYPE) {

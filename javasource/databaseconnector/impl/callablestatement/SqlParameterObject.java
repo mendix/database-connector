@@ -15,17 +15,17 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.ParameterObject;
 
-public class SqlParameterObject extends SqlParameter<List<SqlParameter<?>>> {
+public class SqlParameterObject extends SqlParameter {
 	private final static int SQL_TYPE = java.sql.Types.STRUCT;
 	
-	private List<SqlParameter<?>> objectFields;
+	private List<SqlParameter> objectFields;
 
-	public SqlParameterObject(final IContext context, IMendixObject mendixObject, List<SqlParameter<?>> objectFields) {
+	public SqlParameterObject(final IContext context, IMendixObject mendixObject, List<SqlParameter> objectFields) {
 		super(context, mendixObject);
 		this.objectFields = objectFields;
 
 		Set<Integer> positions = new HashSet<Integer>();
-		for (SqlParameter<?> field : objectFields) {
+		for (SqlParameter field : objectFields) {
 			if (field.getPosition() == null) {
 				String objectNameOrPosition = (this.parameterObject.getName() == null || this.parameterObject.getName().isBlank()) ? this.parameterObject.getPosition().toString() : this.parameterObject.getName();
 				throw new IllegalArgumentException(String.format("Missing position information for field of type %s of ParameterObject %s.", field.parameterObject.getMendixObject().getType(), objectNameOrPosition));
@@ -84,7 +84,7 @@ public class SqlParameterObject extends SqlParameter<List<SqlParameter<?>>> {
 	}
 
 	@Override
-	List<SqlParameter<?>> getValue() {
+	List<SqlParameter> getValue() {
 		return this.objectFields;
 	}
 
@@ -103,7 +103,7 @@ public class SqlParameterObject extends SqlParameter<List<SqlParameter<?>>> {
 				}
 	
 				int index = 0;
-				for (SqlParameter<?> field : objectFields) {
+				for (SqlParameter field : objectFields) {
 					field.setValue(valArray[index]);
 					index++;
 				}
