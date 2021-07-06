@@ -66,19 +66,18 @@ public class SqlParameterObject extends SqlParameter {
 	@Override
 	protected void prepareInput(CallableStatement cStatement) throws SQLException {
 		Struct objStruct = createConnectionStruct(cStatement.getConnection());
-		final String name = this.getName();
-		
+
 		if (objStruct == null) {
-			if (name == null || name.isBlank()) {
+			if (this.isNameDefined()) {
 				cStatement.setNull(this.getPosition(), SQL_TYPE);
 			} else {
-				cStatement.setNull(name, SQL_TYPE);
+				cStatement.setNull(this.getName(), SQL_TYPE);
 			}
 		} else {
-			if (name == null) {
+			if (this.isNameDefined()) {
 				cStatement.setObject(this.getPosition(), objStruct);
 			} else {
-				cStatement.setObject(name, objStruct);
+				cStatement.setObject(this.getName(), objStruct);
 			}
 		}
 	}

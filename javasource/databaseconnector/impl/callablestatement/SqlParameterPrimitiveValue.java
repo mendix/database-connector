@@ -34,11 +34,10 @@ public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter {
 	}
 
 	public void prepareOutput(CallableStatement cStatement) throws SQLException {
-		String name = this.getName();
-		if (name == null || name.isBlank()) {
+		if (this.isNameDefined()) {
 			cStatement.registerOutParameter(this.getPosition(), SQL_TYPE);
 		} else {
-			cStatement.registerOutParameter(name, SQL_TYPE);
+			cStatement.registerOutParameter(this.getName(), SQL_TYPE);
 		}
 	}
 
