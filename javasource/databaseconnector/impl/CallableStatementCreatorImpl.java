@@ -12,7 +12,6 @@ import com.mendix.systemwideinterfaces.core.IContext;
 import databaseconnector.impl.callablestatement.SqlParameter;
 import databaseconnector.impl.callablestatement.StatementWrapper;
 import databaseconnector.interfaces.CallableStatementCreator;
-import databaseconnector.proxies.Parameter;
 import databaseconnector.proxies.Statement;
 
 public class CallableStatementCreatorImpl implements CallableStatementCreator {
@@ -24,7 +23,7 @@ public class CallableStatementCreatorImpl implements CallableStatementCreator {
 
 		List<SqlParameter> parameters = Core
 				.retrieveByPath(context, statement.getMendixObject(),
-						Parameter.MemberNames.Parameter_Statement.toString())
+						Statement.MemberNames.Statement_Parameter.toString())
 				.stream().map(p -> SqlParameter.initialize(context, p)).collect(Collectors.toList());
 
 		for (SqlParameter p : parameters) {

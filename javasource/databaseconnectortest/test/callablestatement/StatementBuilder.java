@@ -40,6 +40,9 @@ public class StatementBuilder {
 	}
 	
 	public Statement getStatement() {
+		// Ensure the statement has the correct parameters:
+		this.statement.setStatement_Parameter(this.parameters);
+
 		return this.statement;
 	}
 	
@@ -66,7 +69,6 @@ public class StatementBuilder {
 		
 		Parameter parameter = initObjectParameter(position, name, value, ParameterMode.INPUT, sqlTypeName);
 		parameters.add(parameter);
-		parameter.setParameter_Statement(statement);
 	
 		return this;
 	}
@@ -75,7 +77,6 @@ public class StatementBuilder {
 		
 		Parameter parameter = initListParameter(position, name, value, ParameterMode.INPUT, sqlTypeName);
 		parameters.add(parameter);
-		parameter.setParameter_Statement(statement);
 	
 		return this;
 	}
@@ -88,7 +89,6 @@ public class StatementBuilder {
 		
 		Parameter parameter = initObjectParameter(position, name, value, ParameterMode.OUTPUT, sqlTypeName);
 		parameters.add(parameter);
-		parameter.setParameter_Statement(statement);
 	
 		return this;
 	}
@@ -97,7 +97,6 @@ public class StatementBuilder {
 		
 		Parameter parameter = initListParameter(position, name, value, ParameterMode.OUTPUT, sqlTypeName);
 		parameters.add(parameter);
-		parameter.setParameter_Statement(statement);
 	
 		return this;
 	}
@@ -106,7 +105,6 @@ public class StatementBuilder {
 		
 		Parameter parameter = initRefCursorParameter(position, name, mode);
 		parameters.add(parameter);
-		parameter.setParameter_Statement(statement);
 	
 		return this;
 	}
@@ -119,7 +117,6 @@ public class StatementBuilder {
 		
 		Parameter parameter = initObjectParameter(position, name, value, ParameterMode.INOUT, sqlTypeName);
 		parameters.add(parameter);
-		parameter.setParameter_Statement(statement);
 	
 		return this;
 	}
@@ -142,7 +139,6 @@ public class StatementBuilder {
 		}
 		
 		parameters.add(parameter);
-		parameter.setParameter_Statement(statement);
 	
 		return this;
 	}

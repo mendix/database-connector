@@ -106,7 +106,7 @@ public class TestRefCursor extends TestCallableStatementBase {
 	}
 
 	private List<ParameterObject> getMembersOfCursor(Statement statement, int position) {
-		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+		return Core.retrieveByPath(context, statement.getMendixObject(), Statement.MemberNames.Statement_Parameter.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
 				.flatMap(p -> Core.retrieveByPath(context, p, ParameterRefCursor.MemberNames.ParameterRefCursor_Parameter.toString()).stream())

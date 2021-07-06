@@ -19,6 +19,7 @@ import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
 import databaseconnector.proxies.ParameterString;
+import databaseconnector.proxies.Statement;
 
 public class TestCallableStatementObjects extends TestCallableStatementBase {
 	@Test
@@ -113,7 +114,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 
 		executeStatement(builder.getStatement());
 
-		long numberOfOutputFields = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+		long numberOfOutputFields = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Statement.MemberNames.Statement_Parameter.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
 				.flatMap(p -> Core.retrieveByPath(context, p, ParameterObject.MemberNames.ParameterObject_Parameter.toString()).stream()).count();

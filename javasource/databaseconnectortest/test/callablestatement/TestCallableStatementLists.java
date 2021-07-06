@@ -226,7 +226,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 
-		List<ParameterObject> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+		List<ParameterObject> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Statement.MemberNames.Statement_Parameter.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
 				.flatMap(p -> Core.retrieveByPath(context, p, ParameterList.MemberNames.ParameterList_Parameter.toString()).stream())
@@ -246,7 +246,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 
-		List<ParameterList> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+		List<ParameterList> outputParameters = Core.retrieveByPath(context, builder.getStatement().getMendixObject(), Statement.MemberNames.Statement_Parameter.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.ParameterMode.toString()).equals(ParameterMode.OUTPUT.toString()))
 				.flatMap(p -> Core.retrieveByPath(context, p, ParameterList.MemberNames.ParameterList_Parameter.toString()).stream())
@@ -258,7 +258,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 
 
 	private Stream<IMendixObject> getMembersOfList(Statement statement, int position) {
-		return Core.retrieveByPath(context, statement.getMendixObject(), Parameter.MemberNames.Parameter_Statement.toString())
+		return Core.retrieveByPath(context, statement.getMendixObject(), Statement.MemberNames.Statement_Parameter.toString())
 				.stream()
 				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
 				.flatMap(p -> Core.retrieveByPath(context, p, ParameterList.MemberNames.ParameterList_Parameter.toString()).stream());
