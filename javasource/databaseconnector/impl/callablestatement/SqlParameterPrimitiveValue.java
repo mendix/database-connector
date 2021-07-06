@@ -57,7 +57,7 @@ public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter {
 	}
 
 	@Override
-	public void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
+	public void retrieveResult(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		final T value;
 		final String name = this.getName();
 		if (name == null || name.isBlank()) {

@@ -95,7 +95,7 @@ public class SqlParameterList extends SqlParameter {
 	}
 
 	@Override
-	protected void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
+	protected void retrieveResult(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		Array objStruct = null;
 		String name = this.getName();
 

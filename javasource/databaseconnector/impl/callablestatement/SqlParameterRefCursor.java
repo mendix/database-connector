@@ -40,7 +40,7 @@ public class SqlParameterRefCursor extends SqlParameter {
 	}
 
 	@Override
-	protected void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
+	protected void retrieveResult(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		IContext context = this.parameterObject.getContext();
 		try (ResultSet rs = retrieveResultSet(cStatement)) {
 			int numColumns = rs.getMetaData().getColumnCount(); 

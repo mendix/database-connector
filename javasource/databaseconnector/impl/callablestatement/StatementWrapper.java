@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import databaseconnector.impl.DatabaseConnectorException;
+import databaseconnector.proxies.ParameterMode;
 
 public class StatementWrapper implements AutoCloseable {
 	final private CallableStatement cStatement;
@@ -19,7 +20,9 @@ public class StatementWrapper implements AutoCloseable {
 		this.cStatement.execute();
 
 		for (SqlParameter p : this.parameters) {
-			p.retrieveResult(cStatement);
+			if (p.getParameterMode().equals(ParameterMode.OUTPUT) || p.getParameterMode().equals(ParameterMode.INOUT)) {
+				p.retrieveResult(cStatement);
+			}
 		}
 	}
 

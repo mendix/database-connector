@@ -93,13 +93,7 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 		}
 	}
 
-	public void retrieveResult(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
-		if (this.getParameterMode().equals(ParameterMode.OUTPUT) || this.getParameterMode().equals(ParameterMode.INOUT)) {
-			getValueOutput(cStatement);
-		}
-	}
-
-	protected abstract void getValueOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
+	protected abstract void retrieveResult(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
 	protected abstract void prepareOutput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
 	protected abstract void prepareInput(CallableStatement cStatement) throws SQLException, DatabaseConnectorException;
 
