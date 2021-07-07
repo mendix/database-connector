@@ -43,10 +43,11 @@ public class SqlParameterList extends SqlParameter {
 		super(context, mendixObject);
 		this.elements = elements;
 
-		if (this.getPosition() == null || this.getPosition() == 0) {
-			throw new IllegalArgumentException("List parameter was initialized without a position.");
-		}
 		if (!this.getParameterMode().equals(ParameterMode.OUTPUT)) {
+			if (this.getPosition() == null || this.getPosition() == 0) {
+				throw new IllegalArgumentException("List parameter cannot be used as INPUT or INOUT without a position.");
+			}
+
 			Set<Integer> positions = new HashSet<Integer>();
 			for (SqlParameter elem : elements) {
 				Integer elementPosition = elem.parameterObject.getPosition();
