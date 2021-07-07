@@ -68,8 +68,9 @@ public class SqlParameterList extends SqlParameter {
 		Array inputArray = createArray(cStatement.getConnection());
 		
 		if (inputArray == null) {
-			throw new IllegalArgumentException("Argument was not an array or not possible to convert to an array.");
+			throw new IllegalArgumentException("Argument was not an array or it was not possible to convert it to an array.");
 		} else {
+			// We are only able to set arrays as input by position.
 			cStatement.setArray(this.getPosition(), inputArray);
 		}
 	}
