@@ -91,19 +91,22 @@ public class SqlParameterList extends SqlParameter {
 	@Override
 	protected void prepareOutput(CallableStatement cStatement) throws SQLException {
 		String sqlTypeName = ((ParameterList) this.parameterObject).getSQLTypeName();
-		cStatement.registerOutParameter(this.getPosition(), SQL_TYPE, sqlTypeName);
+		if (this.isNameDefined()) {
+			cStatement.registerOutParameter(this.getName(), SQL_TYPE, sqlTypeName);
+		} else {
+			cStatement.registerOutParameter(this.getPosition(), SQL_TYPE, sqlTypeName);
+		}
 	}
 
 	@Override
 	protected void retrieveResult(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		Array objStruct = null;
-		String name = this.getName();
 
 		try {
-			if (name == null || name.isBlank()) {
-				objStruct = cStatement.getArray(this.getPosition());
+			if (this.isNameDefined()) {
+				objStruct = cStatement.getArray(this.getName());
 			} else {
-				objStruct = cStatement.getArray(name);
+				objStruct = cStatement.getArray(this.getPosition());
 			}
 			this.setValue(objStruct);
 		} finally {

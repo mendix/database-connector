@@ -78,12 +78,10 @@ public class SqlParameterRefCursor extends SqlParameter {
 
 
 	private ResultSet retrieveResultSet(CallableStatement cStatement) throws SQLException {
-		String name = this.getName();
-
-		if (name == null || name.isBlank()) {
-			return cStatement.getObject(this.getPosition(), ResultSet.class);
+		if (this.isNameDefined()) {
+			return cStatement.getObject(this.getName(), ResultSet.class);
 		} else {
-			return cStatement.getObject(name, ResultSet.class);
+			return cStatement.getObject(this.getPosition(), ResultSet.class);
 		}
 	}
 

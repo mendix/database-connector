@@ -17,27 +17,26 @@ public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter {
 	}
 
 	public void prepareInput(CallableStatement cStatement) throws SQLException {
-		String name = this.getName();
 		if (this.getValue() == null) {
-			if (name == null || name.isBlank()) {
-				cStatement.setNull(this.getPosition(), SQL_TYPE);
+			if (this.isNameDefined()) {
+				cStatement.setNull(this.getName(), SQL_TYPE);
 			} else {
-				cStatement.setNull(name, SQL_TYPE);
+				cStatement.setNull(this.getPosition(), SQL_TYPE);
 			}
 		} else {
-			if (name == null || name.isBlank()) {
-				setStatementValue(cStatement, this.getPosition(), getValue());
+			if (this.isNameDefined()) {
+				setStatementValue(cStatement, this.getName(), getValue());
 			} else {
-				setStatementValue(cStatement, name, getValue());
+				setStatementValue(cStatement, this.getPosition(), getValue());
 			}
 		}
 	}
 
 	public void prepareOutput(CallableStatement cStatement) throws SQLException {
 		if (this.isNameDefined()) {
-			cStatement.registerOutParameter(this.getPosition(), SQL_TYPE);
-		} else {
 			cStatement.registerOutParameter(this.getName(), SQL_TYPE);
+		} else {
+			cStatement.registerOutParameter(this.getPosition(), SQL_TYPE);
 		}
 	}
 
@@ -58,11 +57,10 @@ public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter {
 	@Override
 	public void retrieveResult(CallableStatement cStatement) throws SQLException, DatabaseConnectorException {
 		final T value;
-		final String name = this.getName();
-		if (name == null || name.isBlank()) {
-			value = getStatementValue(cStatement, this.getPosition());
+		if (this.isNameDefined()) {
+			value = getStatementValue(cStatement, this.getName());
 		} else {
-			value = getStatementValue(cStatement, name);
+			value = getStatementValue(cStatement, this.getPosition());
 		}
 		setValue(value);
 	}

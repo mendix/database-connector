@@ -178,6 +178,6 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 	}
 
 	public boolean isNameDefined() {
-		return this.getName() == null || this.getName().isBlank();
+		return this.getName() != null && !this.getName().isBlank();
 	}
 }
