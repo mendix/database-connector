@@ -36,7 +36,11 @@ public class SqlParameterRefCursor extends SqlParameter {
 
 	@Override
 	protected void prepareOutput(CallableStatement cStatement) throws SQLException {
-		cStatement.registerOutParameter(this.getPosition(), SQL_TYPE);
+		if (this.isNameDefined()) {
+			cStatement.registerOutParameter(this.getName(), SQL_TYPE);
+		} else {
+			cStatement.registerOutParameter(this.getPosition(), SQL_TYPE);
+		}
 	}
 
 	@Override
@@ -75,7 +79,6 @@ public class SqlParameterRefCursor extends SqlParameter {
 		List<Parameter> resultMxObject = result.stream().map(p -> p.parameterObject).collect(Collectors.toList());
 		((ParameterRefCursor) this.parameterObject).setParameterRefCursor_Parameter(resultMxObject);
 	}
-
 
 	private ResultSet retrieveResultSet(CallableStatement cStatement) throws SQLException {
 		if (this.isNameDefined()) {
