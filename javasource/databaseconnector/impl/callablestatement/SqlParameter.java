@@ -30,7 +30,7 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 	protected SqlParameter(final IContext context, final IMendixObject mendixParameterObject) {
 		this.parameterObject = Parameter.initialize(context, mendixParameterObject);
 		
-		if ((this.parameterObject.getName() == null || this.parameterObject.getName().isBlank()) && this.parameterObject.getPosition() == null) {
+		if (!this.isNameDefined() && (this.parameterObject.getPosition() == null || this.parameterObject.getPosition() == 0)) {
 			throw new IllegalArgumentException("Parameter was initialized with neither name or position.");
 		}
 	}
