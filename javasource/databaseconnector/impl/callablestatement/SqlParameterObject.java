@@ -27,8 +27,7 @@ public class SqlParameterObject extends SqlParameter {
 		Set<Integer> positions = new HashSet<Integer>();
 		for (SqlParameter field : objectFields) {
 			if (field.getPosition() == null) {
-				String objectNameOrPosition = (this.parameterObject.getName() == null || this.parameterObject.getName().isBlank()) ? this.parameterObject.getPosition().toString() : this.parameterObject.getName();
-				throw new IllegalArgumentException(String.format("Missing position information for field of type %s of ParameterObject %s.", field.parameterObject.getMendixObject().getType(), objectNameOrPosition));
+				throw new IllegalArgumentException(String.format("Missing position information for field of type %s of ParameterObject %s.", field.parameterObject.getMendixObject().getType(), this.getNameOrPosition()));
 			}
 
 			if (positions.contains(field.getPosition())) {

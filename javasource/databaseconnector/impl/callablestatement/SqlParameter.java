@@ -180,4 +180,12 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 	protected boolean isNameDefined() {
 		return this.getName() != null && !this.getName().isBlank();
 	}
+	
+	protected String getNameOrPosition() {
+		if (this.isNameDefined()) {
+			return this.getName();
+		} else {
+			return this.getPosition().toString();
+		}
+	}
 }
