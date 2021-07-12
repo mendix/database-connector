@@ -4,6 +4,7 @@ import static databaseconnectortest.test.callablestatement.Queries.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +44,28 @@ public class TestRefCursor extends TestCallableStatementBase {
 		StatementBuilder builder = prepareStatementWithCursor(0L);
 		executeStatement(builder.getStatement());
 		validateRefCursor(0, builder);
+	}
+
+	@Test
+	public void testRefCursorByName() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context)
+				.withInputParameter(null, "l_amount", 10L, ParameterLong.class)
+				.withRefCursorParameter(null, "result", ParameterMode.OUTPUT)
+				.withContent(LONG_TO_REFCURSOR_BY_NAME);
+		
+		executeStatement(builder.getStatement());
+		validateRefCursor(10, builder);
+	}
+
+	@Test
+	public void testRefCursorNoParameter() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context)
+				.withInputParameter(1, null, 10L, ParameterLong.class)
+				.withContent(LONG_TO_REFCURSOR);
+		
+		exceptionRule.expect(SQLException.class);
+		exceptionRule.expectMessage("Missing IN or OUT parameter at index");
+		executeStatement(builder.getStatement());
 	}
 
 	@Test

@@ -3,6 +3,7 @@ package databaseconnectortest.test.callablestatement;
 import static databaseconnectortest.test.callablestatement.Queries.*;
 import static org.junit.Assert.assertEquals;
 
+import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -116,6 +117,34 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 
 		assertEquals(3, stringList.size());
 		for(ParameterString value : stringList) { assertEquals("test", value.getValue()); }
+	}
+
+	@Test
+	public void testListOutput_ByName() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		builder = builder
+				.withListOutputParameter(null, "result", null, "ARRAY_6_NUMBERS")
+				.withContent(TAKE_NOTHING_RETURN_LIST_BY_NAME);
+		
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage("List parameter was initialized without a position");
+		executeStatement(builder.getStatement());
+	}
+
+	@Test
+	public void testListOutput_Null() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context);
+
+		builder = builder
+				.withListOutputParameter(1, null, null, "ARRAY_6_NUMBERS")
+				.withContent(TAKE_NOTHING_RETURN_NULL);
+
+		executeStatement(builder.getStatement());
+
+		Long outputLength = getMembersOfList(builder.getStatement(), 0).count();
+		
+		assertEquals((Long)0L, outputLength);
 	}
 
 	@Test

@@ -83,6 +83,16 @@ public class Queries {
 			"begin\r\n" +
 			"  :1 := array_6_numbers();\r\n" +
 			"end;";
+	
+	public final static String TAKE_NOTHING_RETURN_NULL =
+			"begin\r\n" +
+			"  :1 := null;\r\n" +
+			"end;";
+
+	public final static String TAKE_NOTHING_RETURN_LIST_BY_NAME =
+			"begin\r\n" +
+			"  :result := array_6_numbers(0, 1, 2);\r\n" +
+			"end;";
 
 	public final static String TAKE_LIST_OF_LONG_RETURN_SUM =
 			"declare\r\n" + 
@@ -118,6 +128,18 @@ public class Queries {
 			"		WHERE l_total > 0\r\n" + 
 			"		CONNECT BY LEVEL <= l_total;" +
 			"  :2 := c_result;\r\n" +
+			"end;";
+
+	
+	public final static String LONG_TO_REFCURSOR_BY_NAME =
+			"declare\r\n" + 
+			"  c_result SYS_REFCURSOR;\r\n" +
+			"begin\r\n" +
+			"	OPEN c_result FOR \r\n" + 
+			"		SELECT LEVEL\r\n" + 
+			"		FROM DUAL\r\n" + 
+			"		CONNECT BY LEVEL <= :l_amount;" +
+			"  :result := c_result;\r\n" +
 			"end;";
 
 	public final static String REFCURSOR_MULTIPLE_COLUMNS =
