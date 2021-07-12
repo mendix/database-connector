@@ -8,6 +8,14 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 
 import databaseconnector.impl.DatabaseConnectorException;
 
+/**
+ * Wrapper class for all basic primitives. As they all mostly behave the same,
+ * aside from <code>SQL_TYPE</code> integer and which methods to call to set or
+ * get values in the CallableStatement.
+ * 
+ * If necessary, some conversion might be made from the value stored in Mendix
+ * to the database (for instance, with Dates, or when reading numbers).
+ */
 public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter {
 	protected final int SQL_TYPE;
 
@@ -44,13 +52,14 @@ public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter {
 	public T getValue() {
 		return this.parameterObject.getMendixObject().getValue(this.parameterObject.getContext(), "Value");
 	}
-	
+
 	@Override
 	public void setValue(Object value) throws DatabaseConnectorException {
 		try {
 			this.parameterObject.getMendixObject().setValue(this.parameterObject.getContext(), "Value", value);
 		} catch (Exception e) {
-			throw new DatabaseConnectorException(String.format("Unable to set value %s for parameter %s.", value.toString(), this.parameterObject.getMendixObject().getType()));
+			throw new DatabaseConnectorException(String.format("Unable to set value %s for parameter %s.",
+					value.toString(), this.parameterObject.getMendixObject().getType()));
 		}
 	}
 
@@ -64,11 +73,12 @@ public abstract class SqlParameterPrimitiveValue<T> extends SqlParameter {
 		}
 		setValue(value);
 	}
-	
 
 	protected abstract T getStatementValue(CallableStatement cStatement, String name) throws SQLException;
+
 	protected abstract T getStatementValue(CallableStatement cStatement, int position) throws SQLException;
 
 	protected abstract void setStatementValue(CallableStatement cStatement, String name, T value) throws SQLException;
+
 	protected abstract void setStatementValue(CallableStatement cStatement, int position, T value) throws SQLException;
 }

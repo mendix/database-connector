@@ -17,6 +17,14 @@ import databaseconnector.proxies.ParameterMode;
 import databaseconnector.proxies.ParameterObject;
 import databaseconnector.proxies.ParameterRefCursor;
 
+/**
+ * Wrapper class for cursors.
+ * 
+ * Cannot be used as input (INPUT or INOUT).
+ * 
+ * The current implementation reads all data at once, and there is no pagination.
+ * In effect, this cursor behaves as a ParameterList.
+ */
 public class SqlParameterRefCursor extends SqlParameter {
 	private final static int SQL_TYPE = java.sql.Types.REF_CURSOR;
 	private List<SqlParameterObject> result = new ArrayList<SqlParameterObject>();

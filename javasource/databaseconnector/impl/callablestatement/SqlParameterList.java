@@ -18,13 +18,25 @@ import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.ParameterList;
 import databaseconnector.proxies.ParameterMode;
 
+/**
+ * Representation of an array.
+ * 
+ * If used as input, we expect all the list members to be in the inner's NPE
+ * <code>ParameterList_Parameter</code> association. All list members must have
+ * a unique position, indicating its place in the list.
+ * 
+ * For INPUT or INOUT parameter mode, the list can only be used by position.
+ */
 public class SqlParameterList extends SqlParameter {
 	private final static int SQL_TYPE = java.sql.Types.ARRAY;
 	private List<SqlParameter> elements;
-	
+
+	/**
+	 * For Oracle we see if the driver is loaded and if call its special Array method instead of the
+	 * usual JDBC standard one. See {@link #createArray(Connection)} for the uses of this static members.
+	 */
 	private final static Class<?> oracleClass;
 	private final static Method createOracleArray;
-
 	static {
 		Class<?> clazz;
 		Method method;
@@ -79,7 +91,6 @@ public class SqlParameterList extends SqlParameter {
 		String sqlTypeName = ((ParameterList) this.parameterObject).getSQLTypeName();
 		Object[] attrVals = this.elements.stream().map(SqlParameter::getValue).toArray();
 
-		// Oracle uses a different, but almost compatible call type; We use reflection to make it possible to compile this module without having Oracle's drivers present
 		if (oracleClass != null && connection.isWrapperFor(oracleClass)) {
 			try {
 				return (Array) createOracleArray.invoke(connection.unwrap(oracleClass), sqlTypeName, attrVals);

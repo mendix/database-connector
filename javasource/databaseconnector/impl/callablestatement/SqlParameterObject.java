@@ -15,6 +15,17 @@ import com.mendix.systemwideinterfaces.core.IMendixObject;
 import databaseconnector.impl.DatabaseConnectorException;
 import databaseconnector.proxies.ParameterObject;
 
+/**
+ * Wrapper class for objects, or STRUCT in JDBC terms.
+ * 
+ * If used as input, we expect all the fields to be in the inner's NPE
+ * <code>ParameterObject_Parameter</code> association. All fields must have
+ * a unique position, indicating the order we should (de-)serialize data from
+ * the database.
+ * 
+ * If used as OUTPUT, the <code>ParameterObject_Parameter</code> association
+ * may be left empty and we will attempt to guess the resulting types.
+ */
 public class SqlParameterObject extends SqlParameter {
 	private final static int SQL_TYPE = java.sql.Types.STRUCT;
 	
