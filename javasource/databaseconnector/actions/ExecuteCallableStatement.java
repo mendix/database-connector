@@ -39,6 +39,9 @@ public class ExecuteCallableStatement extends CustomJavaAction<java.lang.Void>
 		this.statement = __statement == null ? null : databaseconnector.proxies.Statement.initialize(getContext(), __statement);
 
 		// BEGIN USER CODE
+		if (this.statement == null) {
+			throw new IllegalArgumentException("Execute callable statement was called with an empty value.");
+		}
 		connector.executeCallableStatement(this.jdbcUrl, this.userName, this.password, this.statement);
 		return null;
 		// END USER CODE
