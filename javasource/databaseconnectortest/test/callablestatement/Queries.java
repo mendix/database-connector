@@ -29,6 +29,14 @@ public class Queries {
 			"  :8 := l_long;\r\n" + 
 			"end;";
 
+	public final static String RETURN_4_NULLS =
+			"begin\r\n" + 
+			"  :1 := NULL;\r\n" + 
+			"  :2 := NULL;\r\n" + 
+			"  :3 := NULL;\r\n" + 
+			"  :4 := NULL;\r\n" + 
+			"end;";
+
 	public final static String TAKE_OBJECT_RETURN_MEMBERS =
 			"declare\r\n" +
 			"  l_rec NAME_AND_AGE := :1;\r\n" + 

@@ -78,12 +78,12 @@ public class TestRefCursor extends TestCallableStatementBase {
 		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement());
 		assertEquals(3, outputParameters.size());
 		
-		for (long i = 1; i <= outputParameters.size(); i ++) {
-			ParameterObject currentObject = outputParameters.get((int) i - 1);
+		for (int i = 1; i <= outputParameters.size(); i ++) {
+			ParameterObject currentObject = outputParameters.get(i - 1);
 			ParameterDecimal longValue = (ParameterDecimal) currentObject.getParameterObject_Parameter().get(1);
 			ParameterString stringValue = (ParameterString) currentObject.getParameterObject_Parameter().get(2);
 			
-			assertEquals((Long)i, (Long) longValue.getValue().longValue());
+			assertEquals(i, longValue.getValue().longValue());
 			assertEquals("NAME " + String.valueOf(i), (String) stringValue.getValue());
 		}
 	}
@@ -99,11 +99,11 @@ public class TestRefCursor extends TestCallableStatementBase {
 		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement());
 		assertEquals(3, outputParameters.size());
 		
-		for (long i = 1; i <= outputParameters.size(); i ++) {
-			ParameterObject currentObject = outputParameters.get((int) i - 1);
+		for (int i = 1; i <= outputParameters.size(); i ++) {
+			ParameterObject currentObject = outputParameters.get(i - 1);
 			ParameterDecimal longValue = (ParameterDecimal) currentObject.getParameterObject_Parameter().get(0);
 			if (i < 3L) assertNull(longValue.getValue());
-			else assertEquals((Long)i, (Long) longValue.getValue().longValue());
+			else assertEquals(i, longValue.getValue().longValue());
 		}
 	}
 
@@ -119,10 +119,10 @@ public class TestRefCursor extends TestCallableStatementBase {
 		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement());
 		assertEquals(expectedCount, outputParameters.size());
 		
-		for (long i = 1; i <= outputParameters.size(); i ++) {
-			ParameterObject currentObject = outputParameters.get((int) i - 1);
+		for (int i = 1; i <= outputParameters.size(); i ++) {
+			ParameterObject currentObject = outputParameters.get(i - 1);
 			ParameterDecimal currentNumber = (ParameterDecimal) currentObject.getParameterObject_Parameter().get(0);
-			assertEquals((Long)(i), (Long) currentNumber.getValue().longValue());
+			assertEquals(i, currentNumber.getValue().longValue());
 		}
 	}
 

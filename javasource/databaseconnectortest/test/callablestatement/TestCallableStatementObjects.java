@@ -210,11 +210,11 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 		executeStatement(builder.getStatement());
 
 		assertEquals("C", ((ParameterString) outputFields4.get(0)).getValue());
-		assertEquals((Long)3L, ((ParameterLong) outputFields4.get(1)).getValue());
+		assertEquals(3, ((ParameterLong) outputFields4.get(1)).getValue().longValue());
 		assertEquals("B", ((ParameterString) outputFields5.get(0)).getValue());
-		assertEquals((Long)2L, ((ParameterLong) outputFields5.get(1)).getValue());
+		assertEquals(2, ((ParameterLong) outputFields5.get(1)).getValue().longValue());
 		assertEquals("A", ((ParameterString) outputFields6.get(0)).getValue());
-		assertEquals((Long)1L, ((ParameterLong) outputFields6.get(1)).getValue());
+		assertEquals(1, ((ParameterLong) outputFields6.get(1)).getValue().longValue());
 	}
 
 	@Test
@@ -230,7 +230,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 		executeStatement(builder.getStatement());
 
 		assertEquals("new value", ((ParameterString) fields.get(0)).getValue());
-		assertEquals((Long)(AU * 2), ((ParameterLong) fields.get(1)).getValue());
+		assertEquals(AU * 2, ((ParameterLong) fields.get(1)).getValue().longValue());
 	}
 
 	private List<Parameter> objectFields(String name, Long age, StatementBuilder builder) throws Exception {

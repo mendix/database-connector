@@ -57,7 +57,7 @@ public class TestCallableStatementPrimitives extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 		
-		assertEquals(((Long)(AU * 3)).toString(), ((ParameterString)builder.getParameter(1)).getValue());
+		assertEquals(String.valueOf(AU * 3), ((ParameterString)builder.getParameter(1)).getValue());
 	}
 	
 	@Test
@@ -69,9 +69,26 @@ public class TestCallableStatementPrimitives extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 		
-		assertEquals(((Long)(AU * 3)).toString(), ((ParameterString)builder.getParameter(1)).getValue());
+		assertEquals(String.valueOf(AU * 3), ((ParameterString)builder.getParameter(1)).getValue());
 	}
 	
+	@Test
+	public void testReturnNulls() throws Exception {
+		StatementBuilder builder = new StatementBuilder(context)
+				.withOutputParameter(1, null, ParameterDatetime.class)
+				.withOutputParameter(2, null, ParameterString.class)
+				.withOutputParameter(3, null, ParameterDecimal.class)
+				.withOutputParameter(4, null, ParameterLong.class)
+				.withContent(RETURN_4_NULLS);
+		
+		executeStatement(builder.getStatement());
+
+		assertEquals(null, ((ParameterDatetime)builder.getParameter(0)).getValue());
+		assertEquals(null, ((ParameterString)builder.getParameter(1)).getValue());
+		assertEquals(null, ((ParameterDecimal)builder.getParameter(2)).getValue());
+		assertEquals((Long)0L, ((ParameterLong)builder.getParameter(3)).getValue());
+	}
+
 	@Test
 	public void testInOutArgumentByPosition() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context)
@@ -80,7 +97,7 @@ public class TestCallableStatementPrimitives extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 
-		assertEquals((Long)(AU * 2), ((ParameterLong)builder.getParameter(0)).getValue());
+		assertEquals(AU * 2, ((ParameterLong)builder.getParameter(0)).getValue().longValue());
 	}
 	
 	@Test
@@ -91,7 +108,7 @@ public class TestCallableStatementPrimitives extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 
-		assertEquals((Long)(AU * 2), ((ParameterLong)builder.getParameter(0)).getValue());
+		assertEquals(AU * 2, ((ParameterLong)builder.getParameter(0)).getValue().longValue());
 	}
 	
 	@Test

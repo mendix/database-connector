@@ -3,7 +3,6 @@ package databaseconnectortest.test.callablestatement;
 import static databaseconnectortest.test.callablestatement.Queries.*;
 import static org.junit.Assert.assertEquals;
 
-import java.sql.SQLException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,8 +42,8 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 				.collect(Collectors.toList());
 		
 		assertEquals(6, outputParameters.size());
-		for (long i = 0; i < outputParameters.size(); i ++) {
-			assertEquals((Long)(i % 2), (Long) outputParameters.get((int)i).getValue().longValue());
+		for (int i = 0; i < outputParameters.size(); i ++) {
+			assertEquals(i % 2, outputParameters.get(i).getValue().longValue());
 		}
 	}
 
@@ -68,8 +67,8 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 				.collect(Collectors.toList());
 		
 		assertEquals(6, outputParameters.size());
-		for (long i = 0; i < outputParameters.size(); i ++) {
-			assertEquals((Long)(i % 2), (Long) outputParameters.get((int)i).getValue().longValue());
+		for (int i = 0; i < outputParameters.size(); i ++) {
+			assertEquals(i % 2, outputParameters.get((int)i).getValue().longValue());
 		}
 	}
 
@@ -134,8 +133,8 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 				.collect(Collectors.toList());
 
 		assertEquals(3, outputParameters.size());
-		for (long i = 0; i < outputParameters.size(); i ++) {
-			assertEquals((Long) i, (Long) outputParameters.get((int)i).getValue().longValue());
+		for (int i = 0; i < outputParameters.size(); i ++) {
+			assertEquals(i, outputParameters.get(i).getValue().longValue());
 		}
 	}
 
@@ -149,9 +148,9 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 
 		executeStatement(builder.getStatement());
 
-		Long outputLength = getMembersOfList(builder.getStatement(), 0).count();
+		long outputLength = getMembersOfList(builder.getStatement(), 0).count();
 		
-		assertEquals((Long)0L, outputLength);
+		assertEquals(0, outputLength);
 	}
 
 	@Test
@@ -164,9 +163,9 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 
-		Long outputLength = getMembersOfList(builder.getStatement(), 0).count();
+		long outputLength = getMembersOfList(builder.getStatement(), 0).count();
 		
-		assertEquals((Long)0L, outputLength);
+		assertEquals(0, outputLength);
 	}
 
 	@Test
@@ -182,7 +181,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 		
-		assertEquals((Long)7L, ((ParameterLong)builder.getParameter(1)).getValue());
+		assertEquals(7, ((ParameterLong)builder.getParameter(1)).getValue().longValue());
 	}
 
 	@Test
@@ -198,7 +197,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		
 		executeStatement(builder.getStatement());
 		
-		assertEquals((Long)0L, ((ParameterLong)builder.getParameter(1)).getValue());
+		assertEquals(0, ((ParameterLong)builder.getParameter(1)).getValue().longValue());
 	}
 
 	@Test
