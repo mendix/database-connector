@@ -126,10 +126,17 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 		builder = builder
 				.withListOutputParameter(null, "result", null, "ARRAY_6_NUMBERS")
 				.withContent(TAKE_NOTHING_RETURN_LIST_BY_NAME);
-		
-		exceptionRule.expect(IllegalArgumentException.class);
-		exceptionRule.expectMessage("List parameter was initialized without a position");
+
 		executeStatement(builder.getStatement());
+
+		List<ParameterDecimal> outputParameters = getMembersOfList(builder.getStatement(), 0)
+				.map(p -> ParameterDecimal.initialize(context, p))
+				.collect(Collectors.toList());
+
+		assertEquals(3, outputParameters.size());
+		for (long i = 0; i < outputParameters.size(); i ++) {
+			assertEquals((Long) i, (Long) outputParameters.get((int)i).getValue().longValue());
+		}
 	}
 
 	@Test
