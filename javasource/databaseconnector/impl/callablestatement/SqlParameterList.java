@@ -135,19 +135,20 @@ public class SqlParameterList extends SqlParameter {
 	@Override
 	void setValue(Object value) throws DatabaseConnectorException {
 		try {
-			Object[] valueArray = (Object[]) ((Array) value).getArray();
+			if (value != null) {
+				Object[] valueArray = (Object[]) ((Array) value).getArray();
 
-			IContext context = this.parameterObject.getContext();
-			this.elements.clear();
+				IContext context = this.parameterObject.getContext();
+				this.elements.clear();
 
-			int index = 1;
-			for (Object val : valueArray) {
-				this.elements.add(SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, val));
-				index++;
+				int index = 1;
+				for (Object val : valueArray) {
+					this.elements.add(SqlParameter.createParameterFromValue(context, this.getParameterMode(), index, val));
+					index++;
+				}
+
+				((ParameterList) this.parameterObject).setParameterList_Parameter(this.elements.stream().map(p -> p.parameterObject).collect(Collectors.toList()));
 			}
-
-			((ParameterList) this.parameterObject).setParameterList_Parameter(this.elements.stream().map(p -> p.parameterObject).collect(Collectors.toList()));
-
 		} catch (Exception e) {
 			throw new DatabaseConnectorException("Unable to set values of array.", e);
 		}
