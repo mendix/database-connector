@@ -130,8 +130,8 @@ public class TestCallableStatementPrimitives extends TestCallableStatementBase {
 				.withOutputParameter(2, null, ParameterLong.class)
 				.withContent(TAKE_LONG_RETURN_LONG);
 		
-		exceptionRule.expect(SQLException.class);
-		exceptionRule.expectMessage("Invalid column index");
+		exceptionRule.expect(IllegalArgumentException.class);
+		exceptionRule.expectMessage("Parameter was initialized without name or position.");
 		executeStatement(builder.getStatement());
 	}
 	

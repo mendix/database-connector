@@ -240,7 +240,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 				.withContent(TAKE_LIST_OF_LONG_RETURN_SUM);
 		
 		exceptionRule.expect(IllegalArgumentException.class);
-		exceptionRule.expectMessage("Missing position information for element in list.");
+		exceptionRule.expectMessage("Parameter was initialized without name or position.");
 		
 		executeStatement(builder.getStatement());
 	}

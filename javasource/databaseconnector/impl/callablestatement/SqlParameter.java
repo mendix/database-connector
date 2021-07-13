@@ -39,7 +39,7 @@ public abstract class SqlParameter implements Comparable<SqlParameter> {
 
 		if (!this.isNameDefined()
 				&& (this.parameterObject.getPosition() == null || this.parameterObject.getPosition() == 0)) {
-			throw new IllegalArgumentException("Parameter was initialized with neither name or position.");
+			throw new IllegalArgumentException("Parameter was initialized without name or position.");
 		}
 	}
 
