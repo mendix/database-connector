@@ -12,7 +12,6 @@ import org.junit.Test;
 
 import com.mendix.core.Core;
 
-import databaseconnector.proxies.Parameter;
 import databaseconnector.proxies.ParameterDecimal;
 import databaseconnector.proxies.ParameterLong;
 import databaseconnector.proxies.ParameterMode;
@@ -76,12 +75,11 @@ public class TestRefCursor extends TestCallableStatementBase {
 
 		executeStatement(builder.getStatement());
 
-		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement(), 1);
+		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement());
 		assertEquals(3, outputParameters.size());
 		
 		for (long i = 1; i <= outputParameters.size(); i ++) {
 			ParameterObject currentObject = outputParameters.get((int) i - 1);
-			// ParameterString nullValue = (ParameterString) currentObject.getParameterObject_Parameter().get(0);
 			ParameterDecimal longValue = (ParameterDecimal) currentObject.getParameterObject_Parameter().get(1);
 			ParameterString stringValue = (ParameterString) currentObject.getParameterObject_Parameter().get(2);
 			
@@ -98,7 +96,7 @@ public class TestRefCursor extends TestCallableStatementBase {
 
 		executeStatement(builder.getStatement());
 
-		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement(), 1);
+		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement());
 		assertEquals(3, outputParameters.size());
 		
 		for (long i = 1; i <= outputParameters.size(); i ++) {
@@ -118,7 +116,7 @@ public class TestRefCursor extends TestCallableStatementBase {
 	
 	private void validateRefCursor(int expectedCount, StatementBuilder builder) throws Exception {
 		
-		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement(), 2);
+		List<ParameterObject> outputParameters = getMembersOfCursor(builder.getStatement());
 		assertEquals(expectedCount, outputParameters.size());
 		
 		for (long i = 1; i <= outputParameters.size(); i ++) {
@@ -128,10 +126,10 @@ public class TestRefCursor extends TestCallableStatementBase {
 		}
 	}
 
-	private List<ParameterObject> getMembersOfCursor(Statement statement, int position) {
+	private List<ParameterObject> getMembersOfCursor(Statement statement) {
 		return Core.retrieveByPath(context, statement.getMendixObject(), Statement.MemberNames.Statement_Parameter.toString())
 				.stream()
-				.filter(p -> p.getValue(context, Parameter.MemberNames.Position.toString()).equals(position))
+				.filter(p -> p.getType().equals(ParameterRefCursor.entityName))
 				.flatMap(p -> Core.retrieveByPath(context, p, ParameterRefCursor.MemberNames.ParameterRefCursor_Parameter.toString()).stream())
 				.map(p -> ParameterObject.initialize(context, p))
 				.collect(Collectors.toList());
