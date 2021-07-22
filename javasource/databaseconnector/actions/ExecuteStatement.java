@@ -16,38 +16,39 @@ import com.mendix.webui.CustomJavaAction;
 import databaseconnector.impl.JdbcConnector;
 
 /**
- * <p>
+ * For a more detailed documentation, please visit the website at
+ * https://docs.mendix.com/appstore/connectors/database-connector
+ * 
  * This Java action provides a consistent environment for Mendix projects to
- * perform an arbitrary SQL statement on relational external databases. JDBC
- * (Java Database Connectivity) API, a standard Java API, is used when this Java
- * action attempts to connect with a Relational Database for which a JDBC driver
- * exists. The JDBC drivers for the databases you want to connect to, must be
- * placed inside the userlib directory of a project.
- * </p>
+ * perform arbitrary SQL statements on external relational databases.
  * 
- * Do not use this Java action for SELECT queries. This Java action returns
- * number of affected rows. The jdbcUrl argument must specify a database URL
- * address that points to your relational database and is dependent upon the
- * particular database and JDBC driver. It will always begin with "jdbc:"
- * protocol, but the rest is up to particular vendor. For example
- * 'jdbc:mysql://hostname/databaseName' jdbcUrl format can be used for MySQL
- * databases. Note: Proper security must be applied as this action can allow SQL
- * Injection in your Mendix application.
+ * Do not use this Java action for SELECT queries. This action returns the
+ * number of affected rows.
  * 
- * @see JdbcConnector
- * @since Mendix World 2016
- * @param <String> jdbcUrl A database URL address that points to your database.
+ * JDBC (Java Database Connectivity) API, a standard Java API, is used when this
+ * Java action attempts to connect to a Relational Database for which a JDBC driver
+ * exists. The JDBC drivers for the databases you want to connect to must be placed
+ * inside the userlib directory of your project.
  * 
- * @param <String> userName The user name for logging into the database,
- *                 relative to the jdbcUrl argument.
+ * The jdbcUrl argument must specify a database URL address that points to your
+ * relational database and is dependent upon the particular database and JDBC
+ * driver.
  * 
- * @param <String> password The password for logging into the database, relative
- *                 to the jdbcUrl argument.
+ * For example, 'jdbc:mysql://hostname/databaseName' can be used for MySQL
+ * databases.
  * 
- * @param <String> sql The SQL statement to be performed, relative to the
- *                 database type.
+ * Note: Proper security is required when manually composing the statement text to
+ *       avoid SQL injection.
  * 
- * @return <Integer/Long> Number of affected rows.
+ * @param jdbcUrl A database URL address that points to your database.
+ * 
+ * @param userName The user name for logging into the database.
+ * 
+ * @param password The password for logging into the database.
+ * 
+ * @param sql A string containing the SQL statement to be performed.
+ * 
+ * @return Number of affected rows.
  */
 public class ExecuteStatement extends CustomJavaAction<java.lang.Long>
 {
