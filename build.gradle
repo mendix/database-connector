@@ -25,7 +25,6 @@ dependencies {
     // Test dependencies
     compile 'org.mockito:mockito-core:4.3.1'
     compile 'commons-io:commons-io:2.11.0'
-    compile group: 'org.hamcrest', name: 'hamcrest', version: '2.2'
 
     // Module dependencies
     compile 'com.zaxxer:HikariCP:5.0.1'
@@ -39,7 +38,7 @@ dependencies {
     compile 'com.sap.cloud.db.jdbc:ngdbc:2.4.76'
 
     // UnitTesting
-    compile group: 'junit', name: 'junit', version: '4.13.2', { transitive = false }
+    compile group: 'junit', name: 'junit', version: '4.13.2'
     compile group: 'org.apache.httpcomponents', name: 'httpcore-osgi', version: '4.4.15', { transitive = false }
     compile group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: '4.5.13', { transitive = false }
 

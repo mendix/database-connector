@@ -1,7 +1,7 @@
 package databaseconnectortest.test;
 
 import static org.junit.Assert.assertNotEquals;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.times;
 
 import java.sql.Connection;
