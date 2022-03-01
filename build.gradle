@@ -34,7 +34,7 @@ dependencies {
     compile 'org.mariadb.jdbc:mariadb-java-client:2.6.0'
     compile 'com.microsoft.sqlserver:mssql-jdbc:8.2.2.jre11'
     compile 'com.oracle.database.jdbc:ojdbc8:19.6.0.0'
-    compile 'org.postgresql:postgresql:42.2.14'
+    compile 'org.postgresql:postgresql:42.2.25'
     compile 'com.sap.cloud.db.jdbc:ngdbc:2.4.76'
 
     // UnitTesting
