@@ -56,7 +56,7 @@ public class JdbcConnector {
 
 	public List<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
 			final IMetaObject metaObject, final String sql, final IContext context) throws SQLException, DatabaseConnectorException {
-		logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
+		if (logNode.isTraceEnabled()) logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
 				PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
@@ -68,7 +68,7 @@ public class JdbcConnector {
 
 	public List<IMendixObject> executeQuery(final String jdbcUrl, final String userName, final String password,
 			final IMetaObject metaObject, final IStringTemplate sql, final IContext context) throws SQLException, DatabaseConnectorException {
-		logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
+		if (logNode.isTraceEnabled()) logNode.trace(String.format("executeQuery: %s, %s, %s", jdbcUrl, userName, sql));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
 				PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection);
@@ -98,7 +98,7 @@ public class JdbcConnector {
 		for (Map.Entry<String, Optional<Object>> column : columns.entrySet()) {
 			setMemberValue(context, metaObject, obj, column.getKey(), column.getValue());
 		}
-		logNode.trace("Instantiated object: " + obj);
+		if (logNode.isTraceEnabled()) logNode.trace("Instantiated object: " + obj);
 		return obj;
 	}
 	
@@ -131,7 +131,7 @@ public class JdbcConnector {
 
 	public long executeStatement(final String jdbcUrl, final String userName, final String password, final String sql)
 			throws SQLException {
-		logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
+		if (logNode.isTraceEnabled()) logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
 				PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
@@ -141,7 +141,7 @@ public class JdbcConnector {
 
 	public long executeStatement(final String jdbcUrl, final String userName, final String password,
 			final IStringTemplate sql) throws SQLException {
-		logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
+		if (logNode.isTraceEnabled()) logNode.trace(String.format("executeStatement: %s, %s, %s", jdbcUrl, userName, sql));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
 				PreparedStatement preparedStatement = preparedStatementCreator.create(sql, connection)) {
@@ -151,7 +151,7 @@ public class JdbcConnector {
 
 	public void executeCallableStatement(final String jdbcUrl, final String userName, final String password,
 			final Statement stmt) throws SQLException, DatabaseConnectorException {
-		logNode.trace(String.format("executeCallableStatement: %s, %s, %s", jdbcUrl, userName, stmt.getContent()));
+		if (logNode.isTraceEnabled()) logNode.trace(String.format("executeCallableStatement: %s, %s, %s", jdbcUrl, userName, stmt.getContent()));
 
 		try (Connection connection = connectionManager.getConnection(jdbcUrl, userName, password);
 				StatementWrapper callableStatement = callableStatementCreator.create(stmt, connection)) {
