@@ -24,22 +24,14 @@ public class ConnectionManagerTest {
 		return new JdbcConnectionManager(logNode);
 	}
 
-//  @Before
-//  public void setUp() {
-//    ILogNode logNode = Mockito.mock(ILogNode.class);
-//    ILogManager logManager = Mockito.mock(ILogManager.class);
-//    Mockito.when(logManager.getLogNode(Matchers.anyString())).thenReturn(logNode);
-//    StaticLoggerBinder.init(logManager);
-//  }
-
 	@Test
 	public void testGetConnection() throws SQLException {
 		ILogNode logger = Mockito.mock(ILogNode.class);
+		Mockito.when(logger.isTraceEnabled()).thenReturn(true);
 		ConnectionManager manager = newConnManager(logger);
 
 		Connection conn1 = manager.getConnection(jdbcUrl, userName, password);
-		Mockito.verify(logger, times(3)).trace(anyString()); // One log message is printed in
-																// JdbcConnectionManager.initializeDrivers.
+		Mockito.verify(logger, times(3)).trace(anyString());
 		conn1.close();
 
 		Connection conn2 = manager.getConnection(jdbcUrl, userName, password);
