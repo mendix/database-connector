@@ -3,7 +3,7 @@ package databaseconnectortest.test.callablestatement;
 import static databaseconnectortest.test.callablestatement.Queries.*;
 import static org.junit.Assert.assertEquals;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -188,7 +188,7 @@ public class TestCallableStatementLists extends TestCallableStatementBase {
 	public void testInputEmptyList() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<ParameterLong> inputList = new LinkedList<ParameterLong>();
+		List<ParameterLong> inputList = new ArrayList<ParameterLong>();
 		
 		builder = builder
 				.withListInputParameter(1, null, inputList, "ARRAY_6_NUMBERS")

@@ -20,7 +20,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -84,7 +84,7 @@ public class JdbcConnector {
 
 	private List<IMendixObject> createMendixObjects(final IContext context,
 			final IMetaObject metaObject, List<Map<String, Optional<Object>>> resultSet) throws DatabaseConnectorException {
-		List<IMendixObject> convertedResult = new LinkedList<IMendixObject>();
+		List<IMendixObject> convertedResult = new ArrayList<IMendixObject>();
 		for (Map<String, Optional<Object>> result : resultSet) {
 			convertedResult.add(createMendixObject(context, metaObject, result));
 		}

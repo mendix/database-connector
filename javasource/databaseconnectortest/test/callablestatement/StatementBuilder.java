@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.mendix.core.Core;
@@ -27,7 +27,7 @@ public class StatementBuilder {
 	private IContext context;
 	private Statement statement;
 	
-	private List<Parameter> parameters = new LinkedList<Parameter>();
+	private List<Parameter> parameters = new ArrayList<Parameter>();
 	
 	public StatementBuilder(IContext context, Statement statement) {
 		this.context = context;
