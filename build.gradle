@@ -38,7 +38,7 @@ dependencies {
     compile 'com.sap.cloud.db.jdbc:ngdbc:2.4.76'
 
     // UnitTesting
-    compile group: 'junit', name: 'junit', version: '4.13.2'
+    compile group: 'junit', name: 'junit', version: '4.11'
     compile group: 'org.apache.httpcomponents', name: 'httpcore-osgi', version: '4.4.15', { transitive = false }
     compile group: 'org.apache.httpcomponents', name: 'httpclient-osgi', version: '4.5.13', { transitive = false }
 
