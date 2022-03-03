@@ -72,7 +72,7 @@ public class ExecuteQuery extends CustomJavaAction<java.util.List<IMendixObject>
 		IMetaObject metaObject = resultObject.getMetaObject();
 		List<IMendixObject> resultList = connector.executeQuery(this.jdbcUrl, this.userName, this.password,
 				metaObject, this.sql, this.getContext());
-		logNode.trace(String.format("Result list count: %d", resultList.size()));
+		if (logNode.isTraceEnabled()) logNode.trace(String.format("Result list count: %d", resultList.size()));
 
 		return resultList;
 		// END USER CODE

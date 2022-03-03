@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -200,7 +201,7 @@ public class ResultSetReaderTest {
 		assertEquals(new BigDecimal("123"), record.get("Decimal").get());
 		assertEquals("A1", record.get("Enum").get());
 		assertEquals("A2", record.get("String").get());
-		assertEquals("привет мир", new String((byte[]) record.get("Binary").get()));
+		assertEquals("привет мир", new String((byte[]) record.get("Binary").get(), StandardCharsets.UTF_8));
 		assertEquals(new Date(0L), record.get("DateTime").get());
 	}
 

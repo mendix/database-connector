@@ -114,7 +114,7 @@ public class JdbcConnectorTest {
 		when(preparedStatement.executeQuery()).thenReturn(resultSet);
 		when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
 		when(resultSet.next()).thenReturn(true, false);
-		when(objectInstantiator.instantiate(anyObject(), anyString())).thenThrow(testException);
+		when(objectInstantiator.instantiate(any(), anyString())).thenThrow(testException);
 
 		try {
 			jdbcConnector.executeQuery(jdbcUrl, userName, password, mockIMetaObject(), sqlQuery, context);
@@ -152,7 +152,7 @@ public class JdbcConnectorTest {
 		when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
 		when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
 		when(preparedStatement.executeQuery()).thenReturn(resultSet);
-		when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
+		when(objectInstantiator.instantiate(any(), anyString())).thenReturn(resultObject);
 		when(resultSetMetaData.getColumnName(anyInt())).thenReturn("a", "b");
 		when(resultSetMetaData.getColumnCount()).thenReturn(2);
 		when(resultSet.getMetaData()).thenReturn(resultSetMetaData);
@@ -188,7 +188,7 @@ public class JdbcConnectorTest {
 		when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
 		when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
 		when(preparedStatement.executeQuery()).thenReturn(resultSet);
-		when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject1, resultObject2);
+		when(objectInstantiator.instantiate(any(), anyString())).thenReturn(resultObject1, resultObject2);
 		when(resultSetMetaData.getColumnCount()).thenReturn(2);
 		when(resultSetMetaData.getColumnName(1)).thenReturn(columnName1);
 		when(resultSetMetaData.getColumnName(2)).thenReturn(columnName2);
@@ -217,7 +217,7 @@ public class JdbcConnectorTest {
 		when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
 		when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
 		when(preparedStatement.executeQuery()).thenReturn(resultSet);
-		when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
+		when(objectInstantiator.instantiate(any(), anyString())).thenReturn(resultObject);
 
 		when(resultSetMetaData.getColumnCount()).thenReturn(1);
 		when(resultSetMetaData.getColumnName(1)).thenReturn("Boolean");
@@ -244,7 +244,7 @@ public class JdbcConnectorTest {
 		when(connectionManager.getConnection(anyString(), anyString(), anyString())).thenReturn(connection);
 		when(preparedStatementCreator.create(anyString(), eq(connection))).thenReturn(preparedStatement);
 		when(preparedStatement.executeQuery()).thenReturn(resultSet);
-		when(objectInstantiator.instantiate(anyObject(), anyString())).thenReturn(resultObject);
+		when(objectInstantiator.instantiate(any(), anyString())).thenReturn(resultObject);
 		when(resultSetMetaData.getColumnCount()).thenReturn(2);
 		when(resultSetMetaData.getColumnName(1)).thenReturn("a");
 		when(resultSetMetaData.getColumnName(2)).thenReturn("b");

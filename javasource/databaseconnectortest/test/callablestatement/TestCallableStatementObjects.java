@@ -6,7 +6,7 @@ import static databaseconnectortest.test.callablestatement.Queries.TAKE_OBJECT_R
 import static org.junit.Assert.assertEquals;
 
 import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectInput() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> inputObjectFields = new ArrayList<Parameter>();
 		inputObjectFields.add(builder.stringField(1, TEST_STRING));
 		inputObjectFields.add(builder.longField(2, AU));
 		
@@ -43,7 +43,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectInputNulls() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> inputObjectFields = new ArrayList<Parameter>();
 		inputObjectFields.add(builder.stringField(1, null));
 		inputObjectFields.add(builder.longField(2, null));
 		
@@ -60,7 +60,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectInputTooManyMembers() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> inputObjectFields = new ArrayList<Parameter>();
 		inputObjectFields.add(builder.stringField(1, TEST_STRING));
 		inputObjectFields.add(builder.longField(2, AU));
 		inputObjectFields.add(builder.longField(3, AU));
@@ -76,7 +76,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectInputTooFewMembers() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> inputObjectFields = new ArrayList<Parameter>();
 		inputObjectFields.add(builder.stringField(1, TEST_STRING));
 
 		builder = builderFromObjectToMembers(builder, inputObjectFields)
@@ -90,7 +90,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectInputMixedUpTypes() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> inputObjectFields = new ArrayList<Parameter>();
 		inputObjectFields.add(builder.longField(1, AU));
 		inputObjectFields.add(builder.stringField(2, TEST_STRING));
 		
@@ -106,7 +106,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectInputDuplicatePosition() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> inputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> inputObjectFields = new ArrayList<Parameter>();
 		inputObjectFields.add(builder.longField(2, AU));
 		inputObjectFields.add(builder.stringField(2, TEST_STRING));
 		
@@ -122,7 +122,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectOutput() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> outputObjectFields = new ArrayList<Parameter>();
 		outputObjectFields.add(builder.stringField(1, null));
 		outputObjectFields.add(builder.longField(2, null));
 		
@@ -141,7 +141,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectOutputNulls() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> outputObjectFields = new ArrayList<Parameter>();
 		outputObjectFields.add(builder.stringField(1, null));
 		outputObjectFields.add(builder.longField(2, null));
 		
@@ -163,7 +163,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectOutputTooFewParameters() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> outputObjectFields = new ArrayList<Parameter>();
 		outputObjectFields.add(builder.stringField(1, null));
 		
 		builder = builderFromMembersToObject(builder, outputObjectFields)
@@ -179,7 +179,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectOutputDuplicateKeys() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> outputObjectFields = new ArrayList<Parameter>();
 		outputObjectFields.add(builder.stringField(2, null));
 		outputObjectFields.add(builder.longField(2, null));
 		
@@ -195,7 +195,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectOutputTooManyParameters() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> outputObjectFields = new ArrayList<Parameter>();
 		outputObjectFields.add(builder.stringField(1, null));
 		outputObjectFields.add(builder.longField(2, null));
 		outputObjectFields.add(builder.longField(3, null));
@@ -212,7 +212,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	public void testObjectOutputMixedUpParameters() throws Exception {
 		StatementBuilder builder = new StatementBuilder(context);
 
-		List<Parameter> outputObjectFields = new LinkedList<Parameter>();
+		List<Parameter> outputObjectFields = new ArrayList<Parameter>();
 		outputObjectFields.add(builder.longField(1, null));
 		outputObjectFields.add(builder.stringField(2, null));
 
@@ -268,7 +268,7 @@ public class TestCallableStatementObjects extends TestCallableStatementBase {
 	}
 
 	private List<Parameter> objectFields(String name, Long age, StatementBuilder builder) throws Exception {
-		List<Parameter> objectFields = new LinkedList<Parameter>();
+		List<Parameter> objectFields = new ArrayList<Parameter>();
 		objectFields.add(builder.stringField(1, name));
 		objectFields.add(builder.longField(2, age));
 		return objectFields;
