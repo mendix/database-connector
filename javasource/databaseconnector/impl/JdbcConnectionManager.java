@@ -68,10 +68,10 @@ public class JdbcConnectionManager implements ConnectionManager {
 	private synchronized void initializeDrivers() {
 		if (!hasDriversInitialized) {
 			ServiceLoader<Driver> loader = ServiceLoader.load(Driver.class);
+			Stream<String> driverNames = StreamSupport.stream(loader.spliterator(), false)
+					.map(a -> a.getClass().getName());
+			String logMessage = driverNames.collect(Collectors.joining(", ", "Found JDBC Drivers: ", ""));
 			if (logNode.isTraceEnabled()) {
-				Stream<String> driverNames = StreamSupport.stream(loader.spliterator(), false)
-						.map(a -> a.getClass().getName());
-				String logMessage = driverNames.collect(Collectors.joining(", ", "Found JDBC Drivers: ", ""));
 				logNode.trace(logMessage);
 			}
 			hasDriversInitialized = true;
