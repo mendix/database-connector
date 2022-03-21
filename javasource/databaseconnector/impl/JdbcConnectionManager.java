@@ -8,7 +8,9 @@ import databaseconnector.interfaces.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
@@ -61,19 +63,28 @@ public class JdbcConnectionManager implements ConnectionManager {
 	/**
 	 * The JDBC drivers in the userlib folder of a project are not automatically
 	 * correctly registered to the DriverManager. The cause is maybe the fact that
-	 * the drivers are put into the project.jar on deployment. Iterating through the
-	 * drivers found by ServiceLoader.load(Driver.class) will force them to load and
-	 * register to the DriverManager.
+	 * the drivers are put into the project.jar on deployment. Hence, we explicitly
+	 * register the drivers.
 	 */
 	private synchronized void initializeDrivers() {
 		if (!hasDriversInitialized) {
 			ServiceLoader<Driver> loader = ServiceLoader.load(Driver.class);
+			List<Driver> drivers = StreamSupport.stream(loader.spliterator(), false).collect(Collectors.toList());
+
+			for (Driver driver : drivers) {
+				try {
+					DriverManager.registerDriver(driver);
+				} catch (SQLException e) {
+					throw new RuntimeException("Failed to register JDBC driver: " + driver.getClass().getName(), e);
+				}
+			}
+
 			if (logNode.isTraceEnabled()) {
-				Stream<String> driverNames = StreamSupport.stream(loader.spliterator(), false)
-						.map(a -> a.getClass().getName());
-				String logMessage = driverNames.collect(Collectors.joining(", ", "Found JDBC Drivers: ", ""));
+				String logMessage = drivers.stream().map(a -> a.getClass().getName())
+						.collect(Collectors.joining(", ", "Found JDBC Drivers: ", ""));
 				logNode.trace(logMessage);
 			}
+
 			hasDriversInitialized = true;
 		}
 	}

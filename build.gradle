@@ -30,12 +30,12 @@ dependencies {
     compile 'com.zaxxer:HikariCP:5.0.1'
     compile 'org.slf4j:slf4j-api:1.7.36'
     compile 'com.ibm.db2.jcc:db2jcc:db2jcc4'
-    compile 'org.hsqldb:hsqldb:2.5.0'
-    compile 'org.mariadb.jdbc:mariadb-java-client:2.6.0'
-    compile 'com.microsoft.sqlserver:mssql-jdbc:8.2.2.jre11'
-    compile 'com.oracle.database.jdbc:ojdbc8:19.6.0.0'
-    compile 'org.postgresql:postgresql:42.2.25'
-    compile 'com.sap.cloud.db.jdbc:ngdbc:2.4.76'
+    compile 'org.hsqldb:hsqldb:2.6.1'
+    compile 'org.mariadb.jdbc:mariadb-java-client:2.7.5'
+    compile 'com.microsoft.sqlserver:mssql-jdbc:9.4.0.jre11'
+    compile 'com.oracle.database.jdbc:ojdbc8:21.5.0.0'
+    compile 'org.postgresql:postgresql:42.3.3'
+    compile 'com.sap.cloud.db.jdbc:ngdbc:2.11.17'
 
     // UnitTesting
     compile group: 'junit', name: 'junit', version: '4.11'
